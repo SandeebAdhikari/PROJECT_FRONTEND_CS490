@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema, LoginFormData } from "@/libs/auth";
-import { Eye, EyeOff, Lock } from "lucide-react";
+import { Eye, EyeOff, Lock, Mail } from "lucide-react";
 
 import AuthHeader from "@/components/Auth/AuthHeader";
 
@@ -17,7 +17,7 @@ const SignInForm = () => {
 
   const onSubmit = (data: LoginFormData) => {
     console.log("Sign-in submitted:", data);
-    // TODO: integrate with backend API
+    // TODO: integrate with backend API--> later
   };
 
   return (
@@ -33,7 +33,7 @@ const SignInForm = () => {
       <div className="font-inter">
         <label className="block mb-1">Email or Phone</label>
         <div className="relative">
-          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
+          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
           <input
             {...form.register("emailOrPhone")}
             placeholder="Enter a Email or Phone "
