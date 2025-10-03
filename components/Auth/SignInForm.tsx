@@ -1,12 +1,15 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema, LoginFormData } from "@/libs/auth";
+import { Eye, EyeOff, Lock } from "lucide-react";
+
 import AuthHeader from "@/components/Auth/AuthHeader";
 
 const SignInForm = () => {
+  const [showPassword, setShowPassword] = useState(false);
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: { emailOrPhone: "", password: "" },
@@ -23,17 +26,20 @@ const SignInForm = () => {
       className="my-5 flex flex-col space-y-3 p-6 bg-card rounded-lg shadow w-[436px] sm:w-[672px]"
     >
       <AuthHeader
-        title="Sign In"
-        subtitle="Welcome back! Please log in to continue."
+        title="Welcome Back"
+        subtitle="Sign in to your account to continue"
       />
 
-      <div className="font-playfair">
+      <div className="font-inter">
         <label className="block mb-1">Email or Phone</label>
-        <input
-          {...form.register("emailOrPhone")}
-          placeholder="you@example.com or +1 555-555-5555"
-          className="w-full border rounded p-2"
-        />
+        <div className="relative">
+          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
+          <input
+            {...form.register("emailOrPhone")}
+            placeholder="Enter a Email or Phone "
+            className="w-full border border-muted rounded p-2 pl-10"
+          />
+        </div>
         {form.formState.errors.emailOrPhone && (
           <p className="text-red-500 text-sm">
             {form.formState.errors.emailOrPhone.message}
@@ -41,17 +47,31 @@ const SignInForm = () => {
         )}
       </div>
 
-      <div>
-        <label className="block mb-1">Password</label>
-        <input
-          type="password"
-          {...form.register("password")}
-          placeholder="********"
-          className="w-full border rounded p-2"
-        />
+      <div className="font-inter">
+        <label className="block mb-1 font-semibold text-sm">Password *</label>
+        <div className="relative">
+          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
+          {showPassword ? (
+            <EyeOff
+              onClick={() => setShowPassword(false)}
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4 cursor-pointer"
+            />
+          ) : (
+            <Eye
+              onClick={() => setShowPassword(true)}
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4 cursor-pointer"
+            />
+          )}
+          <input
+            type={showPassword ? "text" : "password"}
+            {...form.register("password")}
+            placeholder="Enter password"
+            className="w-full border border-muted rounded-lg p-2 pl-10"
+          />
+        </div>
         {form.formState.errors.password && (
           <p className="text-red-500 text-sm">
-            {form.formState.errors.password.message}
+            {String(form.formState.errors.password.message)}
           </p>
         )}
       </div>

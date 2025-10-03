@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import { ArrowLeft, Scissors, Chrome, Facebook } from "lucide-react";
 
 interface AuthHeaderProps {
