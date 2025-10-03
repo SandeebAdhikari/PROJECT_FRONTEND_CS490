@@ -7,6 +7,72 @@
   --color-foreground: var(--foreground);
 }
 
+@theme inline {
+  --background: 0 0% 100%;
+  --foreground: 0 0% 9%;
+
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 9%;
+
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 9%;
+
+  /* Premium emerald green primary */
+  --primary: 160 84% 39%;
+  --primary-foreground: 0 0% 100%;
+  --primary-light: 160 75% 50%;
+  --primary-dark: 160 95% 25%;
+
+  /* Elegant gold accent */
+  --accent: 45 95% 60%;
+  --accent-foreground: 0 0% 9%;
+  --accent-light: 45 100% 70%;
+  --accent-dark: 45 85% 45%;
+
+  /* Sophisticated grays */
+  --secondary: 0 0% 96%;
+  --secondary-foreground: 0 0% 20%;
+
+  --muted: 0 0% 95%;
+  --muted-foreground: 0 0% 45%;
+
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+
+  --border: 0 0% 90%;
+  --input: 0 0% 95%;
+  --ring: 160 84% 39%;
+
+  --radius: 0.75rem;
+
+  /* Premium gradients */
+  --gradient-primary: linear-gradient(
+    135deg,
+    hsl(160 84% 39%),
+    hsl(160 75% 50%)
+  );
+  --gradient-accent: linear-gradient(135deg, hsl(45 95% 60%), hsl(45 100% 70%));
+  --gradient-subtle: linear-gradient(135deg, hsl(0 0% 99%), hsl(0 0% 96%));
+  --gradient-premium: linear-gradient(
+    135deg,
+    hsl(160 84% 39%),
+    hsl(45 95% 60%)
+  );
+
+  /* Premium shadows */
+  --shadow-soft: 0 2px 8px -2px hsl(0 0% 0% / 0.1);
+  --shadow-medium: 0 8px 24px -4px hsl(0 0% 0% / 0.12);
+  --shadow-large: 0 16px 40px -8px hsl(0 0% 0% / 0.15);
+  --shadow-premium: 0 20px 50px -12px hsl(160 84% 39% / 0.25);
+
+  /* Animations */
+  --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-bounce: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+  --font-sans: var(--font-playfair);
+  --font-inter: var(--font-inter);
+}
+
 /* change this later background to foreground, and viceversa */
 @media (prefers-color-scheme: dark) {
   :root {

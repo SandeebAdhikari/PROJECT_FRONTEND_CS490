@@ -2,14 +2,16 @@ import type { Metadata } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({
-  variable: "--font-sans",
-  subsets: ["latin"],
-});
-
 const playfair = Playfair_Display({
-  variable: "--font-display",
   subsets: ["latin"],
+  weight: ["400", "700"],
+  variable: "--font-playfair",
+  display: "swap",
+});
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -19,16 +21,15 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
+}>) {
   return (
-    <html lang="en">
-      <body
-        className={`${inter.variable} ${playfair.variable} font-sans antialiased`}
-      >
-        {children}
-      </body>
+    <html
+      lang="en"
+      className={`${playfair.variable} ${inter.variable} antialiased`}
+    >
+      <body>{children}</body>
     </html>
   );
 }

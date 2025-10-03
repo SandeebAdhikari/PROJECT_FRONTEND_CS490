@@ -13,7 +13,7 @@ export const SignInForm: React.FC = () => {
 
   const onSubmit = (data: LoginFormData) => {
     console.log("Sign-in submitted:", data);
-    // TODO: integrate with backend API
+    // TODO: need to integrate with backend API
   };
 
   return (
@@ -21,8 +21,8 @@ export const SignInForm: React.FC = () => {
       onSubmit={form.handleSubmit(onSubmit)}
       className="max-w-md mx-auto space-y-6 p-6 border rounded-lg shadow"
     >
-      <div>
-        <label className="block mb-1">Email or Phone</label>
+      <div className="font-playfair">
+        <label className="block mb-1 ">Email or Phone</label>
         <input
           {...form.register("emailOrPhone")}
           placeholder="you@example.com or +1 555-555-5555"
@@ -52,7 +52,7 @@ export const SignInForm: React.FC = () => {
 
       <button
         type="submit"
-        className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700"
+        className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700 font-playfair"
       >
         Sign In
       </button>

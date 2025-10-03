@@ -25,7 +25,7 @@ export const SignUpForm: React.FC = () => {
       onSubmit={form.handleSubmit(onSubmit)}
       className="my-5 flex flex-col space-y-3 p-6 bg-white/50 rounded-lg shadow  w-[436px] sm:w-[672px]"
     >
-      <button className="flex justify-center items-center gap-2  text-[#737373]">
+      <button className="flex justify-center items-center gap-2  text-[#737373] font-inter cursor-pointer hover:text-[#171717]">
         <ArrowLeft className="w-4 h-4" />
         Back to Home
       </button>
@@ -34,7 +34,10 @@ export const SignUpForm: React.FC = () => {
         <div className="flex items-center justify-center w-[48px] h-[48px] rounded-xl bg-[#19C98D]">
           <Scissors className="w-6 h-6 text-white" />
         </div>
-        <h2 className="text-lg mt-[16px] font-bold">Salon Booker</h2>
+        <h2 className="text-2xl mt-[16px] font-bold">SalonBooker</h2>
+      </div>
+      <div className="mt-10 flex flex-col items-center">
+        <h2 className="">Create Account</h2>
       </div>
       {/* User Type */}
       <div>

@@ -1,13 +1,14 @@
-export default function HomePage() {
-  return (
-    <main className="p-8">
-      <p className="text-lg">
-        This text is using the default Inter font via <code>font-sans</code>.
-      </p>
+"use client";
 
-      <h1 className="font-display text-4xl mt-4">
-        This heading uses Playfair Display
-      </h1>
-    </main>
+import React from "react";
+import AuthForm from "@/components/Auth/AuthForm";
+
+const SignInPage = () => {
+  return (
+    <div className="flex justify-center bg-white w-full min-h-screen">
+      <AuthForm type="sign-in" />
+    </div>
   );
-}
+};
+
+export default SignInPage;
