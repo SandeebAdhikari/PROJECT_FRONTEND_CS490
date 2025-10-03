@@ -30,6 +30,11 @@ export const signUpSchema = z
       .string()
       .regex(/^\+?[\d\s\-\(\)]+$/, "Invalid phone")
       .optional(),
+    gender: z.enum(["male", "female", "prefer_not_to_say"]).optional(),
+    zipcode: z
+      .string()
+      .regex(/^\d{5}$/, "Zip code must be 5 digits")
+      .optional(),
 
     // Owner
     ownerName: z.string().min(1, "Owner name is required").optional(),

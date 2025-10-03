@@ -5,7 +5,7 @@ import AuthForm from "@/components/Auth/AuthForm";
 
 const SignUpPage = () => {
   return (
-    <div className="flex justify-center bg-white w-full min-h-screen">
+    <div className="flex justify-center bg-gradient-subtle  w-full min-h-screen">
       <AuthForm type="sign-up" />
     </div>
   );
