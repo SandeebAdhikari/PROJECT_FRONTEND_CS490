@@ -4,8 +4,9 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema, LoginFormData } from "@/libs/auth";
+import AuthHeader from "@/components/Auth/AuthHeader";
 
-export const SignInForm: React.FC = () => {
+const SignInForm = () => {
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: { emailOrPhone: "", password: "" },
@@ -13,16 +14,21 @@ export const SignInForm: React.FC = () => {
 
   const onSubmit = (data: LoginFormData) => {
     console.log("Sign-in submitted:", data);
-    // TODO: need to integrate with backend API
+    // TODO: integrate with backend API
   };
 
   return (
     <form
       onSubmit={form.handleSubmit(onSubmit)}
-      className="max-w-md mx-auto space-y-6 p-6 border rounded-lg shadow"
+      className="my-5 flex flex-col space-y-3 p-6 bg-card rounded-lg shadow w-[436px] sm:w-[672px]"
     >
+      <AuthHeader
+        title="Sign In"
+        subtitle="Welcome back! Please log in to continue."
+      />
+
       <div className="font-playfair">
-        <label className="block mb-1 ">Email or Phone</label>
+        <label className="block mb-1">Email or Phone</label>
         <input
           {...form.register("emailOrPhone")}
           placeholder="you@example.com or +1 555-555-5555"
@@ -52,10 +58,12 @@ export const SignInForm: React.FC = () => {
 
       <button
         type="submit"
-        className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700 font-playfair"
+        className="w-full bg-primary text-white p-2 rounded-lg hover:bg-primary-dark font-inter cursor-pointer"
       >
         Sign In
       </button>
     </form>
   );
 };
+
+export default SignInForm;
