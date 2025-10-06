@@ -1,7 +1,15 @@
+import AdminNavBar from "@/components/AdminNavBar";
 import React from "react";
 
-const layout = () => {
-  return <div>layout</div>;
-};
-
-export default layout;
+export default async function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <main>
+      <AdminNavBar />
+      <div>{children}</div>
+    </main>
+  );
+}
