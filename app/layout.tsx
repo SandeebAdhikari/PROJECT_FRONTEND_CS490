@@ -15,7 +15,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "SalonBooker",
+  title: "StyGo",
   description: "Booking platform for salons",
 };
 

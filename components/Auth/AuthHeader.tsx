@@ -24,9 +24,7 @@ const AuthHeader: React.FC<AuthHeaderProps> = ({ title, subtitle, onBack }) => {
         <div className="flex items-center justify-center w-[48px] h-[48px] rounded-xl bg-primary">
           <Scissors className="w-6 h-6 text-primary-foreground" />
         </div>
-        <h2 className="text-2xl mt-[16px] font-bold text-foreground">
-          SalonBooker
-        </h2>
+        <h2 className="text-2xl mt-[16px] font-bold text-foreground">StyGo</h2>
       </div>
 
       <div className="mt-10 flex flex-col items-center gap-2">
