@@ -1,4 +1,4 @@
-import AdminNavBar from "@/components/AdminNavBar";
+import AdminNavBar from "@/components/Admin/AdminNavBar";
 import React from "react";
 
 export default async function RootLayout({
