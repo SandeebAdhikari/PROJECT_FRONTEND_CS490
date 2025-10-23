@@ -98,10 +98,10 @@
   --color-ring: hsl(var(--ring));
 
   /* Gradients */
-  --bg-gradient-primary: var(--gradient-primary);
-  --bg-gradient-accent: var(--gradient-accent);
-  --bg-gradient-subtle: var(--gradient-subtle);
-  --bg-gradient-premium: var(--gradient-premium);
+  --gradient-primary: var(--gradient-primary);
+  --gradient-accent: var(--gradient-accent);
+  --gradient-subtle: var(--gradient-subtle);
+  --gradient-premium: var(--gradient-premium);
 
   /* Shadows */
   --shadow-soft: 0 2px 8px -2px hsl(0 0% 0% / 0.1);

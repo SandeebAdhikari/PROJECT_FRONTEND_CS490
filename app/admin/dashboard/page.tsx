@@ -1,7 +1,12 @@
 import React from "react";
+import SalonDashboard from "@/components/Admin/SalonDashboard";
 
-const Dashboard = () => {
-  return <div>page</div>;
+const Page = () => {
+  return (
+    <div>
+      <SalonDashboard />
+    </div>
+  );
 };
 
-export default Dashboard;
+export default Page;
