@@ -5,7 +5,7 @@ import data from "@/data/data.json" assert { type: "json" };
 import { DashboardData } from "@/libs/dashboard/dashboard.types";
 import { icons } from "@/libs/dashboard/dashboard.icons";
 
-import Overview from "./SalonDashBoardTabs/overview";
+import Overview from "./SalonDashBoardTabs/Overview";
 import Appointments from "./SalonDashBoardTabs/Appointments";
 import Staff from "./SalonDashBoardTabs/Staff";
 import Customers from "./SalonDashBoardTabs/Customers";
