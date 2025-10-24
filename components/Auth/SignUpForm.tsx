@@ -3,7 +3,7 @@
 import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { signUpSchema, SignUpFormData } from "@/libs/auth";
+import { signUpSchema, SignUpFormData } from "@/libs/auth/auth";
 
 import AuthHeader from "./AuthHeader";
 import AuthPassword from "./AuthPassword";

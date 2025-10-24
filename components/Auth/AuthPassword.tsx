@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Lock, Eye, EyeOff } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
-import { SignUpFormData } from "@/libs/auth";
+import { SignUpFormData } from "@/libs/auth/auth";
 
 type AuthPasswordProps = {
   form: UseFormReturn<SignUpFormData>;

@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { loginSchema, LoginFormData } from "@/libs/auth";
+import { loginSchema, LoginFormData } from "@/libs/auth/auth";
 import { Eye, EyeOff, Lock, Mail } from "lucide-react";
 
 import AuthHeader from "@/components/Auth/AuthHeader";

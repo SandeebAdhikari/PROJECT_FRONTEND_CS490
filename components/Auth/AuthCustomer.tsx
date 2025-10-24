@@ -2,7 +2,7 @@
 
 import { User, Mail, Phone, MapPin } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
-import { SignUpFormData } from "@/libs/auth";
+import { SignUpFormData } from "@/libs/auth/auth";
 
 type AuthCustomerProps = {
   form: UseFormReturn<SignUpFormData>;

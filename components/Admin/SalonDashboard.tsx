@@ -14,7 +14,7 @@ import {
 
 import React from "react";
 import DashboardCard from "./DashboardCard";
-import data from "@/libs/data.json" assert { type: "json" };
+import data from "@/data/data.json" assert { type: "json" };
 
 type IconName =
   | "DollarSign"
