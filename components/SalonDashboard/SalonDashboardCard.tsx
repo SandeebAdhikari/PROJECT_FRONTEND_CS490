@@ -27,13 +27,15 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
           <h1 className="text-sm">{change}</h1>
         </div>
       </div>
-      <h1 className="mt-4 font-inter font-semibold text-sm sm:text-base text-secondary-foreground">
+      <h1 className="mt-4 font-inter font-semibold text-sm sm:text-base text-muted-foreground">
         {title}
       </h1>
       <h1 className="mt-1 text-3xl font-extrabold font-stretch-50% text-foreground">
         {value}
       </h1>
-      <p className="font-inter text-xs sm:font-sm mt-2">{subtext}</p>
+      <p className="font-inter text-xs sm:font-sm mt-2 text-muted-foreground">
+        {subtext}
+      </p>
     </div>
   );
 };

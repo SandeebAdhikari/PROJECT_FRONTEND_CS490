@@ -1,21 +1,19 @@
 import {
-  BarChart3,
   DollarSign,
   CalendarDays,
-  Clock,
   Users,
   Star,
   Activity,
   UserCheck,
+  TrendingUp,
+  TrendingDown,
+  BarChart3,
   UserCircle2,
+  Clock,
   Settings,
-  TrendingUp,
-  TrendingDown,
-  type LucideIcon,
 } from "lucide-react";
-import { IconName, IconNameSwitch } from "./dashboard.types";
 
-export const icons: Record<IconName, LucideIcon> = {
+export const icons = {
   DollarSign,
   CalendarDays,
   Users,
@@ -24,12 +22,7 @@ export const icons: Record<IconName, LucideIcon> = {
   UserCheck,
   TrendingUp,
   TrendingDown,
-};
-
-export const iconSwitch: Record<IconNameSwitch, LucideIcon> = {
   BarChart3,
-  CalendarDays,
-  Users,
   UserCircle2,
   Clock,
   Settings,
