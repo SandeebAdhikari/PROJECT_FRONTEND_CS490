@@ -1,51 +1,10 @@
-import {
-  Download,
-  Plus,
-  DollarSign,
-  CalendarDays,
-  Users,
-  Star,
-  Activity,
-  UserCheck,
-  TrendingUp,
-  TrendingDown,
-  LucideIcon,
-} from "lucide-react";
+import { Download, Plus } from "lucide-react";
 
 import React from "react";
 import DashboardCard from "./DashboardCard";
 import data from "@/data/data.json" assert { type: "json" };
-
-type IconName =
-  | "DollarSign"
-  | "CalendarDays"
-  | "Users"
-  | "Star"
-  | "Activity"
-  | "UserCheck"
-  | "TrendingUp"
-  | "TrendingDown";
-
-type DashboardItem = {
-  id: number;
-  title: string;
-  value: string;
-  subtext: string;
-  change: string;
-  icon: IconName;
-  trendIcon: IconName;
-};
-
-const icons: Record<IconName, LucideIcon> = {
-  DollarSign,
-  CalendarDays,
-  Users,
-  Star,
-  Activity,
-  UserCheck,
-  TrendingUp,
-  TrendingDown,
-};
+import { DashboardItem } from "@/libs/dashboard/dashboard.types";
+import { icons } from "@/libs/dashboard/dashboard.icons";
 
 const typedData = data as DashboardItem[];
 
