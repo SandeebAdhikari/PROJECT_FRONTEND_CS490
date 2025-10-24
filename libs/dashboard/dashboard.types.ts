@@ -28,6 +28,18 @@ export type DashboardItem = {
   trendIcon: IconName;
 };
 
+export type MenuItem = {
+  id: number;
+  label: string;
+  shortLabel: string;
+  icon: IconName;
+};
+
+export type DashboardData = {
+  cards: DashboardItem[];
+  menu: MenuItem[];
+};
+
 export type DashboardCardProps = {
   title: string;
   value: string | number;
@@ -35,14 +47,4 @@ export type DashboardCardProps = {
   change: string;
   icon: LucideIcon;
   trendIcon: LucideIcon;
-};
-
-export type DashboardData = {
-  cards: DashboardItem[];
-  menu: {
-    id: number;
-    label: string;
-    shortLabel: string;
-    icon: string;
-  }[];
 };

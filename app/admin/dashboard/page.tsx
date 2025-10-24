@@ -1,6 +1,6 @@
 import React from "react";
 import SalonDashboard from "@/components/SalonDashboard/SalonDashboard";
-import SwitchComponent from "@/components/SalonDashboard/SwitchComponent";
+import SwitchComponent from "@/components/SalonDashboard/SalonDashboardTabs";
 
 const Page = () => {
   return (

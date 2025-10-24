@@ -1,6 +1,6 @@
 import { Download, Plus } from "lucide-react";
 import React from "react";
-import DashboardCard from "./DashboardCard";
+import SalonDashboardCard from "./SalonDashboardCard";
 import data from "@/data/data.json" assert { type: "json" };
 import { DashboardData } from "@/libs/dashboard/dashboard.types";
 import { icons } from "@/libs/dashboard/dashboard.icons";
@@ -46,7 +46,7 @@ const SalonDashboard = () => {
           const TrendIcon = icons[item.trendIcon];
 
           return (
-            <DashboardCard
+            <SalonDashboardCard
               key={item.id}
               title={item.title}
               value={item.value}
