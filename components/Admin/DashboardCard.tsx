@@ -1,14 +1,48 @@
-import { DollarSign } from "lucide-react";
 import React from "react";
+import { LucideIcon } from "lucide-react";
 
-const DashboardCard = () => {
+type DashboardCardProps = {
+  title: string;
+  value: string | number;
+  subtext?: string;
+  change: string;
+  icon: LucideIcon;
+  trendIcon: LucideIcon;
+};
+
+const DashboardCard: React.FC<DashboardCardProps> = ({
+  title,
+  value,
+  subtext,
+  change,
+  icon: Icon,
+  trendIcon: TrendIcon,
+}) => {
+  const isNegative = change.startsWith("-");
+  const trendColor = isNegative
+    ? "text-red-500 bg-red-100"
+    : "text-green-600 bg-green-100";
+
   return (
-    <div>
-      <div className="mt-4 border border-border bg-secondary rounded-lg p-4">
-        <div className="relative w-11 h-11 sm:w-[48px] sm:h-[48px] bg-primary-light rounded-2xl">
-          <DollarSign className="absolute text-white flex items-center top-2 left-2.5" />
+    <div className="mt-4 border border-border bg-secondary rounded-lg p-6 hover:shadow-soft-br transition-smooth">
+      <div className="flex justify-between items-center">
+        <div className="relative w-11 h-11 sm:w-[48px] sm:h-[48px] bg-primary-light rounded-2xl flex items-center justify-center">
+          <Icon className="text-white w-5 h-5" />
+        </div>
+        <div
+          className={`flex ${trendColor} p-1.5 rounded-full items-center font-inter border border-border`}
+        >
+          <TrendIcon className="w-3 h-3 mr-1" />
+          <h1 className="text-sm">{change}</h1>
         </div>
       </div>
+      <h1 className="mt-4 font-inter font-semibold text-sm sm:text-base text-secondary-foreground">
+        {title}
+      </h1>
+      <h1 className="mt-1 text-3xl font-extrabold font-stretch-50% text-foreground">
+        {value}
+      </h1>
+      <p className="font-inter text-xs sm:font-sm mt-2">{subtext}</p>
     </div>
   );
 };

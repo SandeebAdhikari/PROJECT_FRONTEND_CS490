@@ -29,8 +29,8 @@
   --muted: 0 0% 95%;
   --muted-foreground: 0 0% 45%;
 
-  --subtle-foreground: 0 0% 65%; /* lighter gray */
-  --faint-foreground: 0 0% 80%; /* very dim gray */
+  --subtle-foreground: 146 71% 29%; /* lighter gray */
+  --faint-foreground: 141 77% 92%;
 
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 100%;
@@ -109,8 +109,21 @@
   --shadow-large: 0 16px 40px -8px hsl(0 0% 0% / 0.15);
   --shadow-premium: 0 20px 50px -12px hsl(160 84% 39% / 0.25);
 
+  --shadow-soft-br: 4px 4px 8px hsl(0 0% 0% / 0.1);
+  --shadow-medium-br: 6px 6px 16px hsl(0 0% 0% / 0.12);
+  --shadow-large-br: 8px 8px 24px hsl(0 0% 0% / 0.15);
+  --shadow-premium-br: 10px 10px 28px hsl(160 84% 39% / 0.25);
+
   /* Transitions */
 
   --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-bounce: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@utility transition-smooth {
+  transition: var(--transition-smooth);
+}
+
+@utility transition-bounce {
+  transition: var(--transition-bounce);
 }

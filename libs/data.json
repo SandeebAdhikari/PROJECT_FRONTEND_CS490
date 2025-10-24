@@ -1,0 +1,56 @@
+[
+  {
+    "id": 1,
+    "title": "Total Revenue",
+    "value": "$45,670",
+    "subtext": "vs $37,020 last period",
+    "change": "+23.5%",
+    "trendIcon": "TrendingUp",
+    "icon": "DollarSign"
+  },
+  {
+    "id": 2,
+    "title": "Appointments",
+    "value": "342",
+    "subtext": "vs 289 last period",
+    "change": "+18.2%",
+    "trendIcon": "TrendingUp",
+    "icon": "CalendarDays"
+  },
+  {
+    "id": 3,
+    "title": "New Customers",
+    "value": "67",
+    "subtext": "vs 50 last period",
+    "change": "+34.1%",
+    "trendIcon": "TrendingUp",
+    "icon": "Users"
+  },
+  {
+    "id": 4,
+    "title": "Avg Rating",
+    "value": "4.8",
+    "subtext": "vs 4.9 last period",
+    "change": "-0.1%",
+    "trendIcon": "TrendingDown",
+    "icon": "Star"
+  },
+  {
+    "id": 5,
+    "title": "Staff Utilization",
+    "value": "87%",
+    "subtext": "vs 82% last period",
+    "change": "+5.2%",
+    "trendIcon": "TrendingUp",
+    "icon": "Activity"
+  },
+  {
+    "id": 6,
+    "title": "Customer Retention",
+    "value": "94%",
+    "subtext": "vs 92% last period",
+    "change": "+2.1%",
+    "trendIcon": "TrendingUp",
+    "icon": "UserCheck"
+  }
+]
