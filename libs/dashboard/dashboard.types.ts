@@ -36,3 +36,13 @@ export type DashboardCardProps = {
   icon: LucideIcon;
   trendIcon: LucideIcon;
 };
+
+export type DashboardData = {
+  cards: DashboardItem[];
+  menu: {
+    id: number;
+    label: string;
+    shortLabel: string;
+    icon: string;
+  }[];
+};
