@@ -5,9 +5,35 @@ import data from "@/data/data.json" assert { type: "json" };
 import { DashboardData } from "@/libs/dashboard/dashboard.types";
 import { icons } from "@/libs/dashboard/dashboard.icons";
 
+import Overview from "./SalonDashBoardTabs/overview";
+import Appointments from "./SalonDashBoardTabs/Appointments";
+import Staff from "./SalonDashBoardTabs/Staff";
+import Customers from "./SalonDashBoardTabs/Customers";
+import Analytics from "./SalonDashBoardTabs/Analytics";
+import Settings from "./SalonDashBoardTabs/Settings";
+
 const SalonDashboardTabs = () => {
   const typedData = data as DashboardData;
   const [active, setActive] = useState("Overview");
+
+  const renderActiveTab = () => {
+    switch (active) {
+      case "Overview":
+        return <Overview />;
+      case "Appointments":
+        return <Appointments />;
+      case "Staff":
+        return <Staff />;
+      case "Customers":
+        return <Customers />;
+      case "Analytics":
+        return <Analytics />;
+      case "Settings":
+        return <Settings />;
+      default:
+        return null;
+    }
+  };
 
   return (
     <div className="p-4 sm:p-8">
@@ -37,6 +63,8 @@ const SalonDashboardTabs = () => {
           );
         })}
       </div>
+
+      <div className="mt-6">{renderActiveTab()}</div>
     </div>
   );
 };
