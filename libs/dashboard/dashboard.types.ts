@@ -1,3 +1,5 @@
+import { LucideIcon } from "lucide-react";
+
 export type IconName =
   | "DollarSign"
   | "CalendarDays"
@@ -8,6 +10,14 @@ export type IconName =
   | "TrendingUp"
   | "TrendingDown";
 
+export type IconNameSwitch =
+  | "BarChart3"
+  | "CalendarDays"
+  | "Users"
+  | "UserCircle2"
+  | "Clock"
+  | "Settings";
+
 export type DashboardItem = {
   id: number;
   title: string;
@@ -16,4 +26,13 @@ export type DashboardItem = {
   change: string;
   icon: IconName;
   trendIcon: IconName;
+};
+
+export type DashboardCardProps = {
+  title: string;
+  value: string | number;
+  subtext?: string;
+  change: string;
+  icon: LucideIcon;
+  trendIcon: LucideIcon;
 };

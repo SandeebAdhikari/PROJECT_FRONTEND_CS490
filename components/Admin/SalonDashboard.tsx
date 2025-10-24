@@ -6,7 +6,7 @@ import data from "@/data/data.json" assert { type: "json" };
 import { DashboardItem } from "@/libs/dashboard/dashboard.types";
 import { icons } from "@/libs/dashboard/dashboard.icons";
 
-const typedData = data as DashboardItem[];
+const typedData = data.cards as DashboardItem[];
 
 const SalonDashboard = () => {
   return (

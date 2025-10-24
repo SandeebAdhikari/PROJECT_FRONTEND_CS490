@@ -1,14 +1,5 @@
 import React from "react";
-import { LucideIcon } from "lucide-react";
-
-type DashboardCardProps = {
-  title: string;
-  value: string | number;
-  subtext?: string;
-  change: string;
-  icon: LucideIcon;
-  trendIcon: LucideIcon;
-};
+import { DashboardCardProps } from "@/libs/dashboard/dashboard.types";
 
 const DashboardCard: React.FC<DashboardCardProps> = ({
   title,
