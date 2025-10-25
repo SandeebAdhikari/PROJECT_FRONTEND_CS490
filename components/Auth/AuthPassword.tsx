@@ -34,7 +34,7 @@ const AuthPassword = ({ form }: AuthPasswordProps) => {
             type={showPassword ? "text" : "password"}
             {...form.register("password")}
             placeholder="Enter password"
-            className="w-full border border-muted rounded-lg p-2 pl-10"
+            className="w-full border border-muted rounded-lg p-2 pl-10 focus:ring-1 focus:ring-primary outline-none"
           />
         </div>
         {form.formState.errors.password && (
@@ -65,7 +65,7 @@ const AuthPassword = ({ form }: AuthPasswordProps) => {
             type={showConfirmPassword ? "text" : "password"}
             {...form.register("confirmPassword")}
             placeholder="Confirm password"
-            className="w-full border border-muted rounded-lg p-2 pl-10"
+            className="w-full border border-muted rounded-lg p-2 pl-10 focus:ring-1 focus:ring-primary outline-none"
           />
         </div>
         {form.formState.errors.confirmPassword && (

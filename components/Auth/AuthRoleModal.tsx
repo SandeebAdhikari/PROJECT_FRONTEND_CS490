@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 
 interface AuthRoleModalProps {
-  onSelectRole: (role: string) => void;
+  onSelectRole: (role: string, businessName?: string) => void;
   onCancel: () => void;
 }
 
@@ -12,6 +12,16 @@ const RoleModal: React.FC<AuthRoleModalProps> = ({
   onCancel,
 }) => {
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
+  const [businessName, setBusinessName] = useState<string>("");
+
+  const handleContinue = () => {
+    if (!selectedRole) return;
+    if (selectedRole === "owner" && !businessName.trim()) {
+      alert("Please enter your business name");
+      return;
+    }
+    onSelectRole(selectedRole, businessName.trim());
+  };
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-50 backdrop-blur-sm">
@@ -25,6 +35,7 @@ const RoleModal: React.FC<AuthRoleModalProps> = ({
 
         <div className="flex flex-col gap-3 w-full">
           <button
+            type="button"
             onClick={() => setSelectedRole("owner")}
             className={`border rounded-lg py-2 font-medium hover:bg-primary hover:text-white transition ${
               selectedRole === "owner" ? "bg-primary text-white" : ""
@@ -34,6 +45,7 @@ const RoleModal: React.FC<AuthRoleModalProps> = ({
           </button>
 
           <button
+            type="button"
             onClick={() => setSelectedRole("customer")}
             className={`border rounded-lg py-2 font-medium hover:bg-primary hover:text-white transition ${
               selectedRole === "customer" ? "bg-primary text-white" : ""
@@ -43,6 +55,25 @@ const RoleModal: React.FC<AuthRoleModalProps> = ({
           </button>
         </div>
 
+        {selectedRole === "owner" && (
+          <div className="w-full mt-2">
+            <label
+              htmlFor="businessName"
+              className="block text-sm font-medium text-foreground mb-1"
+            >
+              Business Name
+            </label>
+            <input
+              id="businessName"
+              type="text"
+              value={businessName}
+              onChange={(e) => setBusinessName(e.target.value)}
+              placeholder="Enter your salon name"
+              className="w-full border border-border rounded-md p-2 text-sm focus:ring-1 focus:ring-primary outline-none"
+            />
+          </div>
+        )}
+
         <div className="flex justify-between gap-3 mt-4 w-full">
           <button
             onClick={onCancel}
@@ -51,8 +82,11 @@ const RoleModal: React.FC<AuthRoleModalProps> = ({
             Cancel
           </button>
           <button
-            onClick={() => selectedRole && onSelectRole(selectedRole)}
-            disabled={!selectedRole}
+            onClick={handleContinue}
+            disabled={
+              !selectedRole ||
+              (selectedRole === "owner" && !businessName.trim())
+            }
             className="w-1/2 bg-primary text-white rounded-lg py-2 text-sm font-semibold disabled:opacity-50"
           >
             Continue

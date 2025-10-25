@@ -37,7 +37,7 @@ const SignInForm = () => {
           <input
             {...form.register("emailOrPhone")}
             placeholder="Enter a Email or Phone "
-            className="w-full border border-muted rounded p-2 pl-10"
+            className="w-full border border-muted rounded p-2 pl-10 focus:ring-1 focus:ring-primary outline-none"
           />
         </div>
         {form.formState.errors.emailOrPhone && (
@@ -66,7 +66,7 @@ const SignInForm = () => {
             type={showPassword ? "text" : "password"}
             {...form.register("password")}
             placeholder="Enter password"
-            className="w-full border border-muted rounded-lg p-2 pl-10"
+            className="w-full border border-muted rounded-lg p-2 pl-10 focus:ring-1 focus:ring-primary outline-none"
           />
         </div>
         {form.formState.errors.password && (

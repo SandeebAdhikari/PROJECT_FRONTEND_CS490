@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { ArrowLeft, Scissors, Chrome, Facebook } from "lucide-react";
 import { signInWithPopup, type AuthProvider } from "firebase/auth";
+import { useRouter } from "next/navigation";
 import RoleModal from "@/components/Auth/AuthRoleModal";
 import {
   auth,
@@ -14,10 +15,9 @@ import {
 interface AuthHeaderProps {
   title: string;
   subtitle: string;
-  onBack?: () => void;
 }
 
-const AuthHeader: React.FC<AuthHeaderProps> = ({ title, subtitle, onBack }) => {
+const AuthHeader: React.FC<AuthHeaderProps> = ({ title, subtitle }) => {
   const [showRoleModal, setShowRoleModal] = useState(false);
 
   const [pendingUser, setPendingUser] = useState<{
@@ -27,6 +27,12 @@ const AuthHeader: React.FC<AuthHeaderProps> = ({ title, subtitle, onBack }) => {
     profilePic?: string | null;
     phone?: string | null;
   } | null>(null);
+
+  const router = useRouter();
+
+  const handleBack = () => {
+    router.push("/");
+  };
 
   const handleFirebaseLogin = async (provider: AuthProvider) => {
     try {
@@ -56,8 +62,9 @@ const AuthHeader: React.FC<AuthHeaderProps> = ({ title, subtitle, onBack }) => {
             : "/customer";
         return;
       }
+
       if (data.newUser && data.firebaseUid && data.email) {
-        const user = auth.currentUser; // Firebase user object
+        const user = auth.currentUser;
 
         setPendingUser({
           firebaseUid: data.firebaseUid,
@@ -84,12 +91,11 @@ const AuthHeader: React.FC<AuthHeaderProps> = ({ title, subtitle, onBack }) => {
     }
   };
 
-  const handleRoleSelect = async (role: string) => {
+  const handleRoleSelect = async (role: string, businessName?: string) => {
     if (!pendingUser) return;
     setShowRoleModal(false);
 
     try {
-      // ✅ Prepare the request body with all available user data
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/auth/set-role`,
         {
@@ -98,10 +104,11 @@ const AuthHeader: React.FC<AuthHeaderProps> = ({ title, subtitle, onBack }) => {
           body: JSON.stringify({
             firebaseUid: pendingUser.firebaseUid,
             email: pendingUser.email,
-            fullName: pendingUser.fullName, // ✅ added
-            profilePic: pendingUser.profilePic, // ✅ added
-            phone: pendingUser.phone, // ✅ added
-            role, // ✅ keep existing
+            fullName: pendingUser.fullName,
+            profilePic: pendingUser.profilePic,
+            phone: pendingUser.phone,
+            role,
+            businessName,
           }),
         }
       );
@@ -110,7 +117,6 @@ const AuthHeader: React.FC<AuthHeaderProps> = ({ title, subtitle, onBack }) => {
       if (!res.ok) throw new Error(data.error || "Failed to set role");
 
       document.cookie = `token=${data.token}; path=/; max-age=3600;`;
-
       window.location.href =
         data.role === "owner" ? "/admin/salon-dashboard/overview" : "/customer";
     } catch (err) {
@@ -129,7 +135,7 @@ const AuthHeader: React.FC<AuthHeaderProps> = ({ title, subtitle, onBack }) => {
       )}
 
       <button
-        onClick={onBack}
+        onClick={handleBack}
         type="button"
         className="flex justify-center items-center gap-2 text-muted-foreground font-inter cursor-pointer hover:text-foreground mb-6"
       >
@@ -150,7 +156,6 @@ const AuthHeader: React.FC<AuthHeaderProps> = ({ title, subtitle, onBack }) => {
       </div>
 
       <div className="flex flex-col items-center font-inter font-bold">
-        {/* Google Login */}
         <button
           type="button"
           className="mt-4 flex gap-4 items-center justify-center shadow-medium p-3 w-full rounded-xl hover:bg-accent cursor-pointer"
@@ -160,7 +165,6 @@ const AuthHeader: React.FC<AuthHeaderProps> = ({ title, subtitle, onBack }) => {
           <span>Continue with Google</span>
         </button>
 
-        {/* Microsoft Login */}
         <button
           type="button"
           className="mt-4 flex gap-4 items-center justify-center shadow-medium p-3 w-full rounded-xl hover:bg-accent cursor-pointer"
@@ -172,7 +176,6 @@ const AuthHeader: React.FC<AuthHeaderProps> = ({ title, subtitle, onBack }) => {
           Continue with Microsoft
         </button>
 
-        {/* Facebook Login */}
         <button
           type="button"
           className="mt-4 flex gap-4 items-center justify-center shadow-medium p-3 w-full rounded-xl hover:bg-accent cursor-pointer"
