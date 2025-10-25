@@ -2,7 +2,7 @@ import NextImage from "next/image";
 import Icon9 from "../../public/icons/9.png";
 import { Bell, Search } from "lucide-react";
 
-const AdminNavBar = () => {
+const SalonNavBar = () => {
   return (
     <div className="p-4 sm:px-8 flex justify-between items-center w-full border border-b border-border">
       <div className="flex items-center gap-2">
@@ -43,4 +43,4 @@ const AdminNavBar = () => {
   );
 };
 
-export default AdminNavBar;
+export default SalonNavBar;

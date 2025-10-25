@@ -30,8 +30,11 @@ const AuthHeader: React.FC<AuthHeaderProps> = ({ title, subtitle, onBack }) => {
         `${process.env.NEXT_PUBLIC_API_URL}/api/auth/verify-firebase`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ idToken, provider: providerName }),
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${idToken}`,
+          },
+          body: JSON.stringify({ provider: providerName }),
         }
       );
 
@@ -41,9 +44,7 @@ const AuthHeader: React.FC<AuthHeaderProps> = ({ title, subtitle, onBack }) => {
 
       localStorage.setItem("token", data.token);
       window.location.href =
-        data.role === "salon_owner"
-          ? "/SalonDashboard/owner"
-          : "/SalonDashboard/customer";
+        data.role === "salon_owner" ? "/admin/SalonDashboard/" : "/customer";
     } catch (err: unknown) {
       console.error(err);
       const message =
@@ -80,6 +81,7 @@ const AuthHeader: React.FC<AuthHeaderProps> = ({ title, subtitle, onBack }) => {
 
       <div className="flex flex-col items-center font-inter font-bold">
         <button
+          type="button"
           className="mt-4 flex gap-4 items-center justify-center shadow-medium p-3 w-full rounded-xl hover:bg-accent cursor-pointer"
           onClick={() => handleFirebaseLogin(googleProvider, "google")}
         >
@@ -87,6 +89,7 @@ const AuthHeader: React.FC<AuthHeaderProps> = ({ title, subtitle, onBack }) => {
           <span> Continue with Google</span>
         </button>
         <button
+          type="button"
           className="mt-4 flex gap-4 items-center justify-center shadow-medium p-3 w-full rounded-xl hover:bg-accent cursor-pointer"
           onClick={() => handleFirebaseLogin(microsoftProvider, "microsoft")}
         >
@@ -96,6 +99,7 @@ const AuthHeader: React.FC<AuthHeaderProps> = ({ title, subtitle, onBack }) => {
           Continue with Microsoft
         </button>
         <button
+          type="button"
           className="mt-4 flex gap-4 items-center justify-center shadow-medium p-3 w-full rounded-xl hover:bg-accent cursor-pointer"
           onClick={() => handleFirebaseLogin(facebookProvider, "facebook")}
         >
