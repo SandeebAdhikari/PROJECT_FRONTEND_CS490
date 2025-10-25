@@ -1,7 +1,9 @@
 "use client";
 
+import React, { useState } from "react";
 import { ArrowLeft, Scissors, Chrome, Facebook } from "lucide-react";
 import { signInWithPopup, type AuthProvider } from "firebase/auth";
+import RoleModal from "@/components/Auth/AuthRoleModal";
 import {
   auth,
   googleProvider,
@@ -16,16 +18,22 @@ interface AuthHeaderProps {
 }
 
 const AuthHeader: React.FC<AuthHeaderProps> = ({ title, subtitle, onBack }) => {
-  const handleFirebaseLogin = async (
-    provider: AuthProvider,
-    providerName: string
-  ) => {
+  const [showRoleModal, setShowRoleModal] = useState(false);
+
+  const [pendingUser, setPendingUser] = useState<{
+    firebaseUid: string;
+    email: string;
+    fullName?: string | null;
+    profilePic?: string | null;
+    phone?: string | null;
+  } | null>(null);
+
+  const handleFirebaseLogin = async (provider: AuthProvider) => {
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
       const idToken = await user.getIdToken();
 
-      // Firebase verification + JWT creation
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/auth/verify-firebase`,
         {
@@ -34,18 +42,36 @@ const AuthHeader: React.FC<AuthHeaderProps> = ({ title, subtitle, onBack }) => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${idToken}`,
           },
-          body: JSON.stringify({ provider: providerName }),
         }
       );
 
       const data = await res.json();
-
       if (!res.ok) throw new Error(data.error || "Firebase login failed");
 
-      document.cookie = `token=${data.token}; path=/; max-age=3600;`;
+      if (data.existingUser && data.token && data.role) {
+        document.cookie = `token=${data.token}; path=/; max-age=3600;`;
+        window.location.href =
+          data.role === "owner"
+            ? "/admin/salon-dashboard/overview"
+            : "/customer";
+        return;
+      }
+      if (data.newUser && data.firebaseUid && data.email) {
+        const user = auth.currentUser; // Firebase user object
 
-      window.location.href =
-        data.role === "salon_owner" ? "/admin/SalonDashboard/" : "/customer";
+        setPendingUser({
+          firebaseUid: data.firebaseUid,
+          email: data.email,
+          fullName: user?.displayName || "Unknown User",
+          profilePic: user?.photoURL || null,
+          phone: user?.phoneNumber || null,
+        });
+
+        setShowRoleModal(true);
+        return;
+      }
+
+      throw new Error("Unexpected backend response");
     } catch (err: unknown) {
       console.error(err);
       const message =
@@ -57,8 +83,51 @@ const AuthHeader: React.FC<AuthHeaderProps> = ({ title, subtitle, onBack }) => {
       alert("Social login failed: " + message);
     }
   };
+
+  const handleRoleSelect = async (role: string) => {
+    if (!pendingUser) return;
+    setShowRoleModal(false);
+
+    try {
+      // ✅ Prepare the request body with all available user data
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/auth/set-role`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            firebaseUid: pendingUser.firebaseUid,
+            email: pendingUser.email,
+            fullName: pendingUser.fullName, // ✅ added
+            profilePic: pendingUser.profilePic, // ✅ added
+            phone: pendingUser.phone, // ✅ added
+            role, // ✅ keep existing
+          }),
+        }
+      );
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to set role");
+
+      document.cookie = `token=${data.token}; path=/; max-age=3600;`;
+
+      window.location.href =
+        data.role === "owner" ? "/admin/salon-dashboard/overview" : "/customer";
+    } catch (err) {
+      console.error(err);
+      alert("Failed to assign role");
+    }
+  };
+
   return (
     <>
+      {showRoleModal && (
+        <RoleModal
+          onSelectRole={handleRoleSelect}
+          onCancel={() => setShowRoleModal(false)}
+        />
+      )}
+
       <button
         onClick={onBack}
         type="button"
@@ -81,31 +150,36 @@ const AuthHeader: React.FC<AuthHeaderProps> = ({ title, subtitle, onBack }) => {
       </div>
 
       <div className="flex flex-col items-center font-inter font-bold">
+        {/* Google Login */}
         <button
           type="button"
           className="mt-4 flex gap-4 items-center justify-center shadow-medium p-3 w-full rounded-xl hover:bg-accent cursor-pointer"
-          onClick={() => handleFirebaseLogin(googleProvider, "google")}
+          onClick={() => handleFirebaseLogin(googleProvider)}
         >
           <Chrome className="w-4 h-4" />
-          <span> Continue with Google</span>
+          <span>Continue with Google</span>
         </button>
+
+        {/* Microsoft Login */}
         <button
           type="button"
           className="mt-4 flex gap-4 items-center justify-center shadow-medium p-3 w-full rounded-xl hover:bg-accent cursor-pointer"
-          onClick={() => handleFirebaseLogin(microsoftProvider, "microsoft")}
+          onClick={() => handleFirebaseLogin(microsoftProvider)}
         >
           <svg className="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="currentColor">
             <path d="M2 2h9v9H2zM13 2h9v9h-9zM2 13h9v9H2zM13 13h9v9h-9z" />
           </svg>
           Continue with Microsoft
         </button>
+
+        {/* Facebook Login */}
         <button
           type="button"
           className="mt-4 flex gap-4 items-center justify-center shadow-medium p-3 w-full rounded-xl hover:bg-accent cursor-pointer"
-          onClick={() => handleFirebaseLogin(facebookProvider, "facebook")}
+          onClick={() => handleFirebaseLogin(facebookProvider)}
         >
           <Facebook className="w-4 h-4" />
-          <span> Continue with Facebook</span>
+          <span>Continue with Facebook</span>
         </button>
       </div>
 

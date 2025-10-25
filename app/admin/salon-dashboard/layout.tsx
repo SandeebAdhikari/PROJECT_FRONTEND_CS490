@@ -1,3 +1,5 @@
+"use client";
+
 import SalonNavBar from "@/components/SalonDashboard/SalonNavBar";
 import SalonDashboard from "@/components/SalonDashboard/SalonDashboard";
 import SalonDashboardTabs from "@/components/SalonDashboard/SalonDashboardTabs";
