@@ -1,4 +1,6 @@
 import AdminNavBar from "@/components/SalonDashboard/SalonNavBar";
+import SalonDashboard from "@/components/SalonDashboard/SalonDashboard";
+import SalonDashboardTabs from "@/components/SalonDashboard/SalonDashboardTabs";
 import React from "react";
 
 export default async function RootLayout({
@@ -9,6 +11,8 @@ export default async function RootLayout({
   return (
     <main>
       <AdminNavBar />
+      <SalonDashboard />
+      <SalonDashboardTabs />
       <div>{children}</div>
     </main>
   );
