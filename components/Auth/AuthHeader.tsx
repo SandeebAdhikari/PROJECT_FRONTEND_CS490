@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { ArrowLeft, Scissors, Chrome, Facebook } from "lucide-react";
+import { ArrowLeft, Chrome, Facebook } from "lucide-react";
 import { signInWithPopup, type AuthProvider } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import RoleModal from "@/components/Auth/AuthRoleModal";
@@ -11,7 +11,8 @@ import {
   facebookProvider,
   microsoftProvider,
 } from "@/libs/firebase/client";
-
+import NextImage from "next/image";
+import Icon9 from "@/public/icons/9.png";
 interface AuthHeaderProps {
   title: string;
   subtitle: string;
@@ -144,9 +145,7 @@ const AuthHeader: React.FC<AuthHeaderProps> = ({ title, subtitle }) => {
       </button>
 
       <div className="flex flex-col items-center">
-        <div className="flex items-center justify-center w-[48px] h-[48px] rounded-xl bg-primary">
-          <Scissors className="w-6 h-6 text-primary-foreground" />
-        </div>
+        <NextImage src={Icon9} alt="app-icon" width={45} height={45} />
         <h2 className="text-2xl mt-[16px] font-bold text-foreground">StyGo</h2>
       </div>
 
