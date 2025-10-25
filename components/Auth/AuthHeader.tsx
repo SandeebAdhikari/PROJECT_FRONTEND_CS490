@@ -42,7 +42,8 @@ const AuthHeader: React.FC<AuthHeaderProps> = ({ title, subtitle, onBack }) => {
 
       if (!res.ok) throw new Error(data.error || "Firebase login failed");
 
-      localStorage.setItem("token", data.token);
+      document.cookie = `token=${data.token}; path=/; max-age=3600;`;
+
       window.location.href =
         data.role === "salon_owner" ? "/admin/SalonDashboard/" : "/customer";
     } catch (err: unknown) {

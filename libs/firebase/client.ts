@@ -4,6 +4,8 @@ import {
   GoogleAuthProvider,
   FacebookAuthProvider,
   OAuthProvider,
+  setPersistence,
+  browserLocalPersistence,
 } from "firebase/auth";
 
 const firebaseConfig = {
@@ -15,6 +17,10 @@ const firebaseConfig = {
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);
+
+setPersistence(auth, browserLocalPersistence).catch((err) => {
+  console.error("Firebase persistence setup failed:", err);
+});
 
 const googleProvider = new GoogleAuthProvider();
 const facebookProvider = new FacebookAuthProvider();
