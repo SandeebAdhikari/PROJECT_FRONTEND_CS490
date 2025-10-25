@@ -79,32 +79,32 @@ const AuthHeader: React.FC<AuthHeaderProps> = ({ title, subtitle, onBack }) => {
         <p className="text-sm text-muted-foreground font-inter">{subtitle}</p>
       </div>
 
-      <div className="flex flex-col items-center font-inter font-bold">
+      <div className="flex flex-col items-center font-inter font-semibold w-full">
         <button
           type="button"
-          className="mt-4 flex gap-4 items-center justify-center shadow-medium p-3 w-full rounded-xl hover:bg-accent cursor-pointer"
+          className="mt-4 flex gap-2 items-center justify-center bg-secondary border border-border text-foreground p-3 w-full rounded-xl hover:bg-muted transition-colors cursor-pointer"
           onClick={() => handleFirebaseLogin(googleProvider, "google")}
         >
-          <Chrome className="w-4 h-4" />
-          <span> Continue with Google</span>
+          <Chrome className="w-5 h-5" />
+          <span>Continue with Google</span>
         </button>
         <button
           type="button"
-          className="mt-4 flex gap-4 items-center justify-center shadow-medium p-3 w-full rounded-xl hover:bg-accent cursor-pointer"
+          className="mt-4 flex gap-2 items-center justify-center bg-secondary border border-border text-foreground p-3 w-full rounded-xl hover:bg-muted transition-colors cursor-pointer"
           onClick={() => handleFirebaseLogin(microsoftProvider, "microsoft")}
         >
-          <svg className="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="currentColor">
+          <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
             <path d="M2 2h9v9H2zM13 2h9v9h-9zM2 13h9v9H2zM13 13h9v9h-9z" />
           </svg>
-          Continue with Microsoft
+          <span>Continue with Microsoft</span>
         </button>
         <button
           type="button"
-          className="mt-4 flex gap-4 items-center justify-center shadow-medium p-3 w-full rounded-xl hover:bg-accent cursor-pointer"
+          className="mt-4 flex gap-2 items-center justify-center bg-secondary border border-border text-foreground p-3 w-full rounded-xl hover:bg-muted transition-colors cursor-pointer"
           onClick={() => handleFirebaseLogin(facebookProvider, "facebook")}
         >
-          <Facebook className="w-4 h-4" />
-          <span> Continue with Facebook</span>
+          <Facebook className="w-5 h-5" />
+          <span>Continue with Facebook</span>
         </button>
       </div>
 
