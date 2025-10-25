@@ -6,7 +6,7 @@ import {
   auth,
   googleProvider,
   facebookProvider,
-  appleProvider,
+  microsoftProvider,
 } from "@/libs/firebase/client";
 
 interface AuthHeaderProps {
@@ -25,7 +25,7 @@ const AuthHeader: React.FC<AuthHeaderProps> = ({ title, subtitle, onBack }) => {
       const user = result.user;
       const idToken = await user.getIdToken();
 
-      // Send to your backend for Firebase verification + JWT creation
+      // Firebase verification + JWT creation
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/auth/verify-firebase`,
         {
@@ -88,7 +88,7 @@ const AuthHeader: React.FC<AuthHeaderProps> = ({ title, subtitle, onBack }) => {
         </button>
         <button
           className="mt-4 flex gap-4 items-center justify-center shadow-medium p-3 w-full rounded-xl hover:bg-accent cursor-pointer"
-          onClick={() => handleFirebaseLogin(appleProvider, "apple")}
+          onClick={() => handleFirebaseLogin(microsoftProvider, "microsoft")}
         >
           <svg className="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="currentColor">
             <path d="M2 2h9v9H2zM13 2h9v9h-9zM2 13h9v9H2zM13 13h9v9h-9z" />
