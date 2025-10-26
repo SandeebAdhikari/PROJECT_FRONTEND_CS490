@@ -1,7 +1,8 @@
 import React from "react";
-
-const layout = () => {
-  return <div>layout</div>;
-};
-
-export default layout;
+export default function CustomerLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return <>{children}</>;
+}

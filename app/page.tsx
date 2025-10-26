@@ -1,10 +1,21 @@
+import React from "react";
 import NavBar from "@/components/NavBar";
+import Banner from "@/components/Landing/Banner";
+import Features from "@/components/Landing/Features";
+import Steps from "@/components/Landing/Steps";
+import Business from "@/components/Landing/Business";
+import Footer from "@/components/Landing/Footer";
 
 const LandingPage = () => {
   return (
-    <div>
-      <NavBar></NavBar>
-    </div>
+    <main className="min-h-screen">
+      <NavBar />
+      <Banner />
+      <Features />
+      <Steps />
+      <Business />
+      <Footer />
+    </main>
   );
 };
 

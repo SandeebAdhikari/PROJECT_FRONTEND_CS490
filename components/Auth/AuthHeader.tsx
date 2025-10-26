@@ -154,7 +154,7 @@ const AuthHeader: React.FC<AuthHeaderProps> = ({ title, subtitle }) => {
         <p className="text-sm text-muted-foreground font-inter">{subtitle}</p>
       </div>
 
-      <div className="flex flex-col items-center font-inter font-bold">
+      <div className="flex flex-col items-center font-inter font-semibold w-full">
         <button
           type="button"
           className="mt-4 flex gap-4 items-center justify-center shadow-medium p-3 w-full rounded-xl hover:bg-accent cursor-pointer"
@@ -169,10 +169,10 @@ const AuthHeader: React.FC<AuthHeaderProps> = ({ title, subtitle }) => {
           className="mt-4 flex gap-4 items-center justify-center shadow-medium p-3 w-full rounded-xl hover:bg-accent cursor-pointer"
           onClick={() => handleFirebaseLogin(microsoftProvider)}
         >
-          <svg className="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="currentColor">
+          <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
             <path d="M2 2h9v9H2zM13 2h9v9h-9zM2 13h9v9H2zM13 13h9v9h-9z" />
           </svg>
-          Continue with Microsoft
+          <span>Continue with Microsoft</span>
         </button>
 
         <button

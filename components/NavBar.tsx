@@ -1,39 +1,58 @@
 "use client";
-
 import React from "react";
-import NextImage from "next/image";
-import { useRouter } from "next/navigation";
-import Icon9 from "@/public/icons/9.png";
+import Link from "next/link";
+import { Scissors } from "lucide-react";
 
-const NavBar = () => {
-  const router = useRouter();
-
+const NavBar: React.FC = () => {
   return (
-    <div className="p-4 sm:px-8 flex justify-between items-center w-full border border-b border-border">
-      <div
-        className="flex items-center gap-1 cursor-pointer"
-        onClick={() => router.push("/")}
-      >
-        <NextImage src={Icon9} alt="app-icon" width={45} height={45} />
-        <h1 className="font-extrabold text-lg">StyGo</h1>
-      </div>
+    <nav className="sticky top-0 z-50 bg-background bg-opacity-95 backdrop-blur-sm border-b border-border shadow-soft">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
+          <Link href="/" className="flex items-center gap-2 group">
+            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary group-hover:bg-primary-dark transition-colors">
+              <Scissors className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-2xl font-bold text-foreground">StyGo</span>
+          </Link>
 
-      <div className="flex gap-2">
-        <button
-          onClick={() => router.push("/sign-in")}
-          className="rounded-lg py-3 px-4 text-sm sm:text-base font-inter font-semibold hover:bg-accent transition-smooth cursor-pointer"
-        >
-          Login
-        </button>
+          <div className="hidden md:flex items-center gap-8 font-inter">
+            <Link
+              href="#features"
+              className="text-muted-foreground hover:text-primary transition-colors"
+            >
+              Features
+            </Link>
+            <Link
+              href="#how-it-works"
+              className="text-muted-foreground hover:text-primary transition-colors"
+            >
+              How It Works
+            </Link>
+            <Link
+              href="#for-owners"
+              className="text-muted-foreground hover:text-primary transition-colors"
+            >
+              For Salon Owners
+            </Link>
+          </div>
 
-        <button
-          onClick={() => router.push("/sign-up")}
-          className="border border-border rounded-lg py-3 px-4 text-sm sm:text-base font-inter font-semibold bg-primary-light text-white hover:scale-105 shadow-soft-br transition-smooth cursor-pointer"
-        >
-          Sign Up
-        </button>
+          <div className="flex items-center gap-4 font-inter">
+            <Link
+              href="/sign-in"
+              className="text-primary hover:text-primary-dark font-semibold transition-colors"
+            >
+              Sign In
+            </Link>
+            <Link
+              href="/sign-up"
+              className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors shadow-soft"
+            >
+              Get Started
+            </Link>
+          </div>
+        </div>
       </div>
-    </div>
+    </nav>
   );
 };
 
