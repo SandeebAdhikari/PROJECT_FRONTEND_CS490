@@ -1,10 +1,11 @@
-import CustomerNavbar from "@/components/Customer/CustomerNavbar";
+import CustomerMyProfile from "@/components/Customer/CustomerMyProfile";
+
 import React from "react";
 
 const page = () => {
   return (
     <div>
-      <CustomerNavbar />
+      <CustomerMyProfile />
     </div>
   );
 };
