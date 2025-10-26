@@ -1,5 +1,5 @@
 import React from "react";
-import NavBar from "@/components/NavBar";
+import NavBar from "@/components/Landing/NavBar";
 import Banner from "@/components/Landing/Banner";
 import Features from "@/components/Landing/Features";
 import Steps from "@/components/Landing/Steps";

@@ -16,7 +16,6 @@ const ProfileTabs = () => {
 
   return (
     <div className="p-4 sm:p-8">
-      {/* Tab Navigation */}
       <div className="flex justify-between gap-1 p-1 bg-muted rounded-lg mb-6">
         {tabs.map((tab) => (
           <button
@@ -33,7 +32,6 @@ const ProfileTabs = () => {
         ))}
       </div>
 
-      {/* Tab Content */}
       <div className="bg-card rounded-lg shadow border border-border p-8 sm:p-12">
         {activeTab === "upcoming" && <UpcomingContent />}
         {activeTab === "past" && <PastBookingsContent />}
@@ -118,4 +116,3 @@ const FavoritesContent = () => {
 };
 
 export default ProfileTabs;
-
