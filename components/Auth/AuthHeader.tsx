@@ -1,18 +1,142 @@
 "use client";
 
-import { ArrowLeft, Scissors, Chrome, Facebook } from "lucide-react";
-
+import React, { useState } from "react";
+import { ArrowLeft, Chrome, Facebook } from "lucide-react";
+import { signInWithPopup, type AuthProvider } from "firebase/auth";
+import { useRouter } from "next/navigation";
+import RoleModal from "@/components/Auth/AuthRoleModal";
+import {
+  auth,
+  googleProvider,
+  facebookProvider,
+  microsoftProvider,
+} from "@/libs/firebase/client";
+import NextImage from "next/image";
+import Icon9 from "@/public/icons/9.png";
 interface AuthHeaderProps {
   title: string;
   subtitle: string;
-  onBack?: () => void;
 }
 
-const AuthHeader: React.FC<AuthHeaderProps> = ({ title, subtitle, onBack }) => {
+const AuthHeader: React.FC<AuthHeaderProps> = ({ title, subtitle }) => {
+  const [showRoleModal, setShowRoleModal] = useState(false);
+
+  const [pendingUser, setPendingUser] = useState<{
+    firebaseUid: string;
+    email: string;
+    fullName?: string | null;
+    profilePic?: string | null;
+    phone?: string | null;
+  } | null>(null);
+
+  const router = useRouter();
+
+  const handleBack = () => {
+    router.push("/");
+  };
+
+  const handleFirebaseLogin = async (provider: AuthProvider) => {
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      const idToken = await user.getIdToken();
+
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/auth/verify-firebase`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${idToken}`,
+          },
+        }
+      );
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Firebase login failed");
+
+      if (data.existingUser && data.token && data.role) {
+        document.cookie = `token=${data.token}; path=/; max-age=3600;`;
+        window.location.href =
+          data.role === "owner"
+            ? "/admin/salon-dashboard/overview"
+            : "/customer";
+        return;
+      }
+
+      if (data.newUser && data.firebaseUid && data.email) {
+        const user = auth.currentUser;
+
+        setPendingUser({
+          firebaseUid: data.firebaseUid,
+          email: data.email,
+          fullName: user?.displayName || "Unknown User",
+          profilePic: user?.photoURL || null,
+          phone: user?.phoneNumber || null,
+        });
+
+        setShowRoleModal(true);
+        return;
+      }
+
+      throw new Error("Unexpected backend response");
+    } catch (err: unknown) {
+      console.error(err);
+      const message =
+        err instanceof Error
+          ? err.message
+          : typeof err === "string"
+          ? err
+          : "An unknown error occurred";
+      alert("Social login failed: " + message);
+    }
+  };
+
+  const handleRoleSelect = async (role: string, businessName?: string) => {
+    if (!pendingUser) return;
+    setShowRoleModal(false);
+
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/auth/set-role`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            firebaseUid: pendingUser.firebaseUid,
+            email: pendingUser.email,
+            fullName: pendingUser.fullName,
+            profilePic: pendingUser.profilePic,
+            phone: pendingUser.phone,
+            role,
+            businessName,
+          }),
+        }
+      );
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to set role");
+
+      document.cookie = `token=${data.token}; path=/; max-age=3600;`;
+      window.location.href =
+        data.role === "owner" ? "/admin/salon-dashboard/overview" : "/customer";
+    } catch (err) {
+      console.error(err);
+      alert("Failed to assign role");
+    }
+  };
+
   return (
     <>
+      {showRoleModal && (
+        <RoleModal
+          onSelectRole={handleRoleSelect}
+          onCancel={() => setShowRoleModal(false)}
+        />
+      )}
+
       <button
-        onClick={onBack}
+        onClick={handleBack}
         type="button"
         className="flex justify-center items-center gap-2 text-muted-foreground font-inter cursor-pointer hover:text-foreground mb-6"
       >
@@ -21,9 +145,7 @@ const AuthHeader: React.FC<AuthHeaderProps> = ({ title, subtitle, onBack }) => {
       </button>
 
       <div className="flex flex-col items-center">
-        <div className="flex items-center justify-center w-[48px] h-[48px] rounded-xl bg-primary">
-          <Scissors className="w-6 h-6 text-primary-foreground" />
-        </div>
+        <NextImage src={Icon9} alt="app-icon" width={45} height={45} />
         <h2 className="text-2xl mt-[16px] font-bold text-foreground">StyGo</h2>
       </div>
 
@@ -32,20 +154,34 @@ const AuthHeader: React.FC<AuthHeaderProps> = ({ title, subtitle, onBack }) => {
         <p className="text-sm text-muted-foreground font-inter">{subtitle}</p>
       </div>
 
-      <div className="flex flex-col items-center font-inter font-bold">
-        <button className="mt-4 flex gap-4 items-center justify-center shadow-medium p-3 w-full rounded-xl hover:bg-accent cursor-pointer">
+      <div className="flex flex-col items-center font-inter font-semibold w-full">
+        <button
+          type="button"
+          className="mt-4 flex gap-4 items-center justify-center shadow-medium p-3 w-full rounded-xl hover:bg-accent cursor-pointer"
+          onClick={() => handleFirebaseLogin(googleProvider)}
+        >
           <Chrome className="w-4 h-4" />
-          <span> Continue with Google</span>
+          <span>Continue with Google</span>
         </button>
-        <button className="mt-4 flex gap-4 items-center justify-center shadow-medium p-3 w-full rounded-xl hover:bg-accent cursor-pointer">
-          <svg className="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M18.71 19.5C17.88 20.74 17 21.95 15.66 21.97C14.32 22 13.89 21.18 12.37 21.18C10.84 21.18 10.37 21.95 9.1 22C7.79 22.05 6.8 20.68 5.96 19.47C4.25 17 2.94 12.45 4.7 9.39C5.57 7.87 7.13 6.91 8.82 6.88C10.1 6.86 11.32 7.75 12.11 7.75C12.89 7.75 14.37 6.68 15.92 6.84C16.57 6.87 18.39 7.1 19.56 8.82C19.47 8.88 17.39 10.1 17.41 12.63C17.44 15.65 20.06 16.66 20.09 16.67C20.06 16.74 19.67 18.11 18.71 19.5ZM13 3.5C13.73 2.67 14.94 2.04 15.94 2C16.07 3.17 15.6 4.35 14.9 5.19C14.21 6.04 13.07 6.7 11.95 6.61C11.8 5.46 12.36 4.26 13 3.5Z" />
+
+        <button
+          type="button"
+          className="mt-4 flex gap-4 items-center justify-center shadow-medium p-3 w-full rounded-xl hover:bg-accent cursor-pointer"
+          onClick={() => handleFirebaseLogin(microsoftProvider)}
+        >
+          <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M2 2h9v9H2zM13 2h9v9h-9zM2 13h9v9H2zM13 13h9v9h-9z" />
           </svg>
-          Continue with Apple
+          <span>Continue with Microsoft</span>
         </button>
-        <button className="mt-4 flex gap-4 items-center justify-center shadow-medium p-3 w-full rounded-xl hover:bg-accent cursor-pointer">
+
+        <button
+          type="button"
+          className="mt-4 flex gap-4 items-center justify-center shadow-medium p-3 w-full rounded-xl hover:bg-accent cursor-pointer"
+          onClick={() => handleFirebaseLogin(facebookProvider)}
+        >
           <Facebook className="w-4 h-4" />
-          <span> Continue with Facebook</span>
+          <span>Continue with Facebook</span>
         </button>
       </div>
 
