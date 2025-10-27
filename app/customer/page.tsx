@@ -1,10 +1,12 @@
 import CustomerNavbar from "@/components/Customer/CustomerNavbar";
+import CustomerSearchCard from "@/components/Customer/CustomerSearchCard";
 import React from "react";
 
 const page = () => {
   return (
-    <div>
+    <div className="bg-muted min-h-screen">
       <CustomerNavbar />
+      <CustomerSearchCard />
     </div>
   );
 };
