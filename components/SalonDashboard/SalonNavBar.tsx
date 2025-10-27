@@ -7,7 +7,7 @@ const SalonNavBar = () => {
     <div className="p-4 sm:px-8 flex justify-between items-center w-full border border-b border-border">
       <div className="flex items-center gap-2">
         <NextImage src={Icon9} alt="app-icon" width={40} height={40} />
-        <h1 className="font-extrabold text-lg">Lux Hair Salon</h1>
+        <h1 className="font-extrabold text-lg">Stygo</h1>
       </div>
       <div className="flex items-center gap-3">
         <div className="hidden sm:flex  gap-3">
