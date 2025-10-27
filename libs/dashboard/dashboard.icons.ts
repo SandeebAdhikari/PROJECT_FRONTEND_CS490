@@ -11,6 +11,14 @@ import {
   UserCircle2,
   Clock,
   Settings,
+  Award,
+  Scissors,
+  Calendar,
+  Crown,
+  LayoutDashboard,
+  History,
+  Gift,
+  User,
 } from "lucide-react";
 
 export const icons = {
@@ -26,4 +34,12 @@ export const icons = {
   UserCircle2,
   Clock,
   Settings,
+  Award,
+  Scissors,
+  Calendar,
+  Crown,
+  LayoutDashboard,
+  History,
+  Gift,
+  User,
 };
