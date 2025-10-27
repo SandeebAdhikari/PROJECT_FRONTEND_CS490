@@ -16,7 +16,7 @@ const CustomerNavbar = () => {
           <User className="absolute w-4 h-4 top-1 left-3 text-foreground" />
           <Link
             href="/customer/my-profile"
-            className="hover:bg-accent transition-bounce rounded-lg py-2 px-4 text-sm sm:text-base font-inter font-semibold  text-foreground hover:cursor-pointer  hover:shadow-soft-br"
+            className="hover:bg-accent transition-bounce rounded-lg py-2.5 px-4 text-sm sm:text-base font-inter font-semibold  text-foreground hover:cursor-pointer  hover:shadow-soft-br"
           >
             <span className="ml-6">My Profile</span>
           </Link>

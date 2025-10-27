@@ -1,4 +1,7 @@
 {
+  "salonImages": {
+    "default": "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=400&h=300&fit=crop"
+  },
   "cards": [
     {
       "id": 1,
@@ -91,6 +94,118 @@
       "label": "Settings",
       "shortLabel": "Config",
       "icon": "Settings"
+    }
+  ],
+  "salons": [
+    {
+      "id": "1",
+      "name": "Glamour Beauty Bar",
+      "city": "Los Angeles",
+      "category": "Skincare",
+      "rating": 4.9,
+      "totalReviews": 256,
+      "priceFrom": 45,
+      "description": "Full-service beauty salon offering hair, nails, makeup, and spa services.",
+      "imageUrl": "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=400&h=300&fit=crop"
+    },
+    {
+      "id": "2",
+      "name": "Elite Hair Studio",
+      "city": "New York",
+      "category": "Hair",
+      "rating": 4.8,
+      "totalReviews": 124,
+      "priceFrom": 65,
+      "description": "Premium hair salon specializing in modern cuts, coloring, and styling.",
+      "imageUrl": "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400&h=300&fit=crop"
+    },
+    {
+      "id": "3",
+      "name": "Urban Style Lounge",
+      "city": "Chicago",
+      "category": "Hair",
+      "rating": 4.7,
+      "totalReviews": 89,
+      "priceFrom": 70,
+      "description": "Contemporary salon offering creative cuts, blowouts, and styling.",
+      "imageUrl": "https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=400&h=300&fit=crop"
+    },
+    {
+      "id": "4",
+      "name": "Color & Co. Studio",
+      "city": "San Francisco",
+      "category": "Coloring",
+      "rating": 4.6,
+      "totalReviews": 105,
+      "priceFrom": 80,
+      "description": "Experts in balayage, highlights, and custom color transformations.",
+      "imageUrl": "https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=400&h=300&fit=crop"
+    },
+    {
+      "id": "5",
+      "name": "Nail Haven Spa",
+      "city": "Miami",
+      "category": "Nails",
+      "rating": 4.9,
+      "totalReviews": 312,
+      "priceFrom": 30,
+      "description": "Luxurious manicure and pedicure experience with top hygiene standards.",
+      "imageUrl": "https://images.unsplash.com/photo-1620331311520-246422fd82f9?w=400&h=300&fit=crop"
+    },
+    {
+      "id": "6",
+      "name": "The Brow Atelier",
+      "city": "Austin",
+      "category": "Eyebrows",
+      "rating": 4.8,
+      "totalReviews": 142,
+      "priceFrom": 35,
+      "description": "Brow shaping, tinting, and microblading by certified specialists.",
+      "imageUrl": "/salons/3.png"
+    },
+    {
+      "id": "7",
+      "name": "Luxe Glow Spa",
+      "city": "Seattle",
+      "category": "Spa",
+      "rating": 4.9,
+      "totalReviews": 201,
+      "priceFrom": 60,
+      "description": "Relax and rejuvenate with facial treatments and aromatherapy sessions.",
+      "imageUrl": "/salons/1.png"
+    },
+    {
+      "id": "8",
+      "name": "Chroma Hair Loft",
+      "city": "Boston",
+      "category": "Coloring",
+      "rating": 4.5,
+      "totalReviews": 178,
+      "priceFrom": 75,
+      "description": "Stylish color transformations with a focus on hair health and shine.",
+      "imageUrl": "/salons/2.png"
+    },
+    {
+      "id": "9",
+      "name": "Velvet Touch Salon",
+      "city": "Dallas",
+      "category": "Hair",
+      "rating": 4.6,
+      "totalReviews": 97,
+      "priceFrom": 55,
+      "description": "Modern haircuts and blowouts in a luxurious yet comfortable setting.",
+      "imageUrl": "/salons/4.png"
+    },
+    {
+      "id": "10",
+      "name": "Serenity Beauty Lounge",
+      "city": "Denver",
+      "category": "Skincare",
+      "rating": 4.9,
+      "totalReviews": 188,
+      "priceFrom": 50,
+      "description": "Customized skincare treatments and beauty rituals for glowing results.",
+      "imageUrl": "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=400&h=300&fit=crop"
     }
   ]
 }
