@@ -5,7 +5,7 @@ import data from "@/data/data.json";
 
 import SalonDetailNavbar from "@/components/Salon/SalonDetailNavBar";
 import SalonDetailHero from "@/components/Salon/SalonDetailHero";
-import SalonSidebar from "@/components/Salon/SalonDetailSidebar";
+import SalonSidebar from "@/components/Salon/SalonSidebar/SalonDetailSidebar";
 import SalonDetailInfo from "@/components/Salon/SalonDetailInfo";
 import SalonDetailBookingPolicy from "@/components/Salon/SalonDetailBookingPolicy";
 import SalonDetailGallery from "@/components/Salon/SalonDetailGallery";
@@ -54,27 +54,33 @@ const SalonDetailsPage: React.FC<{ params: Promise<{ id: string }> }> = ({
   return (
     <div className="w-full">
       <SalonDetailNavbar salonName={salon.name} />
+      <div className="flex">
+        <div className="p-6 sm:p-8 w-full sm:w-2/3 ">
+          <SalonDetailHero salon={salon} />
+          <SalonDetailInfo />
+          <SalonDetailBookingPolicy />
+          <SalonDetailGallery salonId={salon.id} />
+          <SalonDetailServices salonId={salon.id} />
+          <SalonDetailStaffProfile salonId={salon.id} />
 
-      <div className="p-6 sm:p-8 w-full sm:w-2/3">
-        <SalonDetailHero salon={salon} />
-        <SalonDetailInfo />
-        <SalonDetailBookingPolicy />
-        <SalonDetailGallery salonId={salon.id} />
-        <SalonDetailServices salonId={salon.id} />
-        <SalonDetailStaffProfile salonId={salon.id} />
+          {salonReviewData ? (
+            <SalonDetailReview stats={salonReviewData} />
+          ) : (
+            <div className="bg-card border border-border rounded-2xl p-6 text-center text-muted-foreground mt-5">
+              No review data found for this salon.
+            </div>
+          )}
 
-        {salonReviewData ? (
-          <SalonDetailReview stats={salonReviewData} />
-        ) : (
-          <div className="bg-card border border-border rounded-2xl p-6 text-center text-muted-foreground mt-5">
-            No review data found for this salon.
+          <SalonDetailExploreOther currentSalonId={salon.id} />
+          <div className="block sm:hidden mt-8">
+            <SalonSidebar />
           </div>
-        )}
+        </div>
 
-        <SalonDetailExploreOther currentSalonId={salon.id} />
+        <div className="hidden sm:block w-1/3 p-6 overflow-y-auto max-h-screen sticky top-0">
+          <SalonSidebar />
+        </div>
       </div>
-
-      <SalonSidebar />
     </div>
   );
 };

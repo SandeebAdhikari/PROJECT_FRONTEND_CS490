@@ -17,7 +17,7 @@ const SalonDetailExploreOtherCard: React.FC<
   SalonDetailExploreOtherCardProps
 > = ({ name, city, rating, totalReviews, imageUrl, onViewDetails }) => {
   return (
-    <div className="bg-card border border-border rounded-2xl shadow-sm overflow-hidden hover:shadow-md transition">
+    <div className="bg-card border border-border rounded-2xl shadow-sm overflow-hidden hover:shadow-md transition font-inter">
       <div className="relative">
         <Image
           src={imageUrl}
@@ -38,16 +38,18 @@ const SalonDetailExploreOtherCard: React.FC<
           <MapPin className="w-4 h-4 mr-1" />
           {city}
         </div>
-        <p className="text-sm text-muted-foreground mt-1">
-          {totalReviews} {totalReviews === 1 ? "review" : "reviews"}
-        </p>
+        <div className="flex justify-between items-center">
+          <p className="text-sm text-muted-foreground">
+            {totalReviews} {totalReviews === 1 ? "review" : "reviews"}
+          </p>
 
-        <button
-          onClick={onViewDetails}
-          className="mt-3 bg-background border border-border rounded-lg px-4 py-1.5 text-sm font-medium text-foreground hover:bg-muted transition"
-        >
-          View Details
-        </button>
+          <button
+            onClick={onViewDetails}
+            className="mt-3 bg-background border border-border rounded-lg px-4 py-1.5 text-sm font-medium text-foreground hover:bg-muted transition"
+          >
+            View Details
+          </button>
+        </div>
       </div>
     </div>
   );
