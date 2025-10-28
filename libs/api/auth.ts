@@ -23,13 +23,13 @@ export interface AuthResponse {
   message?: string;
   error?: string;
   requires2FA?: boolean;
+  tempToken?: string;
   method?: string;
 }
 
 export interface Verify2FAData {
-  email: string;
-  password: string;
   code: string;
+  tempToken: string;
 }
 
 /**
@@ -98,6 +98,10 @@ export async function login(data: LoginData): Promise<AuthResponse> {
       
       console.log('Token stored successfully!');
       console.log('Verifying token in localStorage:', localStorage.getItem('token'));
+    } else if (result.tempToken) {
+      // Store temporary token for 2FA verification
+      console.log('Storing temp token for 2FA');
+      localStorage.setItem('tempToken', result.tempToken);
     } else {
       console.log('No token in response');
     }
