@@ -12,7 +12,7 @@ const CustomerNavbar = () => {
         <span className="text-2xl font-bold text-foreground">StyGo</span>
       </Link>
       <div className="flex gap-2">
-        <div className="mt-1 sm:mt-2 relative ">
+        <div className=" relative ">
           <User className="absolute w-4 h-4 top-1 left-3 text-foreground" />
           <Link
             href="/customer/my-profile"
@@ -22,9 +22,12 @@ const CustomerNavbar = () => {
           </Link>
         </div>
         <div className="relative ">
-          <button className="border border-border rounded-lg py-2 px-4 text-sm sm:text-base font-inter font-semibold hover:cursor-pointer hover:bg-accent shadow-soft-br hover:shadow-none transition-smooth">
+          <Link
+            href="/"
+            className="border border-border rounded-lg py-2 px-4 text-sm sm:text-base font-inter font-semibold hover:cursor-pointer hover:bg-accent shadow-soft-br hover:shadow-none transition-smooth"
+          >
             <span>Logout</span>
-          </button>
+          </Link>
         </div>
       </div>
     </div>
