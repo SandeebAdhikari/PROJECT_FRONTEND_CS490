@@ -31,7 +31,7 @@ const SalonDetailHero: React.FC<SalonDetailHeroProps> = ({ salon }) => {
     : salon.imageUrl || "/images/default.jpg";
   return (
     <div className="flex justify-between gap-7">
-      <div className=" w-full sm:w-2/3">
+      <div className="w-full">
         <Link
           href="/customer"
           className="flex items-center text-sm text-muted-foreground hover:text-foreground cursor-pointer mb-6 font-inter w-fit"

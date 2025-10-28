@@ -5,8 +5,14 @@ import data from "@/data/data.json";
 
 import SalonDetailNavbar from "@/components/Salon/SalonDetailNavBar";
 import SalonDetailHero from "@/components/Salon/SalonDetailHero";
-import SalonSidebar from "@/components/Salon/SalonSidebar";
+import SalonSidebar from "@/components/Salon/SalonSidebar/SalonDetailSidebar";
 import SalonDetailInfo from "@/components/Salon/SalonDetailInfo";
+import SalonDetailBookingPolicy from "@/components/Salon/SalonDetailBookingPolicy";
+import SalonDetailGallery from "@/components/Salon/SalonDetailGallery";
+import SalonDetailServices from "@/components/Salon/SalonDetailServices";
+import SalonDetailStaffProfile from "@/components/Salon/SalonDetailStaffProfile";
+import SalonDetailReview from "@/components/Salon/SalonDetailReviews";
+import SalonDetailExploreOther from "@/components/Salon/SalonDetailExploreOther";
 
 interface Salon {
   id: string;
@@ -24,9 +30,22 @@ const SalonDetailsPage: React.FC<{ params: Promise<{ id: string }> }> = ({
   params,
 }) => {
   const unwrappedParams = React.use(params);
-  const salon = data.salons.find(
-    (s: Salon) => String(s.id) === String(unwrappedParams.id)
-  );
+  const salonId = String(unwrappedParams.id);
+
+  const salon = data.salons.find((s: Salon) => s.id === salonId);
+
+  const salonReviewData = salon
+    ? (
+        data.reviews as Record<
+          string,
+          {
+            average: number;
+            totalReviews: number;
+            breakdown: Record<number, number>;
+          }
+        >
+      )[salon.id]
+    : undefined;
 
   if (!salon) {
     return <div className="p-6 text-center">Salon not found</div>;
@@ -35,12 +54,33 @@ const SalonDetailsPage: React.FC<{ params: Promise<{ id: string }> }> = ({
   return (
     <div className="w-full">
       <SalonDetailNavbar salonName={salon.name} />
-      <div className="p-6 sm:p-8">
-        <SalonDetailHero salon={salon} />
-        <SalonDetailInfo />
-      </div>
+      <div className="flex">
+        <div className="p-6 sm:p-8 w-full sm:w-2/3 ">
+          <SalonDetailHero salon={salon} />
+          <SalonDetailInfo />
+          <SalonDetailBookingPolicy />
+          <SalonDetailGallery salonId={salon.id} />
+          <SalonDetailServices salonId={salon.id} />
+          <SalonDetailStaffProfile salonId={salon.id} />
 
-      <SalonSidebar />
+          {salonReviewData ? (
+            <SalonDetailReview stats={salonReviewData} />
+          ) : (
+            <div className="bg-card border border-border rounded-2xl p-6 text-center text-muted-foreground mt-5">
+              No review data found for this salon.
+            </div>
+          )}
+
+          <SalonDetailExploreOther currentSalonId={salon.id} />
+          <div className="block sm:hidden mt-8">
+            <SalonSidebar />
+          </div>
+        </div>
+
+        <div className="hidden sm:block w-1/3 p-6 overflow-y-auto max-h-screen sticky top-0">
+          <SalonSidebar />
+        </div>
+      </div>
     </div>
   );
 };
