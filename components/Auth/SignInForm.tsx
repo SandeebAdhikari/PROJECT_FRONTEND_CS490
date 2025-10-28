@@ -75,10 +75,16 @@ const SignInForm = () => {
     setLoading(true);
 
     try {
+      const tempToken = localStorage.getItem('tempToken');
+      if (!tempToken) {
+        setError('Session expired. Please login again.');
+        setLoading(false);
+        return;
+      }
+      
       const response = await verify2FA({
-        email,
-        password,
         code: verificationCode,
+        tempToken: tempToken,
       });
 
       if (response.error) {
@@ -90,6 +96,7 @@ const SignInForm = () => {
       if (response.token) {
         // Successful verification and login
         console.log("2FA verification successful");
+        localStorage.removeItem('tempToken'); // Clean up temp token
         router.push("/customer"); // Redirect to customer view page after login
       }
     } catch (err) {
