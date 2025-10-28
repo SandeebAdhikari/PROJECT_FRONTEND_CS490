@@ -1,10 +1,11 @@
+import CustomerMyProfile from "@/components/Customer/CustomerMyProfile";
+
 import React from "react";
-import Overview from "@/components/Overview/Overview";
 
 const page = () => {
   return (
     <div>
-      <Overview />
+      <CustomerMyProfile />
     </div>
   );
 };
