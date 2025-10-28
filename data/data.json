@@ -207,5 +207,327 @@
       "description": "Customized skincare treatments and beauty rituals for glowing results.",
       "imageUrl": "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=400&h=300&fit=crop"
     }
-  ]
+  ],
+  "galleries": {
+    "1": [
+      {
+        "src": "/salons/1.png",
+        "title": "Expert Styling",
+        "subtitle": "Hair Services"
+      },
+      {
+        "src": "/salons/2.png",
+        "title": "Modern Salon Space",
+        "subtitle": "Relaxed and Elegant"
+      },
+      {
+        "src": "/salons/3.png",
+        "title": "Professional Team",
+        "subtitle": "Certified Stylists"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=600&h=600&fit=crop",
+        "title": "Luxurious Interior",
+        "subtitle": "Premium Experience"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1505691938895-1758d7feb511?w=600&h=600&fit=crop",
+        "title": "Creative Color Work",
+        "subtitle": "Vibrant Hair Shades"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1544717302-de2939b7ef71?w=600&h=600&fit=crop",
+        "title": "Hair Transformation",
+        "subtitle": "Before & After"
+      }
+    ],
+    "2": [
+      {
+        "src": "https://images.unsplash.com/photo-1600185365873-cdbdb18a3fce?w=600&h=600&fit=crop",
+        "title": "Elegant Studio",
+        "subtitle": "Clean and Modern"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1600180758890-6f3d3c27c17c?w=600&h=600&fit=crop",
+        "title": "Precision Styling",
+        "subtitle": "Expert Haircuts"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=600&h=600&fit=crop",
+        "title": "Vibrant Hair Color",
+        "subtitle": "Custom Coloring"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=600&h=600&fit=crop",
+        "title": "Relaxing Environment",
+        "subtitle": "Comfort & Luxury"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1604147706283-62461a0b1dce?w=600&h=600&fit=crop",
+        "title": "Hair Perfection",
+        "subtitle": "Expert Stylists"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1600891964599-f61ba0e24092?w=600&h=600&fit=crop",
+        "title": "Client Glow",
+        "subtitle": "Confidence Boost"
+      }
+    ],
+    "3": [
+      {
+        "src": "https://images.unsplash.com/photo-1559599101-3dfd1c23cdbf?w=600&h=600&fit=crop",
+        "title": "Urban Edge",
+        "subtitle": "Creative Cuts"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1514995669114-6081e934b693?w=600&h=600&fit=crop",
+        "title": "Modern Styling",
+        "subtitle": "Trendy Looks"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1589984662646-e7b2fc6b4b29?w=600&h=600&fit=crop",
+        "title": "Luxury Space",
+        "subtitle": "Relaxing Ambience"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1589987607627-8ec038b9e9e1?w=600&h=600&fit=crop",
+        "title": "Premium Finish",
+        "subtitle": "Salon Experience"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1620331311520-246422fd82f9?w=600&h=600&fit=crop",
+        "title": "Stylist in Action",
+        "subtitle": "Precision Craft"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1599940856013-3f7f3c5a9c22?w=600&h=600&fit=crop",
+        "title": "Salon Details",
+        "subtitle": "Polished Aesthetics"
+      }
+    ],
+    "4": [
+      {
+        "src": "https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=600&h=600&fit=crop",
+        "title": "Color Perfection",
+        "subtitle": "Balayage & Highlights"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1600180758890-6f3d3c27c17c?w=600&h=600&fit=crop",
+        "title": "Precision Coloring",
+        "subtitle": "Custom Shades"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1589984662646-e7b2fc6b4b29?w=600&h=600&fit=crop",
+        "title": "Stylish Interior",
+        "subtitle": "Modern Design"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=600&h=600&fit=crop",
+        "title": "Professional Team",
+        "subtitle": "Certified Colorists"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1589987607627-8ec038b9e9e1?w=600&h=600&fit=crop",
+        "title": "Vibrant Looks",
+        "subtitle": "Before & After"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1600185365873-cdbdb18a3fce?w=600&h=600&fit=crop",
+        "title": "Salon Ambience",
+        "subtitle": "Warm Lighting"
+      }
+    ],
+    "5": [
+      {
+        "src": "https://images.unsplash.com/photo-1620331311520-246422fd82f9?w=600&h=600&fit=crop",
+        "title": "Nail Perfection",
+        "subtitle": "Gel & Acrylic"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1616394584738-47d09f7a7e1a?w=600&h=600&fit=crop",
+        "title": "Luxury Setup",
+        "subtitle": "Relaxing Chairs"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1616394584654-58e0d0b1c1d8?w=600&h=600&fit=crop",
+        "title": "Color Variety",
+        "subtitle": "Nail Art & Design"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1609840170833-3f531b95e2d5?w=600&h=600&fit=crop",
+        "title": "Clean Workspace",
+        "subtitle": "High Hygiene Standards"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1616394584959-118c366b5237?w=600&h=600&fit=crop",
+        "title": "Finishing Touch",
+        "subtitle": "Shine & Polish"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1589984662646-e7b2fc6b4b29?w=600&h=600&fit=crop",
+        "title": "Professional Care",
+        "subtitle": "Relaxation Therapy"
+      }
+    ],
+    "6": [
+      {
+        "src": "https://images.unsplash.com/photo-1517949908114-720226b864c1?w=600&h=600&fit=crop",
+        "title": "Brow Artistry",
+        "subtitle": "Precision Shaping"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1571171637578-0419aa85f658?w=600&h=600&fit=crop",
+        "title": "Natural Results",
+        "subtitle": "Soft Tinting"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1616394584738-47d09f7a7e1a?w=600&h=600&fit=crop",
+        "title": "Luxury Setup",
+        "subtitle": "Calm Environment"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1620331311520-246422fd82f9?w=600&h=600&fit=crop",
+        "title": "Before & After",
+        "subtitle": "Confidence Boost"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1589987607627-8ec038b9e9e1?w=600&h=600&fit=crop",
+        "title": "Attention to Detail",
+        "subtitle": "Perfect Finish"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1600185365873-cdbdb18a3fce?w=600&h=600&fit=crop",
+        "title": "Professional Artists",
+        "subtitle": "Trained Technicians"
+      }
+    ],
+    "7": [
+      {
+        "src": "https://images.unsplash.com/photo-1600185365873-cdbdb18a3fce?w=600&h=600&fit=crop",
+        "title": "Spa Experience",
+        "subtitle": "Soothing Atmosphere"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1589984662646-e7b2fc6b4b29?w=600&h=600&fit=crop",
+        "title": "Relaxation Room",
+        "subtitle": "Peaceful Ambience"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=600&h=600&fit=crop",
+        "title": "Professional Therapists",
+        "subtitle": "Expert Techniques"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1600180758890-6f3d3c27c17c?w=600&h=600&fit=crop",
+        "title": "Luxury Treatments",
+        "subtitle": "Facials & Massages"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1559599101-3dfd1c23cdbf?w=600&h=600&fit=crop",
+        "title": "Aromatherapy",
+        "subtitle": "Relaxing Scents"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1620331311520-246422fd82f9?w=600&h=600&fit=crop",
+        "title": "Healing Glow",
+        "subtitle": "Spa Essentials"
+      }
+    ],
+    "8": [
+      {
+        "src": "https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=600&h=600&fit=crop",
+        "title": "Vibrant Coloring",
+        "subtitle": "Hair Health First"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1589984662646-e7b2fc6b4b29?w=600&h=600&fit=crop",
+        "title": "Creative Shades",
+        "subtitle": "Personalized Color"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1559599101-3dfd1c23cdbf?w=600&h=600&fit=crop",
+        "title": "Professional Stylists",
+        "subtitle": "Expert Coloring"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=600&h=600&fit=crop",
+        "title": "Polished Look",
+        "subtitle": "Healthy Hair"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1616394584738-47d09f7a7e1a?w=600&h=600&fit=crop",
+        "title": "Luxury Salon",
+        "subtitle": "Modern Design"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1620331311520-246422fd82f9?w=600&h=600&fit=crop",
+        "title": "Client Satisfaction",
+        "subtitle": "Vibrant Results"
+      }
+    ],
+    "9": [
+      {
+        "src": "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=600&h=600&fit=crop",
+        "title": "Modern Vibe",
+        "subtitle": "Minimalist Salon"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1589984662646-e7b2fc6b4b29?w=600&h=600&fit=crop",
+        "title": "Precision Styling",
+        "subtitle": "Creative Cuts"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1600180758890-6f3d3c27c17c?w=600&h=600&fit=crop",
+        "title": "Salon Interior",
+        "subtitle": "Cozy & Bright"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1616394584738-47d09f7a7e1a?w=600&h=600&fit=crop",
+        "title": "Client Confidence",
+        "subtitle": "Fresh Look"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1620331311520-246422fd82f9?w=600&h=600&fit=crop",
+        "title": "Luxury Feel",
+        "subtitle": "Polished Space"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1544717302-de2939b7ef71?w=600&h=600&fit=crop",
+        "title": "Team at Work",
+        "subtitle": "Collaborative Stylists"
+      }
+    ],
+    "10": [
+      {
+        "src": "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=600&h=600&fit=crop",
+        "title": "Serenity Room",
+        "subtitle": "Skincare Lounge"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1559599101-3dfd1c23cdbf?w=600&h=600&fit=crop",
+        "title": "Luxury Facial",
+        "subtitle": "Radiant Glow"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1589984662646-e7b2fc6b4b29?w=600&h=600&fit=crop",
+        "title": "Therapy Essentials",
+        "subtitle": "Soothing Care"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1616394584738-47d09f7a7e1a?w=600&h=600&fit=crop",
+        "title": "Natural Treatments",
+        "subtitle": "Organic Products"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1620331311520-246422fd82f9?w=600&h=600&fit=crop",
+        "title": "Skin Experts",
+        "subtitle": "Professional Care"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=600&h=600&fit=crop",
+        "title": "Client Relaxation",
+        "subtitle": "Calm Atmosphere"
+      }
+    ]
+  }
 }
