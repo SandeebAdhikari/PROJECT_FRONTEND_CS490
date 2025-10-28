@@ -42,12 +42,11 @@ const SalonCard: React.FC<SalonCardProps> = ({
           height={300}
           className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
         />
-
         <div className="absolute top-4 left-4 bg-primary text-white text-xs font-semibold px-3 py-1 rounded-full shadow-sm">
           <span>{category}</span>
         </div>
 
-        <button //ignore typescript error
+        <button
           type="button"
           onClick={(e) => {
             e.stopPropagation();
