@@ -40,38 +40,37 @@ const StaffProfileModal: React.FC<StaffProfileModalProps> = ({
           <span className="sr-only">Close</span>
         </button>
 
-        {/* Header */}
         <div className="flex flex-col items-center text-center">
           <div
             className={`w-20 h-20 ${
-              staff.color || "bg-green-400"
-            } text-white flex items-center justify-center text-2xl font-semibold rounded-full mb-4`}
+              staff.color || "bg-primary-light"
+            } text-primary-foreground flex items-center justify-center text-2xl font-semibold rounded-full mb-4`}
           >
             {initials}
           </div>
 
           <h3 className="text-xl font-bold">{staff.name}</h3>
-          <p className="text-sm text-neutral-500">{staff.role}</p>
+          <p className="text-sm text-muted-foreground">{staff.role}</p>
 
-          {/* Rating */}
           <div className="flex items-center gap-1 mt-2 text-sm text-neutral-600">
-            <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+            <Star className="w-4 h-4 fill-accent text-accent/40" />
             <span className="font-semibold">{staff.rating}</span>
-            <span className="text-neutral-400">({staff.reviews} reviews)</span>
+            <span className="text-muted-foreground">
+              ({staff.reviews} reviews)
+            </span>
           </div>
         </div>
 
-        {/* Specialties */}
         <div className="mt-6">
           <div className="flex items-center gap-2 mb-2">
-            <BadgeCheck className="w-4 h-4 text-green-600" />
+            <BadgeCheck className="w-4 h-4 text-primary-green" />
             <h4 className="font-semibold text-sm">Specialties</h4>
           </div>
           <div className="flex flex-wrap gap-2">
             {staff.specialties.map((s) => (
               <span
                 key={s}
-                className="bg-neutral-100 text-neutral-700 text-xs px-3 py-1 rounded-full"
+                className="bg-primary-foreground text-muted-foreground text-xs px-3 py-1 rounded-full"
               >
                 {s}
               </span>
