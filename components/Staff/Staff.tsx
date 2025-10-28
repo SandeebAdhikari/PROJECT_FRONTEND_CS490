@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import { Users, Star, DollarSign, Activity, Filter, UserPlus } from "lucide-react";
+import { Users, Star, DollarSign, Activity } from "lucide-react";
 import StaffCard, { StaffMember } from "./Staffcard";
 
 // KPI card
@@ -38,8 +38,7 @@ function KPI({
   );
 }
 
-
-//mock data 
+//mock data
 const SEED: StaffMember[] = [
   {
     id: "1",
@@ -117,7 +116,9 @@ export default function Staff() {
 
   // KPIs for this tab
   const total = staff.length;
-  const avgRating = (staff.reduce((a, s) => a + s.rating, 0) / Math.max(1, total)).toFixed(1);
+  const avgRating = (
+    staff.reduce((a, s) => a + s.rating, 0) / Math.max(1, total)
+  ).toFixed(1);
   const monthlyRevenue = staff.reduce((a, s) => a + s.monthlyRevenue, 0);
   const avgEfficiency = Math.round(
     staff.reduce((a, s) => a + s.efficiency, 0) / Math.max(1, total)
@@ -125,32 +126,38 @@ export default function Staff() {
 
   return (
     <section className="space-y-6 font-inter">
-      {/* Title/actions */}
-     
-     <header className="flex items-start justify-between pt-2">
-  <div>
-    <h2 className="font-sans text-2xl sm:text-3xl lg:text-4xl font-extrabold">
-      Staff Management
-    </h2>
-    <p className="text-muted-foreground text-base mt-1 sm:text-lg">
-      Manage your salon team and their performance
-    </p>
-  </div>
-  <div className="flex gap-2">
-    <button className="px-4 py-2.5 rounded-lg border border-border bg-white text-sm font-medium text-gray-800 hover:bg-gray-50 hover:shadow-sm transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-emerald-500/30">
-      Filter
-    </button>
-    <button className="px-4 py-2.5 rounded-lg border border-transparent bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 hover:shadow-md transform hover:-translate-y-[1px] transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-emerald-500/30">
-      Add Staff Member
-    </button>
-  </div>
-</header>
+      <header className="flex items-start justify-between pt-2">
+        <div>
+          <h2 className="font-sans text-2xl sm:text-3xl lg:text-4xl font-extrabold">
+            Staff Management
+          </h2>
+          <p className="text-muted-foreground text-base mt-1 sm:text-lg">
+            Manage your salon team and their performance
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <button className="px-4 py-2.5 rounded-lg border border-border bg-white text-sm font-medium text-gray-800 hover:bg-gray-50 hover:shadow-sm transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-emerald-500/30">
+            Filter
+          </button>
+          <button className="px-4 py-2.5 rounded-lg border border-transparent bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 hover:shadow-md transform hover:-translate-y-[1px] transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-emerald-500/30">
+            Add Staff Member
+          </button>
+        </div>
+      </header>
 
-
-      {/* KPI row  */}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 items-stretch">
-        <KPI label="Total Staff" value={total} Icon={Users} iconClass="bg-blue-100 text-blue-600" />
-        <KPI label="Avg Rating" value={avgRating} Icon={Star} iconClass="bg-yellow-100 text-yellow-600" />
+        <KPI
+          label="Total Staff"
+          value={total}
+          Icon={Users}
+          iconClass="bg-blue-100 text-blue-600"
+        />
+        <KPI
+          label="Avg Rating"
+          value={avgRating}
+          Icon={Star}
+          iconClass="bg-yellow-100 text-yellow-600"
+        />
         <KPI
           label="Monthly Revenue"
           value={`$${monthlyRevenue.toLocaleString()}`}
@@ -165,7 +172,6 @@ export default function Staff() {
         />
       </div>
 
-      {/* Search */}
       <div className="flex items-center">
         <input
           value={q}
@@ -175,7 +181,6 @@ export default function Staff() {
         />
       </div>
 
-      {/* Cards grid */}
       <div className="grid gap-5 md:grid-cols-2">
         {staff.map((s) => (
           <StaffCard key={s.id} s={s} />
