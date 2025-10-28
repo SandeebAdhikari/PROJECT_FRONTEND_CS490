@@ -1,10 +1,12 @@
 "use client";
 
+
 import React, { useState } from "react";
 import { ArrowLeft, Chrome, Facebook } from "lucide-react";
-import { signInWithPopup, type AuthProvider } from "firebase/auth";
+//import { signInWithPopup, type AuthProvider } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import RoleModal from "@/components/Auth/AuthRoleModal";
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import {
   auth,
   googleProvider,
@@ -20,6 +22,7 @@ interface AuthHeaderProps {
 
 const AuthHeader: React.FC<AuthHeaderProps> = ({ title, subtitle }) => {
   const [showRoleModal, setShowRoleModal] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const [pendingUser, setPendingUser] = useState<{
     firebaseUid: string;
@@ -35,12 +38,18 @@ const AuthHeader: React.FC<AuthHeaderProps> = ({ title, subtitle }) => {
     router.push("/");
   };
 
-  const handleFirebaseLogin = async (provider: AuthProvider) => {
+
+
+  const handleFirebaseLogin = async (provider: GoogleAuthProvider) => {
+    if (loading) return;
+    setLoading(true);
+  
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
       const idToken = await user.getIdToken();
-
+      
+      
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/auth/verify-firebase`,
         {
@@ -51,46 +60,47 @@ const AuthHeader: React.FC<AuthHeaderProps> = ({ title, subtitle }) => {
           },
         }
       );
-
+  
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Firebase login failed");
-
+  
       if (data.existingUser && data.token && data.role) {
         document.cookie = `token=${data.token}; path=/; max-age=3600;`;
         window.location.href =
           data.role === "owner"
             ? "/admin/salon-dashboard/overview"
             : "/customer";
-        return;
-      }
-
-      if (data.newUser && data.firebaseUid && data.email) {
-        const user = auth.currentUser;
-
+      } else if (data.newUser && data.firebaseUid && data.email) {
+        const current = auth.currentUser;
         setPendingUser({
           firebaseUid: data.firebaseUid,
           email: data.email,
-          fullName: user?.displayName || "Unknown User",
-          profilePic: user?.photoURL || null,
-          phone: user?.phoneNumber || null,
+          fullName: current?.displayName || "Unknown User",
+          profilePic: current?.photoURL || null,
+          phone: current?.phoneNumber || null,
         });
-
         setShowRoleModal(true);
+      } else {
+        throw new Error("Unexpected backend response");
+      }
+    } catch (err: any) {
+      // ignore harmless cancellations
+      if (err.code === "auth/cancelled-popup-request") {
+        console.log("Popup canceled (double click) — safely ignored.");
         return;
       }
-
-      throw new Error("Unexpected backend response");
-    } catch (err: unknown) {
-      console.error(err);
-      const message =
-        err instanceof Error
-          ? err.message
-          : typeof err === "string"
-          ? err
-          : "An unknown error occurred";
-      alert("Social login failed: " + message);
+      if (err.code === "auth/popup-closed-by-user") {
+        console.log("User closed popup — no action needed.");
+        return;
+      }
+  
+      console.error("❌ Login failed:", err);
+      alert("Social login failed: " + err.message);
+    } finally {
+      setLoading(false);
     }
   };
+  
 
   const handleRoleSelect = async (role: string, businessName?: string) => {
     if (!pendingUser) return;
