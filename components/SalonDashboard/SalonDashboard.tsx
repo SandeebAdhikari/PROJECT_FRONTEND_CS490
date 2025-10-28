@@ -1,5 +1,5 @@
 import { Download, Plus } from "lucide-react";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import SalonDashboardCard from "./SalonDashboardCard";
 import data from "@/data/data.json" assert { type: "json" };
 import { DashboardData } from "@/libs/dashboard/dashboard.types";
@@ -7,13 +7,22 @@ import { icons } from "@/libs/dashboard/dashboard.icons";
 
 const SalonDashboard = () => {
   const typedData = data as DashboardData;
+  const [userName, setUserName] = useState("");
+
+  useEffect(() => {
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      const user = JSON.parse(userData);
+      setUserName(user.full_name || user.email?.split('@')[0] || "");
+    }
+  }, []);
 
   return (
     <div className="p-4 sm:px-8">
       <div className="sm:flex sm:justify-between w-full">
         <div>
           <h1 className="text-xl sm:text-3xl lg:text-4xl font-extrabold">
-            Good morning, Sandeeb!
+            Welcome{userName ? `, ${userName.split(' ')[0]}` : ''}!
           </h1>
           <p className="text-muted-foreground font-inter text-base mt-2 sm:text-lg">
             Your salon is performing excellently today. Here&apos;s your

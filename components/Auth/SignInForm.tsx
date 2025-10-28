@@ -61,7 +61,13 @@ const SignInForm = () => {
       if (response.token) {
         // Successful login
         console.log("Login successful");
-        router.push("/customer"); // Redirect to customer view page after login
+        
+        // Redirect based on role
+        if (response.user?.role === 'owner' || response.user?.role === 'salon_owner') {
+          router.push("/admin/salon-dashboard/overview");
+        } else {
+          router.push("/customer");
+        }
       }
     } catch (err) {
       setError("Login failed. Please try again.");
@@ -97,7 +103,13 @@ const SignInForm = () => {
         // Successful verification and login
         console.log("2FA verification successful");
         localStorage.removeItem('tempToken'); // Clean up temp token
-        router.push("/customer"); // Redirect to customer view page after login
+        
+        // Redirect based on role
+        if (response.user?.role === 'owner' || response.user?.role === 'salon_owner') {
+          router.push("/admin/salon-dashboard/overview");
+        } else {
+          router.push("/customer");
+        }
       }
     } catch (err) {
       setError("Verification failed. Please try again.");

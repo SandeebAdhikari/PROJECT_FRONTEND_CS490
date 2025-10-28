@@ -35,6 +35,17 @@ const SalonNavBar = () => {
           <Bell className="w-5 h-5" />
         </div>
 
+        <button
+          onClick={() => {
+            localStorage.removeItem('token');
+            localStorage.removeItem('tempToken');
+            window.location.href = '/sign-in';
+          }}
+          className="border border-border rounded-lg py-2 px-4 text-sm font-inter font-semibold hover:cursor-pointer hover:bg-accent shadow-soft-br"
+        >
+          Logout
+        </button>
+
         <div className="rounded-full w-10 h-10 border border-border text-center pt-1">
           SA
         </div>
