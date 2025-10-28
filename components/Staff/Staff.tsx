@@ -19,7 +19,7 @@ function KPI({
   return (
     <div
       className="
-        rounded-2xl border border-border bg-white
+        rounded-2xl border border-border bg-primary-foreground
         p-5 sm:p-6 shadow-soft-br hover:shadow-md transition-smooth
         flex items-center justify-between min-h-[96px]
       "
