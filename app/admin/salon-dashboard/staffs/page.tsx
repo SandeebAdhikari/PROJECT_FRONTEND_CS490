@@ -1,9 +1,15 @@
+"use client";
+
 import React from "react";
 import Staff from "@/components/Staff/Staff";
-import StaffCard from "@/components/Staff/Staffcard";
 
-const page = () => {
-  return <div>page</div>;
+const Page = () => {
+  return (
+    <div className="p-6">
+      <h1 className="text-2xl font-semibold mb-4"></h1>
+      <Staff />
+    </div>
+  );
 };
 
-export default page;
+export default Page;

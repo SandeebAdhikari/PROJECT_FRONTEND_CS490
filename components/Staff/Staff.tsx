@@ -126,26 +126,26 @@ export default function Staff() {
   return (
     <section className="space-y-6 font-inter">
       {/* Title/actions */}
-      <header className="flex items-start justify-between">
-        <div>
-          <h2 className="font-sans text-xl sm:text-3xl lg:text-4xl font-extrabold">
-            Staff Management
-          </h2>
-          <p className="text-muted-foreground text-base mt-2 sm:text-lg">
-            Manage your salon team and their performance
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <button className="border border-border rounded-lg px-3 py-2 bg-white flex items-center gap-2">
-            <svg className="h-4 w-4" viewBox="0 0 24 24" />
-            <span>Filter</span>
-          </button>
-          <button className="border border-border rounded-lg px-3 py-2 bg-emerald-600 text-white flex items-center gap-2">
-            <svg className="h-4 w-4" viewBox="0 0 24 24" />
-            <span>Add Staff Member</span>
-          </button>
-        </div>
-      </header>
+     
+     <header className="flex items-start justify-between pt-2">
+  <div>
+    <h2 className="font-sans text-2xl sm:text-3xl lg:text-4xl font-extrabold">
+      Staff Management
+    </h2>
+    <p className="text-muted-foreground text-base mt-1 sm:text-lg">
+      Manage your salon team and their performance
+    </p>
+  </div>
+  <div className="flex gap-2">
+    <button className="px-4 py-2.5 rounded-lg border border-border bg-white text-sm font-medium text-gray-800 hover:bg-gray-50 hover:shadow-sm transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-emerald-500/30">
+      Filter
+    </button>
+    <button className="px-4 py-2.5 rounded-lg border border-transparent bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 hover:shadow-md transform hover:-translate-y-[1px] transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-emerald-500/30">
+      Add Staff Member
+    </button>
+  </div>
+</header>
+
 
       {/* KPI row  */}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 items-stretch">
