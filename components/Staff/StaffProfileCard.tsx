@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import StaffProfileModal from "@/components/Staff/StaffProfileModal";
 import { Star } from "lucide-react";
 
 interface StaffProfileCardProps {
@@ -25,6 +26,8 @@ const StaffProfileCard: React.FC<StaffProfileCardProps> = ({
     .map((n) => n[0])
     .join("")
     .toUpperCase();
+
+  const [isOpen, setIsOpen] = React.useState(false);
 
   return (
     <div className="bg-muted border border-border rounded-2xl shadow-sm p-6 flex flex-col items-center text-center hover:shadow-md transition font-inter">
@@ -59,9 +62,26 @@ const StaffProfileCard: React.FC<StaffProfileCardProps> = ({
         )}
       </div>
 
-      <button className="mt-5 w-full bg-primary-foreground border border-border shadow-soft-br text-sm font-medium text-neutral-800 py-1 rounded-lg hover:bg-accent transition-smooth cursor-pointer">
+      <button
+        onClick={() => setIsOpen(true)}
+        className="mt-5 w-full bg-primary-foreground border border-border shadow-soft-br text-sm font-medium text-neutral-800 py-1 rounded-lg hover:bg-accent transition-smooth cursor-pointer"
+      >
         View Profile
       </button>
+
+      {isOpen && (
+        <StaffProfileModal
+          staff={{
+            name,
+            role,
+            rating,
+            reviews,
+            specialties,
+            color,
+          }}
+          onClose={() => setIsOpen(false)}
+        />
+      )}
     </div>
   );
 };
