@@ -1,7 +1,11 @@
-import React from "react";
+"use client";
 
-const page = () => {
-  return <div>page</div>;
-};
+import Appointments from "@/components/Appointments/Appointments";
 
-export default page;
+export default function Page() {
+  return (
+    <div className="p-6">
+      <Appointments />
+    </div>
+  );
+}

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signUpSchema, SignUpFormData } from "@/libs/auth/auth";
 
@@ -16,16 +16,60 @@ const SignUpForm = () => {
     defaultValues: { userType: "customer", agreeToTerms: false },
   });
 
-  const onSubmit = (data: SignUpFormData) => {
-    console.log("Sign-up submitted:", data);
-    // TODO: integrate with backend API
+  const onSubmit = async (data: SignUpFormData) => {
+    try {
+      console.log("Sign-up submitted:", data);
+
+      const payload = {
+        full_name:
+          data.userType === "owner"
+            ? data.ownerName
+            : `${data.firstName} ${data.lastName}`,
+        phone:
+          data.userType === "owner"
+            ? data.businessPhone || ""
+            : data.phone || "",
+        email: data.userType === "owner" ? data.businessEmail : data.email,
+        password: data.password,
+        role: data.userType,
+      };
+
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/auth/signup`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      const result = await res.json();
+
+      if (!res.ok) {
+        alert(result.error || "Failed to sign up");
+        return;
+      }
+
+      alert("Account created successfully!");
+      window.location.href = "/sign-in";
+    } catch (error) {
+      console.error("Signup failed:", error);
+      alert("Server error. Please try again later.");
+    }
   };
+
+  /** 
+   *  const onError = (errors: any) => {
+    console.log(" Validation errors:", errors);
+  };
+
+  */
 
   const userType = form.watch("userType");
 
   return (
     <form
-      onSubmit={form.handleSubmit(onSubmit)}
+      onSubmit={form.handleSubmit(onSubmit)} //, onError)}
       className="my-5 flex flex-col space-y-3 p-6 bg-card rounded-lg shadow w-[436px] sm:w-[672px]"
     >
       <AuthHeader
@@ -68,21 +112,34 @@ const SignUpForm = () => {
       <AuthPassword form={form} />
 
       <div className="flex items-center space-x-2 font-inter text-sm">
-        <input
-          type="radio"
-          {...form.register("agreeToTerms")}
-          className="h-4 w-4"
+        <Controller
+          name="agreeToTerms"
+          control={form.control}
+          render={({ field }) => (
+            <div className="flex items-center space-x-2 font-inter text-sm">
+              <input
+                type="checkbox"
+                id="agreeToTerms"
+                checked={field.value}
+                onChange={(e) => field.onChange(e.target.checked)}
+                className="h-4 w-4 cursor-pointer"
+              />
+              <label
+                htmlFor="agreeToTerms"
+                className="cursor-pointer select-none"
+              >
+                I agree to the{" "}
+                <span className="text-primary hover:underline hover:font-bold hover:cursor-pointer">
+                  Terms & Conditions
+                </span>{" "}
+                and{" "}
+                <span className="text-primary hover:underline hover:font-bold hover:cursor-pointer">
+                  Privacy Policy
+                </span>
+              </label>
+            </div>
+          )}
         />
-        <label>
-          I agree to the{" "}
-          <span className="text-primary hover:underline hover:font-bold hover:cursor-pointer">
-            Terms & Conditions
-          </span>{" "}
-          and{" "}
-          <span className="text-primary hover:underline hover:font-bold hover:cursor-pointer">
-            Privacy Policy
-          </span>
-        </label>
       </div>
       {form.formState.errors.agreeToTerms && (
         <p className="text-red-500 text-sm font-inter">

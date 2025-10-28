@@ -18,7 +18,7 @@ const AuthOwner = ({ form }: AuthOwnerProps) => {
           <input
             {...form.register("ownerName")}
             placeholder="Enter owner name"
-            className="w-full border border-muted rounded-lg p-2 pl-10"
+            className="w-full border border-muted rounded-lg p-2 pl-10 focus:ring-1 focus:ring-primary outline-none"
           />
         </div>
       </div>
@@ -32,7 +32,7 @@ const AuthOwner = ({ form }: AuthOwnerProps) => {
           <input
             {...form.register("businessName")}
             placeholder="Enter business name"
-            className="w-full border border-muted rounded-lg p-2 pl-10"
+            className="w-full border border-muted rounded-lg p-2 pl-10 focus:ring-1 focus:ring-primary outline-none"
           />
         </div>
       </div>
@@ -47,7 +47,7 @@ const AuthOwner = ({ form }: AuthOwnerProps) => {
             type="email"
             {...form.register("businessEmail")}
             placeholder="business@example.com"
-            className="w-full border border-muted rounded-lg p-2 pl-10"
+            className="w-full border border-muted rounded-lg p-2 pl-10 focus:ring-1 focus:ring-primary outline-none"
           />
         </div>
       </div>
@@ -62,7 +62,7 @@ const AuthOwner = ({ form }: AuthOwnerProps) => {
             type="tel"
             {...form.register("businessPhone")}
             placeholder="Enter business phone"
-            className="w-full border border-muted rounded-lg p-2 pl-10"
+            className="w-full border border-muted rounded-lg p-2 pl-10 focus:ring-1 focus:ring-primary outline-none"
           />
         </div>
       </div>

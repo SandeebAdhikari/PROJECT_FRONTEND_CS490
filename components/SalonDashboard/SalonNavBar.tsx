@@ -1,5 +1,5 @@
 import NextImage from "next/image";
-import Icon9 from "../../public/icons/9.png";
+import Icon9 from "@/public/icons/9.png";
 import { Bell, Search } from "lucide-react";
 
 const SalonNavBar = () => {

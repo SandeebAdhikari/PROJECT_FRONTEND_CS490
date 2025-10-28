@@ -21,7 +21,7 @@ const AuthCustomer = ({ form }: AuthCustomerProps) => {
             <input
               {...form.register("firstName")}
               placeholder="First name"
-              className="w-full border border-muted rounded-lg p-2 pl-10"
+              className="w-full border border-muted rounded-lg p-2 pl-10 focus:ring-1 focus:ring-primary outline-none"
             />
           </div>
           {form.formState.errors.firstName && (
@@ -38,7 +38,7 @@ const AuthCustomer = ({ form }: AuthCustomerProps) => {
           <input
             {...form.register("lastName")}
             placeholder="Last name"
-            className="w-full border border-muted rounded-lg p-2"
+            className="w-full border border-muted rounded-lg p-2 focus:ring-1 focus:ring-primary outline-none"
           />
           {form.formState.errors.lastName && (
             <p className="text-red-500 text-sm">
@@ -58,7 +58,7 @@ const AuthCustomer = ({ form }: AuthCustomerProps) => {
             type="email"
             {...form.register("email")}
             placeholder="Enter your email"
-            className="w-full border border-muted rounded-lg p-2 pl-10"
+            className="w-full border border-muted rounded-lg p-2 pl-10 focus:ring-1 focus:ring-primary outline-none"
           />
         </div>
         {form.formState.errors.email && (
@@ -78,7 +78,7 @@ const AuthCustomer = ({ form }: AuthCustomerProps) => {
             type="tel"
             {...form.register("phone")}
             placeholder="Enter your phone number"
-            className="w-full border border-muted rounded-lg p-2 pl-10"
+            className="w-full border border-muted rounded-lg p-2 pl-10 focus:ring-1 focus:ring-primary outline-none"
           />
         </div>
         {form.formState.errors.phone && (
@@ -95,7 +95,7 @@ const AuthCustomer = ({ form }: AuthCustomerProps) => {
           </label>
           <select
             {...form.register("gender")}
-            className="w-full border border-muted rounded-lg p-2"
+            className="w-full border border-muted rounded-lg p-2 focus:ring-1 focus:ring-primary outline-none"
           >
             <option value="">Select Gender</option>
             <option value="male">Male</option>
@@ -113,7 +113,7 @@ const AuthCustomer = ({ form }: AuthCustomerProps) => {
               type="tel"
               {...form.register("zipcode")}
               placeholder="12345"
-              className="w-full border border-muted rounded-lg p-2 pl-10"
+              className="w-full border border-muted rounded-lg p-2 pl-10 focus:ring-1 focus:ring-primary outline-none"
             />
           </div>
         </div>
