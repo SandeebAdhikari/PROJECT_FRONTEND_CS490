@@ -58,18 +58,15 @@ const SignUpForm = () => {
     }
   };
 
-  /** 
-   *  const onError = (errors: any) => {
+  const onError = (errors: any) => {
     console.log(" Validation errors:", errors);
   };
-
-  */
 
   const userType = form.watch("userType");
 
   return (
     <form
-      onSubmit={form.handleSubmit(onSubmit)} //, onError)}
+      onSubmit={form.handleSubmit(onSubmit, onError)}
       className="my-5 flex flex-col space-y-3 p-6 bg-card rounded-lg shadow w-[436px] sm:w-[672px]"
     >
       <AuthHeader

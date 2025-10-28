@@ -24,7 +24,7 @@ const SalonStaffSection: React.FC<{ salonId: string }> = ({ salonId }) => {
   const staffMembers = typedData.staff?.[salonId] ?? [];
 
   return (
-    <div className="mt-10">
+    <div className="mt-10 w-full">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-extrabold">Our Expert Team</h2>
         <span className="text-sm text-muted-foreground bg-muted px-3 py-1 rounded-full font-inter">
@@ -33,7 +33,7 @@ const SalonStaffSection: React.FC<{ salonId: string }> = ({ salonId }) => {
         </span>
       </div>
 
-      <div className="flex flex-col gap-8">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {staffMembers.map((member) => (
           <StaffProfileCard key={member.id} {...member} />
         ))}

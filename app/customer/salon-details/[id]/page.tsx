@@ -77,7 +77,7 @@ const SalonDetailsPage: React.FC<{ params: Promise<{ id: string }> }> = ({
           </div>
         </div>
 
-        <div className="hidden sm:block w-1/3 p-6 overflow-y-auto max-h-screen sticky top-0">
+        <div className="sm:mt-2 hidden sm:block w-1/3 p-6 overflow-y-auto max-h-screen sticky top-0">
           <SalonSidebar />
         </div>
       </div>

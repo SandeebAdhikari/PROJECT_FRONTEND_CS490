@@ -23,27 +23,23 @@ export default function Staffcard({ s }: { s: StaffMember }) {
   return (
     <div
       className="
-        border border-border bg-white rounded-xl p-6
+        border border-border bg-primary-foreground rounded-xl p-6
         shadow-sm hover:shadow-lg
         transform hover:-translate-y-1
         transition-all duration-300 ease-out
         relative overflow-hidden
       "
     >
-      {/* Status badge */}
       <div className="absolute right-4 top-4">
         <span
           className={`px-3 py-1.5 rounded-full text-sm font-medium border border-transparent shadow-sm ${
-            s.active
-              ? "bg-emerald-500 text-white"
-              : "bg-gray-300 text-gray-800"
+            s.active ? "bg-emerald-500 text-white" : "bg-gray-300 text-gray-800"
           }`}
         >
           {s.active ? "active" : "inactive"}
         </span>
       </div>
 
-      {/* Header */}
       <div className="flex items-start gap-4">
         {s.avatarUrl ? (
           <Image
@@ -80,7 +76,6 @@ export default function Staffcard({ s }: { s: StaffMember }) {
         </div>
       </div>
 
-      {/* Details */}
       <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2">
         <div className="text-base">
           <div className="text-muted-foreground font-inter">Email:</div>
@@ -111,19 +106,21 @@ export default function Staffcard({ s }: { s: StaffMember }) {
         </div>
       </div>
 
-      {/* Metrics */}
       <div className="mt-6 space-y-5">
         <MetricBar label="Efficiency" value={s.efficiency} />
-        <MetricBar label="Customer Satisfaction" value={s.customerSatisfaction} />
+        <MetricBar
+          label="Customer Satisfaction"
+          value={s.customerSatisfaction}
+        />
       </div>
 
-      {/* Divider */}
       <div className="mt-6 border-t border-border" />
 
-      {/* Footer */}
       <div className="mt-4 flex items-center justify-between">
         <div className="text-sm">
-          <div className="text-muted-foreground font-inter">Monthly Revenue:</div>
+          <div className="text-muted-foreground font-inter">
+            Monthly Revenue:
+          </div>
           <div className="mt-0.5 font-semibold text-emerald-600">
             ${s.monthlyRevenue.toLocaleString()}
           </div>

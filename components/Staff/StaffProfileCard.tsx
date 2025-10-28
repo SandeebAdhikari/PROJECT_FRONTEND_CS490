@@ -30,7 +30,7 @@ const StaffProfileCard: React.FC<StaffProfileCardProps> = ({
   const [isOpen, setIsOpen] = React.useState(false);
 
   return (
-    <div className="bg-muted border border-border rounded-2xl shadow-sm p-6 flex flex-col items-center text-center hover:shadow-md transition font-inter">
+    <div className="bg-muted border border-border rounded-2xl shadow-sm p-6 flex flex-col items-center text-center hover:shadow-soft-br transition-smooth font-inter">
       <div
         className={`w-20 h-20 ${color} text-primary-foreground flex items-center justify-center text-2xl font-semibold rounded-full mb-4`}
       >
@@ -40,8 +40,8 @@ const StaffProfileCard: React.FC<StaffProfileCardProps> = ({
       <h3 className="text-lg font-bold">{name}</h3>
       <p className="text-sm text-neutral-500">{role}</p>
 
-      <div className="flex items-center gap-1 mt-2 text-sm text-neutral-600">
-        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+      <div className="flex items-center gap-1 mt-2 text-sm text-muted-foreground">
+        <Star className="w-4 h-4 fill-accent text-accent" />
         <span className="font-semibold">{rating}</span>
         <span className="text-neutral-400">({reviews} reviews)</span>
       </div>
@@ -56,7 +56,7 @@ const StaffProfileCard: React.FC<StaffProfileCardProps> = ({
           </span>
         ))}
         {specialties.length > 2 && (
-          <span className=" text-neutral-700 text-xs px-3 py-1 rounded-full">
+          <span className=" text-muted-foreground text-xs px-3 py-1 rounded-full">
             +{specialties.length - 2}
           </span>
         )}

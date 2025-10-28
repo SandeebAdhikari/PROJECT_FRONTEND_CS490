@@ -31,7 +31,7 @@ const SalonDetailExploreOther: React.FC<SalonDetailExploreOtherProps> = ({
     <section className="mt-10">
       <h2 className="text-2xl font-extrabold mb-6">You May Also Like</h2>
 
-      <div className="flex flex-col gap-4 sm:grid sm:grid-cols-3 lg:grid-cols-5 w-full">
+      <div className="sm:flex w-full justify-between">
         {relatedSalons.map((salon) => (
           <SalonDetailExploreOtherCard
             key={salon.id}

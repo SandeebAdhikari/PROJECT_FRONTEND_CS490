@@ -45,7 +45,7 @@ const SalonDetailExploreOtherCard: React.FC<
 
           <button
             onClick={onViewDetails}
-            className="mt-3 bg-background border border-border rounded-lg px-4 py-1.5 text-sm font-medium text-foreground hover:bg-muted transition"
+            className="mt-3 bg-background border border-border rounded-lg px-4 py-1.5 text-sm font-medium text-foreground hover:bg-muted transition cursor-pointer"
           >
             View Details
           </button>
