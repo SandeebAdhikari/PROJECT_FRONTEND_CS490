@@ -8,7 +8,7 @@ interface DecodedToken {
 
 export function middleware(req: NextRequest) {
   const token = req.cookies.get("token")?.value;
-  const protectedRoutes = ["/admin/salon-dashboard", "/customer"];
+  const protectedRoutes = ["/admin/salon-dashboard"];
 
   const isProtected = protectedRoutes.some((route) =>
     req.nextUrl.pathname.startsWith(route)
@@ -35,5 +35,5 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/salon-dashboard/:path*", "/customer/:path*"],
+  matcher: ["/admin/salon-dashboard/:path*"],
 };
