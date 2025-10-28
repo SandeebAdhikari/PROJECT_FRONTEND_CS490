@@ -5,7 +5,7 @@ import data from "@/data/staff-customer-management.json" assert { type: "json" }
 
 const CustomersPage = () => {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 font-inter p-6 sm:p-8">
       {/* Stats Cards */}
       <CustomerStatsCards stats={data.customerStats} />
 
