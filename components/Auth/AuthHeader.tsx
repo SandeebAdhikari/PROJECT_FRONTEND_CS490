@@ -60,7 +60,7 @@ const AuthHeader: React.FC<AuthHeaderProps> = ({ title, subtitle }) => {
         window.location.href =
           data.role === "owner"
             ? "/admin/salon-dashboard/overview"
-            : "/customer-view";
+            : "/customer";
         return;
       }
 
@@ -119,7 +119,7 @@ const AuthHeader: React.FC<AuthHeaderProps> = ({ title, subtitle }) => {
 
       document.cookie = `token=${data.token}; path=/; max-age=3600;`;
       window.location.href =
-        data.role === "owner" ? "/admin/salon-dashboard/overview" : "/customer-view";
+        data.role === "owner" ? "/admin/salon-dashboard/overview" : "/customer";
     } catch (err) {
       console.error(err);
       alert("Failed to assign role");

@@ -20,12 +20,12 @@ const SignInForm = () => {
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const router = useRouter();
-  
+
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
       emailOrPhone: "",
-      password: ""
+      password: "",
     },
     mode: "onSubmit",
   });
@@ -34,10 +34,13 @@ const SignInForm = () => {
     console.log("Sign-in submitted:", data);
     setError("");
     setLoading(true);
-    
+
     try {
-      const response = await login({ email: data.emailOrPhone, password: data.password });
-      
+      const response = await login({
+        email: data.emailOrPhone,
+        password: data.password,
+      });
+
       // Check if 2FA is required
       if (response.requires2FA) {
         setShowCodeInput(true);
@@ -47,18 +50,18 @@ const SignInForm = () => {
         setLoading(false);
         return;
       }
-      
+
       // Normal login
       if (response.error) {
         setError(response.error);
         setLoading(false);
         return;
       }
-      
+
       if (response.token) {
         // Successful login
         console.log("Login successful");
-        router.push("/customer-view"); // Redirect to customer view page after login
+        router.push("/customer"); // Redirect to customer view page after login
       }
     } catch (err) {
       setError("Login failed. Please try again.");
@@ -72,7 +75,11 @@ const SignInForm = () => {
     setLoading(true);
 
     try {
-      const response = await verify2FA({ email, password, code: verificationCode });
+      const response = await verify2FA({
+        email,
+        password,
+        code: verificationCode,
+      });
 
       if (response.error) {
         setError(response.error);
@@ -83,7 +90,7 @@ const SignInForm = () => {
       if (response.token) {
         // Successful verification and login
         console.log("2FA verification successful");
-        router.push("/customer-view"); // Redirect to customer view page after login
+        router.push("/customer"); // Redirect to customer view page after login
       }
     } catch (err) {
       setError("Verification failed. Please try again.");
@@ -104,7 +111,9 @@ const SignInForm = () => {
         />
 
         <div className="font-inter">
-          <label className="block mb-1 font-semibold text-sm">Verification Code *</label>
+          <label className="block mb-1 font-semibold text-sm">
+            Verification Code *
+          </label>
           <div className="relative">
             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
             <input

@@ -2,7 +2,12 @@
 
 import React, { useState, useEffect } from "react";
 import { Calendar } from "lucide-react";
-import { enable2FA, disable2FA, get2FAStatus, getProfile } from "@/libs/api/auth";
+import {
+  enable2FA,
+  disable2FA,
+  get2FAStatus,
+  getProfile,
+} from "@/libs/api/auth";
 
 type TabType = "upcoming" | "past" | "favorites" | "settings";
 
@@ -55,7 +60,7 @@ const UpcomingContent = () => {
         Book your next appointment now!
       </p>
       <button
-        onClick={() => window.location.href = "/customer-view"}
+        onClick={() => (window.location.href = "/customer")}
         className="px-8 py-3 bg-primary text-white rounded-lg hover:bg-primary-dark font-inter font-semibold transition-colors"
       >
         Discover Salons
@@ -75,7 +80,7 @@ const PastBookingsContent = () => {
         Your booking history will appear here.
       </p>
       <button
-        onClick={() => window.location.href = "/customer-view"}
+        onClick={() => (window.location.href = "/customer")}
         className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-dark font-inter font-semibold transition-colors"
       >
         Discover Salons
@@ -109,7 +114,7 @@ const FavoritesContent = () => {
         Start saving your favorite salons!
       </p>
       <button
-        onClick={() => window.location.href = "/customer-view"}
+        onClick={() => (window.location.href = "/customer")}
         className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-dark font-inter font-semibold transition-colors"
       >
         Discover Salons
@@ -133,19 +138,19 @@ const SettingsContent = () => {
     try {
       const status = await get2FAStatus();
       if (status.error) {
-        console.log('2FA status check failed:', status.error);
+        console.log("2FA status check failed:", status.error);
         setIs2FAEnabled(false);
       } else {
         setIs2FAEnabled(status.twoFactorEnabled);
       }
-      
+
       // Load user's current phone number from API
       const userData = await getProfile();
       if (userData.user && userData.user.phone) {
         setPhoneNumber(userData.user.phone);
       } else {
         // Fallback to localStorage if API fails
-        const storedUser = localStorage.getItem('user');
+        const storedUser = localStorage.getItem("user");
         if (storedUser) {
           const user = JSON.parse(storedUser);
           if (user.phone) {
@@ -154,7 +159,7 @@ const SettingsContent = () => {
         }
       }
     } catch (error) {
-      console.error('Error loading 2FA status:', error);
+      console.error("Error loading 2FA status:", error);
       setIs2FAEnabled(false);
     }
   };
@@ -171,22 +176,24 @@ const SettingsContent = () => {
           setIs2FAEnabled(false);
           setMessage("2FA disabled successfully");
         } else {
-          console.error('Disable 2FA error:', result);
+          console.error("Disable 2FA error:", result);
           setError("Error: " + result.error);
         }
       } else {
         const result = await enable2FA("sms", phoneNumber);
-        console.log('Enable 2FA result:', result);
+        console.log("Enable 2FA result:", result);
         if (!result.error) {
           setIs2FAEnabled(true);
-          setMessage("2FA enabled! You will be asked for a code on your next login.");
+          setMessage(
+            "2FA enabled! You will be asked for a code on your next login."
+          );
         } else {
-          console.error('Enable 2FA error:', result);
+          console.error("Enable 2FA error:", result);
           setError("Error: " + (result.error || "Failed to enable 2FA"));
         }
       }
     } catch (err) {
-      console.error('Toggle 2FA error:', err);
+      console.error("Toggle 2FA error:", err);
       setError("Unexpected error: " + err);
     }
 
@@ -198,17 +205,29 @@ const SettingsContent = () => {
       <h2 className="text-2xl font-bold mb-6">Settings</h2>
 
       <div className="border border-border rounded-lg p-6">
-        <h3 className="text-xl font-semibold mb-2">Two-Factor Authentication</h3>
+        <h3 className="text-xl font-semibold mb-2">
+          Two-Factor Authentication
+        </h3>
         <p className="text-muted-foreground text-sm mb-4">
           Add an extra layer of security to your account
         </p>
 
-        {message && <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded">{message}</div>}
-        {error && <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">{error}</div>}
+        {message && (
+          <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded">
+            {message}
+          </div>
+        )}
+        {error && (
+          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+            {error}
+          </div>
+        )}
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-2">Phone Number</label>
+            <label className="block text-sm font-medium mb-2">
+              Phone Number
+            </label>
             <input
               type="tel"
               value={phoneNumber}
@@ -216,24 +235,34 @@ const SettingsContent = () => {
               placeholder="+1234567890"
               className="w-full px-3 py-2 border border-border rounded-md bg-card text-foreground"
             />
-            <p className="text-xs text-muted-foreground mt-1">Phone number used for 2FA SMS verification</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Phone number used for 2FA SMS verification
+            </p>
           </div>
-          
+
           <div className="flex items-center justify-between py-4 border-t border-border">
             <div>
               <p className="font-medium">SMS 2FA</p>
               <p className="text-sm text-muted-foreground">
-                {is2FAEnabled ? "Enabled - You will receive verification codes via SMS" : "Disabled - Enable to protect your account"}
+                {is2FAEnabled
+                  ? "Enabled - You will receive verification codes via SMS"
+                  : "Disabled - Enable to protect your account"}
               </p>
             </div>
             <button
               onClick={handleToggle2FA}
               disabled={loading || (!is2FAEnabled && !phoneNumber)}
               className={`px-4 py-2 rounded-md font-medium transition-colors ${
-                is2FAEnabled ? "bg-red-600 hover:bg-red-700 text-white" : "bg-primary hover:bg-primary-dark text-white"
+                is2FAEnabled
+                  ? "bg-red-600 hover:bg-red-700 text-white"
+                  : "bg-primary hover:bg-primary-dark text-white"
               } disabled:opacity-50`}
             >
-              {loading ? "Loading..." : is2FAEnabled ? "Disable 2FA" : "Enable 2FA"}
+              {loading
+                ? "Loading..."
+                : is2FAEnabled
+                ? "Disable 2FA"
+                : "Enable 2FA"}
             </button>
           </div>
         </div>
