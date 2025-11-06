@@ -1,7 +1,14 @@
 "use client";
 
 import React from "react";
-import { Calendar, CheckCircle, Clock, DollarSign } from "lucide-react";
+import {
+  Calendar,
+  Calendar1,
+  CheckCircle,
+  Clock,
+  DollarSign,
+  Filter,
+} from "lucide-react";
 import AppointmentCard, { Appointment } from "./AppointmentCard";
 import data from "@/data/data.json";
 
@@ -21,7 +28,7 @@ function KPI({
       className="
         rounded-2xl border border-border bg-white
         p-5 sm:p-6 shadow-soft-br hover:shadow-md transition-smooth
-        flex items-center justify-between min-h-[96px]
+        flex items-center justify-between min-h-[96px] 
       "
     >
       <div>
@@ -51,25 +58,26 @@ export default function Appointments() {
 
   return (
     <section className="space-y-6 font-inter">
-      <header className="flex items-start justify-between">
+      <header className="sm:flex sm:items-start sm:justify-between">
         <div>
-          <h2 className="font-sans text-2xl sm:text-3xl font-extrabold">
+          <h2 className="font-inter text-2xl sm:text-3xl font-extrabold">
             Appointment Management
           </h2>
           <p className="text-muted-foreground text-base mt-2 sm:text-lg">
             Manage and track all salon appointments
           </p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-3 mt-3">
           <button
             className="
               px-4 py-2.5 rounded-lg border border-border bg-white
               text-sm font-medium text-gray-800
-              hover:bg-gray-50 hover:shadow-sm
-              transition-all duration-200 ease-out
-              focus:outline-none focus:ring-2 focus:ring-emerald-500/30
+              hover:bg-accent hover:shadow-soft-br
+              transition-smooth 
+              focus:outline-none focus:ring-2 focus:ring-emerald-500/30 flex gap-4 justify-center cursor-pointer
             "
           >
+            <Filter className="w-4 h-4 " />
             Filter
           </button>
           <button
@@ -78,11 +86,12 @@ export default function Appointments() {
               bg-emerald-600 text-white text-sm font-medium
               hover:bg-emerald-700 hover:shadow-md
               transform hover:-translate-y-[1px]
-              transition-all duration-200 ease-out
-              focus:outline-none focus:ring-2 focus:ring-emerald-500/30
+              transition-smooth 
+              focus:outline-none focus:ring-2 focus:ring-emerald-500/30 flex gap-4 justify-center cursor-pointer
             "
           >
-            Add Staff Member
+            <Calendar1 className="w-4 h-4" />
+            New Appointment
           </button>
         </div>
       </header>
