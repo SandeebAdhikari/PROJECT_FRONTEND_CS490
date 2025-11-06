@@ -10,42 +10,10 @@ import {
   Filter,
 } from "lucide-react";
 import AppointmentCard, { Appointment } from "./AppointmentCard";
+import KPI from "@/components/KPI";
 import data from "@/data/data.json";
 
-function KPI({
-  label,
-  value,
-  Icon,
-  iconClass = "",
-}: {
-  label: string;
-  value: string | number;
-  Icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
-  iconClass?: string;
-}) {
-  return (
-    <div
-      className="
-        rounded-2xl border border-border bg-white
-        p-5 sm:p-6 shadow-soft-br hover:shadow-md transition-smooth
-        flex items-center justify-between min-h-[96px] 
-      "
-    >
-      <div>
-        <div className="text-sm text-muted-foreground font-inter">{label}</div>
-        <div className="mt-1 text-2xl font-semibold leading-tight">{value}</div>
-      </div>
-      <div
-        className={`h-9 w-9 rounded-2xl flex items-center justify-center ${iconClass}`}
-        aria-hidden
-      >
-        <Icon className="h-4 w-4" />
-      </div>
-    </div>
-  );
-}
-
-export default function Appointments() {
+const Appointments = () => {
   const salonId = "1";
   const APPOINTMENTS = (data.appointments?.[salonId] ||
     []) as unknown as Appointment[];
@@ -69,26 +37,24 @@ export default function Appointments() {
         </div>
         <div className="flex gap-3 mt-3">
           <button
-            className="
-              px-4 py-2.5 rounded-lg border border-border bg-white
+            className="px-4 py-2.5 rounded-lg border border-border bg-white
               text-sm font-medium text-gray-800
               hover:bg-accent hover:shadow-soft-br
               transition-smooth 
-              focus:outline-none focus:ring-2 focus:ring-emerald-500/30 flex gap-4 justify-center cursor-pointer
-            "
+              focus:outline-none focus:ring-2 focus:ring-emerald-500/30 
+              flex gap-4 justify-center cursor-pointer"
           >
-            <Filter className="w-4 h-4 " />
+            <Filter className="w-4 h-4" />
             Filter
           </button>
           <button
-            className="
-              px-4 py-2.5 rounded-lg border border-transparent
+            className="px-4 py-2.5 rounded-lg border border-transparent
               bg-emerald-600 text-white text-sm font-medium
               hover:bg-emerald-700 hover:shadow-md
               transform hover:-translate-y-[1px]
               transition-smooth 
-              focus:outline-none focus:ring-2 focus:ring-emerald-500/30 flex gap-4 justify-center cursor-pointer
-            "
+              focus:outline-none focus:ring-2 focus:ring-emerald-500/30 
+              flex gap-4 justify-center cursor-pointer"
           >
             <Calendar1 className="w-4 h-4" />
             New Appointment
@@ -133,4 +99,6 @@ export default function Appointments() {
       </div>
     </section>
   );
-}
+};
+
+export default Appointments;

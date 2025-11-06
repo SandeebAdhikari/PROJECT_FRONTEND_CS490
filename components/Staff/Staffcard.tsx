@@ -1,7 +1,9 @@
 "use client";
 
+import React from "react";
 import Image from "next/image";
 import { Eye, Pencil, Star } from "lucide-react";
+import MetricBar from "@/components/Staff/StaffMetricBar";
 
 export type StaffMember = {
   id: string;
@@ -15,21 +17,17 @@ export type StaffMember = {
   reviewsCount: number;
   efficiency: number;
   customerSatisfaction: number;
-  monthlyRevenue: number;
+  monthlyRevenue?: number;
   active: boolean;
 };
 
-export default function Staffcard({ s }: { s: StaffMember }) {
+const StaffCard: React.FC<{ s: StaffMember }> = ({ s }) => {
+  const revenueDisplay = s.monthlyRevenue
+    ? `$${s.monthlyRevenue.toLocaleString()}`
+    : "N/A";
+
   return (
-    <div
-      className="
-        border border-border bg-primary-foreground rounded-xl p-6
-        shadow-sm hover:shadow-lg
-        transform hover:-translate-y-1
-        transition-all duration-300 ease-out
-        relative overflow-hidden
-      "
-    >
+    <div className="border border-border bg-muted/40 rounded-xl p-6 shadow-sm hover:shadow-lg transform hover:-translate-y-1 transition-all duration-300 ease-out relative overflow-hidden">
       <div className="absolute right-4 top-4">
         <span
           className={`px-3 py-1.5 rounded-full text-sm font-medium border border-transparent shadow-sm ${
@@ -61,7 +59,7 @@ export default function Staffcard({ s }: { s: StaffMember }) {
         )}
 
         <div className="flex-1">
-          <h3 className="font-sans text-lg sm:text-xl font-extrabold">
+          <h3 className="font-inter text-lg sm:text-xl font-extrabold">
             {s.name}
           </h3>
           <p className="text-sm text-muted-foreground font-inter">{s.role}</p>
@@ -122,7 +120,7 @@ export default function Staffcard({ s }: { s: StaffMember }) {
             Monthly Revenue:
           </div>
           <div className="mt-0.5 font-semibold text-emerald-600">
-            ${s.monthlyRevenue.toLocaleString()}
+            {revenueDisplay}
           </div>
         </div>
 
@@ -143,22 +141,6 @@ export default function Staffcard({ s }: { s: StaffMember }) {
       </div>
     </div>
   );
-}
+};
 
-function MetricBar({ label, value }: { label: string; value: number }) {
-  const pct = Math.max(0, Math.min(100, value));
-  return (
-    <div>
-      <div className="mb-1 flex items-center justify-between text-sm">
-        <span className="text-foreground font-inter">{label}</span>
-        <span className="font-medium">{pct}%</span>
-      </div>
-      <div className="h-2.5 w-full overflow-hidden rounded-full bg-gray-100">
-        <div
-          className="h-2.5 rounded-full bg-emerald-500"
-          style={{ width: `${pct}%` }}
-        />
-      </div>
-    </div>
-  );
-}
+export default StaffCard;
