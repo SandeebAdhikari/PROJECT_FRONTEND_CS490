@@ -1142,5 +1142,79 @@
         "1": 1
       }
     }
+  },
+  "appointments": {
+    "1": [
+      {
+        "id": 1,
+        "salonId": 1,
+        "serviceId": 1,
+        "staffId": 1,
+        "userId": 101,
+        "customerName": "Emma Thompson",
+        "date": "2024-11-06",
+        "time": "10:00 AM",
+        "duration": "90 min",
+        "price": 120,
+        "status": "confirmed",
+        "notes": "Customer prefers organic products"
+      },
+      {
+        "id": 2,
+        "salonId": 1,
+        "serviceId": 3,
+        "staffId": 2,
+        "userId": 102,
+        "customerName": "Michael Brown",
+        "date": "2024-11-06",
+        "time": "1:00 PM",
+        "duration": "60 min",
+        "price": 100,
+        "status": "confirmed",
+        "notes": "Requested lavender essential oil"
+      },
+      {
+        "id": 3,
+        "salonId": 1,
+        "serviceId": 5,
+        "staffId": 3,
+        "userId": 103,
+        "customerName": "Sophia Davis",
+        "date": "2024-11-07",
+        "time": "3:30 PM",
+        "duration": "45 min",
+        "price": 35,
+        "status": "pending",
+        "notes": "Prefers French polish style"
+      }
+    ],
+    "2": [
+      {
+        "id": 4,
+        "salonId": 2,
+        "serviceId": 1,
+        "staffId": 1,
+        "userId": 104,
+        "customerName": "Olivia Johnson",
+        "date": "2024-11-06",
+        "time": "9:30 AM",
+        "duration": "60 min",
+        "price": 75,
+        "status": "confirmed"
+      },
+      {
+        "id": 5,
+        "salonId": 2,
+        "serviceId": 2,
+        "staffId": 2,
+        "userId": 105,
+        "customerName": "Liam Smith",
+        "date": "2024-11-06",
+        "time": "2:00 PM",
+        "duration": "120 min",
+        "price": 180,
+        "status": "pending"
+      }
+    ]
   }
 }
