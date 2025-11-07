@@ -44,32 +44,30 @@ const SalonBookingSettings = () => {
           />
         </div>
 
-        <div className="sm:flex items-center justify-between">
-          <div className="flex justify-between items-center">
-            <div>
-              <p id="require-deposit-label" className="font-medium">
-                Require Deposit
-              </p>
-              <p className="text-sm text-gray-500">
-                Require customers to pay a deposit
-              </p>
-            </div>
-            <div className="flex items-center gap-3">
-              <ToggleButton checked={enabled} onChange={setEnabled} />
-            </div>
+        <div className="flex justify-between items-center">
+          <div>
+            <p id="require-deposit-label" className="font-medium">
+              Require Deposit
+            </p>
+            <p className="text-sm text-gray-500">
+              Require customers to pay a deposit
+            </p>
           </div>
-          <div className="mt-6">
-            <label className="block text-sm font-medium">
-              Deposit Amount ($)
-            </label>
-            <input
-              type="number"
-              className="w-full mt-1 rounded-lg border border-border px-3 py-2"
-              defaultValue={25}
-              placeholder="Enter deposit amount"
-              title="Deposit Amount"
-            />
+          <div className="flex items-center gap-3">
+            <ToggleButton checked={enabled} onChange={setEnabled} />
           </div>
+        </div>
+        <div className="mt-6">
+          <label className="block text-sm font-medium">
+            Deposit Amount ($)
+          </label>
+          <input
+            type="number"
+            className="w-full mt-1 rounded-lg border border-border px-3 py-2"
+            defaultValue={25}
+            placeholder="Enter deposit amount"
+            title="Deposit Amount"
+          />
         </div>
       </div>
     </div>

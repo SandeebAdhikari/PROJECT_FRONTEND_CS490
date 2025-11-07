@@ -1216,5 +1216,42 @@
         "status": "pending"
       }
     ]
+  },
+  "schedule": {
+    "1": [
+      {
+        "id": 1,
+        "time": "9:00 AM",
+        "duration": "90 min",
+        "name": "Sarah Johnson",
+        "service": "Haircut & Style",
+        "stylist": "Maria Rodriguez",
+        "price": 85,
+        "status": "confirmed",
+        "avatarUrl": ""
+      },
+      {
+        "id": 2,
+        "time": "10:30 AM",
+        "duration": "180 min",
+        "name": "Emily Davis",
+        "service": "Color Treatment",
+        "stylist": "Lisa Chen",
+        "price": 150,
+        "status": "confirmed",
+        "avatarUrl": "https://i.pravatar.cc/100?img=47"
+      },
+      {
+        "id": 3,
+        "time": "1:00 PM",
+        "duration": "45 min",
+        "name": "Michael Brown",
+        "service": "Beard Trim",
+        "stylist": "James Wilson",
+        "price": 35,
+        "status": "pending",
+        "avatarUrl": "https://i.pravatar.cc/100?img=21"
+      }
+    ]
   }
 }

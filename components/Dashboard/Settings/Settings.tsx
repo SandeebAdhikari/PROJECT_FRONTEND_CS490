@@ -23,9 +23,9 @@ const Settings = () => {
         <SalonBusinessHours />
         <SalonBookingSettings />
         <SalonNotificationSettings />
-        <div className="flex justify-end mt-6">
-          <SaveButton onClick={() => console.log("Settings saved")} />
-        </div>
+      </div>
+      <div className="flex justify-end mt-6">
+        <SaveButton onClick={() => console.log("Settings saved")} />
       </div>
     </div>
   );
