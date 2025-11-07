@@ -4,12 +4,21 @@ import React from "react";
 import CustomerStatsCards from "@/components/Dashboard/DashBoardCustomer/CustomerStatsCards";
 import CustomerCard from "@/components/Dashboard/DashBoardCustomer/CustomerListTable";
 import data from "@/data/staff-customer-management.json" assert { type: "json" };
-
+import Header from "@/components/Dashboard/Header";
+import { UserPlus } from "lucide-react";
 const CustomersPage = () => {
   const customers = data.customers || [];
 
   return (
     <div className="space-y-6 font-inter p-6 sm:p-8">
+      <Header
+        title="Customer Management"
+        subtitle="Track your loyal customers and their details"
+        primaryLabel="Add Customer"
+        primaryIcon={UserPlus}
+        showActions={true}
+      />
+
       <CustomerStatsCards stats={data.customerStats} />
 
       <section>

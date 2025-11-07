@@ -1,16 +1,10 @@
 "use client";
 
 import React from "react";
-import {
-  Calendar,
-  Calendar1,
-  CheckCircle,
-  Clock,
-  DollarSign,
-  Filter,
-} from "lucide-react";
+import { Calendar, CheckCircle, Clock, DollarSign } from "lucide-react";
 import AppointmentCard, { Appointment } from "./AppointmentCard";
 import KPI from "@/components/Dashboard/KPI";
+import Header from "@/components/Dashboard/Header";
 import data from "@/data/data.json";
 
 const Appointments = () => {
@@ -26,41 +20,15 @@ const Appointments = () => {
 
   return (
     <section className="space-y-6 font-inter">
-      <header className="sm:flex sm:items-start sm:justify-between">
-        <div>
-          <h2 className="font-inter text-2xl sm:text-3xl font-extrabold">
-            Appointment Management
-          </h2>
-          <p className="text-muted-foreground text-base mt-2 sm:text-lg">
-            Manage and track all salon appointments
-          </p>
-        </div>
-        <div className="flex gap-3 mt-3">
-          <button
-            className="px-4 py-2.5 rounded-lg border border-border bg-white
-              text-sm font-medium text-gray-800
-              hover:bg-accent hover:shadow-soft-br
-              transition-smooth 
-              focus:outline-none focus:ring-2 focus:ring-emerald-500/30 
-              flex gap-4 justify-center cursor-pointer"
-          >
-            <Filter className="w-4 h-4" />
-            Filter
-          </button>
-          <button
-            className="px-4 py-2.5 rounded-lg border border-transparent
-              bg-emerald-600 text-white text-sm font-medium
-              hover:bg-emerald-700 hover:shadow-md
-              transform hover:-translate-y-[1px]
-              transition-smooth 
-              focus:outline-none focus:ring-2 focus:ring-emerald-500/30 
-              flex gap-4 justify-center cursor-pointer"
-          >
-            <Calendar1 className="w-4 h-4" />
-            New Appointment
-          </button>
-        </div>
-      </header>
+      <Header
+        title="Appointment Management"
+        subtitle="Manage and track all salon appointments"
+        onFilterClick={() => console.log("Filter clicked")}
+        onPrimaryClick={() => console.log("New appointment clicked")}
+        primaryLabel="New Appointment"
+        primaryIcon={Calendar}
+        showActions={true}
+      />
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 items-stretch">
         <KPI

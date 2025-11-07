@@ -5,7 +5,7 @@ import { Users, Star } from "lucide-react";
 import StaffCard, { StaffMember } from "./Staffcard";
 import KPI from "@/components/Dashboard/KPI";
 import data from "@/data/data.json";
-import { Calendar1, Filter } from "lucide-react";
+import Header from "@/components/Dashboard/Header";
 
 const Staff = () => {
   const [q, setQ] = useState("");
@@ -33,41 +33,13 @@ const Staff = () => {
 
   return (
     <section className="space-y-6 font-inter">
-      <header className="sm:flex sm:items-start sm:justify-between">
-        <div>
-          <h2 className="font-inter text-2xl sm:text-3xl font-extrabold">
-            Salon Management
-          </h2>
-          <p className="text-muted-foreground text-base mt-2 sm:text-lg">
-            Manage your salon team and their performance
-          </p>
-        </div>
-        <div className="flex gap-3 mt-3">
-          <button
-            className="px-4 py-2.5 rounded-lg border border-border bg-primary-foreground
-              text-sm font-medium text-gray-800
-              hover:bg-accent hover:shadow-soft-br
-              transition-smooth 
-              focus:outline-none focus:ring-2 focus:ring-emerald-500/30 
-              flex gap-4 justify-center cursor-pointer"
-          >
-            <Filter className="w-4 h-4" />
-            Filter
-          </button>
-          <button
-            className="px-4 py-2.5 rounded-lg border border-transparent
-              bg-emerald-600 text-white text-sm font-medium
-              hover:bg-emerald-700 hover:shadow-md
-              transform hover:-translate-y-[1px]
-              transition-smooth 
-              focus:outline-none focus:ring-2 focus:ring-emerald-500/30 
-              flex gap-4 justify-center cursor-pointer"
-          >
-            <Calendar1 className="w-4 h-4" />
-            New Appointment
-          </button>
-        </div>
-      </header>
+      <Header
+        title="Staff Management"
+        subtitle="Manage and track all salon appointments"
+        onFilterClick={() => console.log("Filter clicked")}
+        onPrimaryClick={() => console.log("New appointment clicked")}
+        primaryLabel="Add Staff Member"
+      />
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 items-stretch">
         <KPI
