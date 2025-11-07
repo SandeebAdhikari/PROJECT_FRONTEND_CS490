@@ -3,7 +3,7 @@
 import React, { useMemo, useState } from "react";
 import { Users, Star } from "lucide-react";
 import StaffCard, { StaffMember } from "./Staffcard";
-import KPI from "@/components/KPI";
+import KPI from "@/components/Dashboard/KPI";
 import data from "@/data/data.json";
 import { Calendar1, Filter } from "lucide-react";
 

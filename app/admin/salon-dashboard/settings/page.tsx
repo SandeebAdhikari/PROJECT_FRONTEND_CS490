@@ -24,7 +24,6 @@ const SettingsPage = () => {
     setError("");
 
     if (is2FAEnabled) {
-      // Disable 2FA
       const result = await disable2FA();
       if (!result.error) {
         setIs2FAEnabled(false);
@@ -33,11 +32,12 @@ const SettingsPage = () => {
         setError("Error: " + result.error);
       }
     } else {
-      // Enable 2FA
       const result = await enable2FA("sms");
       if (!result.error) {
         setIs2FAEnabled(true);
-        setMessage("2FA enabled successfully! You will be asked for a code on your next login.");
+        setMessage(
+          "2FA enabled successfully! You will be asked for a code on your next login."
+        );
       } else {
         setError("Error: " + result.error);
       }
@@ -53,7 +53,9 @@ const SettingsPage = () => {
       <div className="bg-white rounded-lg shadow p-6 mb-6">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 className="text-xl font-semibold mb-2">Two-Factor Authentication</h2>
+            <h2 className="text-xl font-semibold mb-2">
+              Two-Factor Authentication
+            </h2>
             <p className="text-gray-600 text-sm">
               Add an extra layer of security to your account
             </p>

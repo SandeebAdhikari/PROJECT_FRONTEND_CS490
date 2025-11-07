@@ -1,8 +1,8 @@
 "use client";
 
 import React from "react";
-import CustomerStatsCards from "@/components/DashBoardCustomer/CustomerStatsCards";
-import CustomerCard from "@/components/DashBoardCustomer/CustomerListTable";
+import CustomerStatsCards from "@/components/Dashboard/DashBoardCustomer/CustomerStatsCards";
+import CustomerCard from "@/components/Dashboard/DashBoardCustomer/CustomerListTable";
 import data from "@/data/staff-customer-management.json" assert { type: "json" };
 
 const CustomersPage = () => {

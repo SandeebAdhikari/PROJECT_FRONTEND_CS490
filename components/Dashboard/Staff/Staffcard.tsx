@@ -3,7 +3,7 @@
 import React from "react";
 import Image from "next/image";
 import { Eye, Pencil, Star } from "lucide-react";
-import MetricBar from "@/components/Staff/StaffMetricBar";
+import MetricBar from "@/components/Dashboard/Staff/StaffMetricBar";
 
 export type StaffMember = {
   id: string;

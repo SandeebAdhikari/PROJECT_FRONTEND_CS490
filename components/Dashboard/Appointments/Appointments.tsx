@@ -10,7 +10,7 @@ import {
   Filter,
 } from "lucide-react";
 import AppointmentCard, { Appointment } from "./AppointmentCard";
-import KPI from "@/components/KPI";
+import KPI from "@/components/Dashboard/KPI";
 import data from "@/data/data.json";
 
 const Appointments = () => {

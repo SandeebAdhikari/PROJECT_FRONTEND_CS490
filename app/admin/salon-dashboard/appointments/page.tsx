@@ -1,6 +1,6 @@
 "use client";
 
-import Appointments from "@/components/Appointments/Appointments";
+import Appointments from "@/components/Dashboard/Appointments/Appointments";
 
 export default function Page() {
   return (
