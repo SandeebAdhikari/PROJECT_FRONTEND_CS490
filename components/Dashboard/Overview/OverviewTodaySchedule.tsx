@@ -62,7 +62,7 @@ const TodaySchedule = () => {
 
                 <div>
                   <div className="font-semibold">{a.name}</div>
-                  <div className="text-sm text-muted-foreground">
+                  <div className="flex flex-col text-sm text-muted-foreground">
                     {a.service} <span>with {a.stylist}</span>
                   </div>
                 </div>
