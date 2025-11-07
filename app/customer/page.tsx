@@ -3,7 +3,7 @@
 import { useState } from "react";
 import CustomerNavbar from "@/components/Customer/CustomerNavbar";
 import CustomerSearchCard from "@/components/Customer/CustomerSearchCard";
-import ServiceButton from "@/components/Service/ServiceButton";
+import ServiceButton from "@/components/Dashboard/Service/ServiceButton";
 
 import { Scissors, Palette, Sparkles, Hand, Eye, Brush } from "lucide-react";
 import CustomerTopSalon from "@/components/Customer/CustomerTopSalon";
