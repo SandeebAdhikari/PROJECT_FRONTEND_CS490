@@ -28,6 +28,7 @@ const SignInForm = () => {
   });
 
   const onSubmit = async (data: LoginFormData) => {
+    console.log("➡️ onSubmit triggered with:", data);
     setError("");
     setLoading(true);
     try {
@@ -35,6 +36,7 @@ const SignInForm = () => {
         email: data.emailOrPhone,
         password: data.password,
       });
+      console.log("✅ login() resolved in SignInForm:", response);
 
       if (response.requires2FA) {
         setShowCodeInput(true);
@@ -56,16 +58,15 @@ const SignInForm = () => {
         if (response.user?.id)
           localStorage.setItem("user_id", response.user.id.toString());
 
-        setTimeout(() => {
-          if (
-            response.user?.role === "owner" ||
-            response.user?.role === "salon_owner"
-          ) {
-            router.push("/admin/salon-dashboard/overview");
-          } else {
-            router.push("/customer");
-          }
-        }, 200);
+        const role = response.user?.role?.toLowerCase();
+
+        if (role === "owner" || role === "salon_owner") {
+          router.push("/admin/salon-dashboard/overview");
+        } else if (role === "staff") {
+          router.push("/staff/dashboard");
+        } else {
+          router.push("/customer");
+        }
       }
     } catch {
       setError("Login failed. Please try again.");
@@ -104,16 +105,19 @@ const SignInForm = () => {
         if (response.user?.id)
           localStorage.setItem("user_id", response.user.id.toString());
 
-        setTimeout(() => {
-          if (
-            response.user?.role === "owner" ||
-            response.user?.role === "salon_owner"
-          ) {
-            router.push("/admin/salon-dashboard/overview");
-          } else {
-            router.push("/customer");
-          }
-        }, 200);
+        const role = response.user?.role?.toLowerCase();
+        console.log("Detected role:", role);
+
+        if (role === "owner" || role === "salon_owner") {
+          console.log("Redirecting → /admin/salon-dashboard/overview");
+          router.push("/admin/salon-dashboard/overview");
+        } else if (role === "staff") {
+          console.log("Redirecting → /staff/dashboard");
+          router.push("/staff/dashboard");
+        } else {
+          console.log("Redirecting → /customer");
+          router.push("/customer");
+        }
       }
     } catch {
       setError("Verification failed. Please try again.");

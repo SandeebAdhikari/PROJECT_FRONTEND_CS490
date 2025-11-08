@@ -41,25 +41,24 @@ const NewAppointmentModal = ({
   useEffect(() => {
     if (!isOpen || !salonId) return;
 
-    // ensure it's running client-side
-    if (typeof window === "undefined") return;
+    // Parse user data from localStorage
+    const userData =
+      typeof window !== "undefined" ? localStorage.getItem("user") : null;
+    const user = userData ? JSON.parse(userData) : null;
 
-    const token = window.localStorage.getItem("token");
-    if (!token) {
-      console.error("No auth token found in localStorage");
-      return;
-    }
+    // Determine which salon to fetch for (owner/staff)
+    const currentSalonId = user?.salon_id || salonId;
 
     const fetchCustomers = async () => {
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/users/customers`,
+          `${process.env.NEXT_PUBLIC_API_URL}/api/users/salon-customers?salon_id=${currentSalonId}`,
           {
-            headers: { Authorization: `Bearer ${token}` },
+            credentials: "include",
           }
         );
-        const data = await res.json();
 
+        const data = await res.json();
         if (res.ok && Array.isArray(data)) {
           setCustomers(data);
         } else {
@@ -67,12 +66,35 @@ const NewAppointmentModal = ({
           setCustomers([]);
         }
       } catch (error) {
-        console.error("Fetch error:", error);
+        console.error("Fetch customers error:", error);
         setCustomers([]);
       }
     };
 
+    const fetchServices = async () => {
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/salons/${currentSalonId}/services`,
+          {
+            credentials: "include",
+          }
+        );
+        const data = await res.json();
+
+        if (res.ok && Array.isArray(data)) {
+          setServices(data);
+        } else {
+          console.error("Failed to load services:", data);
+          setServices([]);
+        }
+      } catch (error) {
+        console.error("Fetch services error:", error);
+        setServices([]);
+      }
+    };
+
     fetchCustomers();
+    fetchServices();
   }, [isOpen, salonId]);
 
   if (!isOpen) return null;
@@ -80,6 +102,7 @@ const NewAppointmentModal = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const dateStr = form.date.toISOString().split("T")[0];
+
     const payload = {
       salon_id: salonId,
       user_id: Number(form.user_id),
@@ -90,6 +113,7 @@ const NewAppointmentModal = ({
       status: "booked",
       notes: form.notes,
     };
+
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/appointments/create`,
@@ -97,13 +121,16 @@ const NewAppointmentModal = ({
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
+          credentials: "include",
         }
       );
+
       const data = await res.json();
       if (!res.ok) {
         alert(data.error || "Failed to create appointment");
         return;
       }
+
       alert("Appointment added successfully!");
       console.log("Appointment created:", data);
       onClose();
@@ -130,6 +157,7 @@ const NewAppointmentModal = ({
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-5">
+          {/* Customer selection */}
           <div>
             <label htmlFor="user_id" className="block text-sm font-medium mb-1">
               Customer <span className="text-red-500">*</span>
