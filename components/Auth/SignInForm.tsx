@@ -7,7 +7,6 @@ import { loginSchema, LoginFormData } from "@/libs/auth/auth";
 import { Eye, EyeOff, Lock, Mail } from "lucide-react";
 import { login, verify2FA } from "@/libs/api/auth";
 import { useRouter } from "next/navigation";
-
 import AuthHeader from "@/components/Auth/AuthHeader";
 
 const SignInForm = () => {
@@ -16,8 +15,6 @@ const SignInForm = () => {
   const [verificationCode, setVerificationCode] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const router = useRouter();
 
@@ -31,27 +28,21 @@ const SignInForm = () => {
   });
 
   const onSubmit = async (data: LoginFormData) => {
-    console.log("Sign-in submitted:", data);
     setError("");
     setLoading(true);
-
     try {
       const response = await login({
         email: data.emailOrPhone,
         password: data.password,
       });
 
-      // Check if 2FA is required
       if (response.requires2FA) {
         setShowCodeInput(true);
-        setEmail(data.emailOrPhone);
-        setPassword(data.password);
-        setMessage(response.message || "Verification code sent to your phone");
+        setMessage(response.message || "Verification code sent");
         setLoading(false);
         return;
       }
 
-      // Normal login
       if (response.error) {
         setError(response.error);
         setLoading(false);
@@ -59,17 +50,24 @@ const SignInForm = () => {
       }
 
       if (response.token) {
-        // Successful login
-        console.log("Login successful");
-        
-        // Redirect based on role
-        if (response.user?.role === 'owner' || response.user?.role === 'salon_owner') {
-          router.push("/admin/salon-dashboard/overview");
-        } else {
-          router.push("/customer");
-        }
+        localStorage.setItem("token", response.token);
+        if (response.user?.role)
+          localStorage.setItem("role", response.user.role);
+        if (response.user?.id)
+          localStorage.setItem("user_id", response.user.id.toString());
+
+        setTimeout(() => {
+          if (
+            response.user?.role === "owner" ||
+            response.user?.role === "salon_owner"
+          ) {
+            router.push("/admin/salon-dashboard/overview");
+          } else {
+            router.push("/customer");
+          }
+        }, 200);
       }
-    } catch (err) {
+    } catch {
       setError("Login failed. Please try again.");
       setLoading(false);
     }
@@ -79,15 +77,14 @@ const SignInForm = () => {
     e.preventDefault();
     setError("");
     setLoading(true);
-
     try {
-      const tempToken = localStorage.getItem('tempToken');
+      const tempToken = localStorage.getItem("tempToken");
       if (!tempToken) {
-        setError('Session expired. Please login again.');
+        setError("Session expired. Please login again.");
         setLoading(false);
         return;
       }
-      
+
       const response = await verify2FA({
         code: verificationCode,
         tempToken: tempToken,
@@ -100,24 +97,30 @@ const SignInForm = () => {
       }
 
       if (response.token) {
-        // Successful verification and login
-        console.log("2FA verification successful");
-        localStorage.removeItem('tempToken'); // Clean up temp token
-        
-        // Redirect based on role
-        if (response.user?.role === 'owner' || response.user?.role === 'salon_owner') {
-          router.push("/admin/salon-dashboard/overview");
-        } else {
-          router.push("/customer");
-        }
+        localStorage.setItem("token", response.token);
+        localStorage.removeItem("tempToken");
+        if (response.user?.role)
+          localStorage.setItem("role", response.user.role);
+        if (response.user?.id)
+          localStorage.setItem("user_id", response.user.id.toString());
+
+        setTimeout(() => {
+          if (
+            response.user?.role === "owner" ||
+            response.user?.role === "salon_owner"
+          ) {
+            router.push("/admin/salon-dashboard/overview");
+          } else {
+            router.push("/customer");
+          }
+        }, 200);
       }
-    } catch (err) {
+    } catch {
       setError("Verification failed. Please try again.");
       setLoading(false);
     }
   };
 
-  // Show 2FA code input if verification is required
   if (showCodeInput) {
     return (
       <form
@@ -128,7 +131,6 @@ const SignInForm = () => {
           title="Verify Your Code"
           subtitle={message || "Enter the verification code sent to your phone"}
         />
-
         <div className="font-inter">
           <label className="block mb-1 font-semibold text-sm">
             Verification Code *
@@ -146,9 +148,7 @@ const SignInForm = () => {
             />
           </div>
         </div>
-
         {error && <p className="text-red-500 text-sm">{error}</p>}
-
         <button
           type="submit"
           disabled={loading}
@@ -156,7 +156,6 @@ const SignInForm = () => {
         >
           {loading ? "Verifying..." : "Verify Code"}
         </button>
-
         <button
           type="button"
           onClick={() => {
@@ -172,7 +171,6 @@ const SignInForm = () => {
     );
   }
 
-  // Normal login form
   return (
     <form
       onSubmit={form.handleSubmit(onSubmit)}
@@ -182,7 +180,6 @@ const SignInForm = () => {
         title="Welcome Back"
         subtitle="Sign in to your account to continue"
       />
-
       <div className="font-inter">
         <label className="block mb-1">Email or Phone</label>
         <div className="relative">
@@ -199,7 +196,6 @@ const SignInForm = () => {
           </p>
         )}
       </div>
-
       <div className="font-inter">
         <label className="block mb-1 font-semibold text-sm">Password *</label>
         <div className="relative">
@@ -235,9 +231,7 @@ const SignInForm = () => {
           </p>
         )}
       </div>
-
       {error && <p className="text-red-500 text-sm">{error}</p>}
-
       <button
         type="submit"
         disabled={loading}

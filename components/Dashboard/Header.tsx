@@ -1,14 +1,7 @@
 "use client";
 
 import React from "react";
-import {
-  Calendar1,
-  Filter,
-  Users,
-  UserPlus,
-  BarChart3,
-  Settings,
-} from "lucide-react";
+import { Calendar1, Filter } from "lucide-react";
 
 interface HeaderProps {
   title?: string;

@@ -1,12 +1,14 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Calendar, Eye, Pencil, MoreVertical } from "lucide-react";
 import Header from "../Header";
 import Image from "next/image";
 import data from "@/data/data.json";
+import NewAppointmentModal from "@/components/Dashboard/Appointments/NewAppointmentModal";
 
 const TodaySchedule = () => {
+  const [openModal, setOpenModal] = useState(false);
   const salonId = "1";
   const SCHEDULE = data.schedule?.[salonId] || [];
 
@@ -21,7 +23,7 @@ const TodaySchedule = () => {
         title="Today's Schedule"
         subtitle="Manage and track all salon appointments"
         onFilterClick={() => console.log("Filter clicked")}
-        onPrimaryClick={() => console.log("New appointment clicked")}
+        onPrimaryClick={() => setOpenModal(true)}
         primaryLabel="New Appointment"
         primaryIcon={Calendar}
         showActions={true}
@@ -33,7 +35,6 @@ const TodaySchedule = () => {
             key={a.id}
             className="flex flex-col sm:flex-row sm:items-center justify-between border border-border rounded-xl p-4 hover:shadow-sm transition-smooth"
           >
-            {/* Left section: Time, Customer, Service */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:gap-4 flex-1">
               <div className="mb-2 sm:mb-0 text-center sm:text-left">
                 <div className="font-semibold text-foreground">{a.time}</div>
@@ -69,7 +70,6 @@ const TodaySchedule = () => {
               </div>
             </div>
 
-            {/* Right section for desktop */}
             <div className="hidden sm:flex items-center gap-5">
               <div className="text-right">
                 <div className="font-semibold">${a.price}</div>
@@ -89,7 +89,6 @@ const TodaySchedule = () => {
               </div>
             </div>
 
-            {/* Mobile layout (stacked) */}
             <div className="flex sm:hidden flex-col items-center justify-center mt-3 border-t border-border pt-3">
               <div className="flex items-center justify-between w-full">
                 <div className="text-sm font-semibold">${a.price}</div>
@@ -111,6 +110,12 @@ const TodaySchedule = () => {
           </div>
         ))}
       </div>
+
+      <NewAppointmentModal
+        isOpen={openModal}
+        onClose={() => setOpenModal(false)}
+        salonId={Number(salonId)}
+      />
     </section>
   );
 };

@@ -2,7 +2,7 @@
 
 import React from "react";
 import data from "@/data/data.json";
-import StaffProfileCard from "@/components/Staff/StaffProfileCard";
+import StaffProfileCard from "@/components/Dashboard/Staff/StaffProfileCard";
 
 interface Staff {
   id: number;
