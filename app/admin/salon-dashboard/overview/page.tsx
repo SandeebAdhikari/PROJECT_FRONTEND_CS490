@@ -1,6 +1,6 @@
 import React from "react";
 import OverviewRevenueAnalytics from "@/components/Dashboard/Overview/OverviewRevenueAnalytics";
-import OverviewServiceDistChar from "@/components/Dashboard/Overview/OverviewServiceDistChart";
+import OverviewServiceDistChar from "@/components/Dashboard/Service/ServiceDistChart";
 import Header from "@/components/Dashboard/Header";
 import TodaySchedule from "@/components/Dashboard/Overview/OverviewTodaySchedule";
 const page = () => {

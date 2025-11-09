@@ -22,7 +22,7 @@ const COLORS = [
 
 const ServiceDistribution = () => {
   return (
-    <div className="rounded-2xl bg-secondary border border-border p-4 shadow-soft-br font-inter transition-smooth">
+    <div className=" rounded-2xl bg-secondary border border-border p-4 shadow-soft-br font-inter transition-smooth">
       <div className="flex items-center gap-2 mb-4">
         <PieIcon className="w-5 h-5 text-color-primary-dark" />
         <h2 className="text-lg font-bold text-color-foreground">
