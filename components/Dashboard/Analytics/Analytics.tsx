@@ -6,6 +6,9 @@ import AnalyticsPeakHours from "./AnalyticsPeakHours";
 import AnalyticsServiceRevenue from "./AnalyticsServiceRevenue";
 import AnalyticsServiceChart from "./AnalyticsServiceChart";
 import AnalyticsStaffPerformance from "./AnalyticsStaffPerformance";
+import AnalyticsCustomerRetention from "./AnalyticsCustomerRetention";
+import AnalyticsCustomerValue from "./AnalyticsCustomerValue";
+import AnalyticsGrowthOverview from "./AnalyticsGrowthOverview";
 
 const Analytics = () => {
   return (
@@ -34,6 +37,15 @@ const Analytics = () => {
         </div>
       </div>
       <AnalyticsStaffPerformance />
+      <div className="sm:flex gap-2 w-full space-y-4">
+        <div className="sm:w-1/2">
+          <AnalyticsCustomerRetention />
+        </div>
+        <div className="sm:w-1/2">
+          <AnalyticsCustomerValue />
+        </div>
+      </div>
+      <AnalyticsGrowthOverview />
     </div>
   );
 };
