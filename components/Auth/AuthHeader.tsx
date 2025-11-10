@@ -86,15 +86,13 @@ const AuthHeader: React.FC<AuthHeaderProps> = ({ title, subtitle }) => {
     } catch (err: any) {
       // ignore harmless cancellations
       if (err.code === "auth/cancelled-popup-request") {
-        console.log("Popup canceled (double click) — safely ignored.");
         return;
       }
       if (err.code === "auth/popup-closed-by-user") {
-        console.log("User closed popup — no action needed.");
         return;
       }
   
-      console.error("❌ Login failed:", err);
+      console.error("Login failed:", err);
       alert("Social login failed: " + err.message);
     } finally {
       setLoading(false);

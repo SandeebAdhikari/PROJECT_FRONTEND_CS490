@@ -18,8 +18,6 @@ const SignUpForm = () => {
 
   const onSubmit = async (data: SignUpFormData) => {
     try {
-      console.log("Sign-up submitted:", data);
-
       const payload = {
         full_name:
           data.userType === "owner"
@@ -59,7 +57,7 @@ const SignUpForm = () => {
   };
 
   const onError = (errors: any) => {
-    console.log(" Validation errors:", errors);
+    // Validation errors are shown in the form
   };
 
   const userType = form.watch("userType");

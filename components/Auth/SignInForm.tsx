@@ -31,17 +31,17 @@ const SignInForm = () => {
   });
 
   const onSubmit = async (data: LoginFormData) => {
-    console.log("Sign-in submitted:", data);
     setError("");
     setLoading(true);
 
     try {
+      // call login API
       const response = await login({
         email: data.emailOrPhone,
         password: data.password,
       });
 
-      // Check if 2FA is required
+      // check if 2FA is needed
       if (response.requires2FA) {
         setShowCodeInput(true);
         setEmail(data.emailOrPhone);
@@ -51,18 +51,16 @@ const SignInForm = () => {
         return;
       }
 
-      // Normal login
+      // check for errors
       if (response.error) {
         setError(response.error);
         setLoading(false);
         return;
       }
 
+      // login successful
       if (response.token) {
-        // Successful login
-        console.log("Login successful");
-        
-        // Redirect based on role
+        // go to correct page based on role
         if (response.user?.role === 'owner' || response.user?.role === 'salon_owner') {
           router.push("/admin/salon-dashboard/overview");
         } else {
@@ -100,9 +98,7 @@ const SignInForm = () => {
       }
 
       if (response.token) {
-        // Successful verification and login
-        console.log("2FA verification successful");
-        localStorage.removeItem('tempToken'); // Clean up temp token
+        localStorage.removeItem('tempToken');
         
         // Redirect based on role
         if (response.user?.role === 'owner' || response.user?.role === 'salon_owner') {
