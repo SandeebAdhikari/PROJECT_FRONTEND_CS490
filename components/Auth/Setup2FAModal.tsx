@@ -143,12 +143,11 @@ const Setup2FAModal: React.FC<Setup2FAModalProps> = ({
           <input
             type="tel"
             value={phoneNumber}
-            onChange={(e) => setPhoneNumber(e.target.value)}
-            placeholder="+1234567890"
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            disabled
+            className="w-full px-4 py-3 border border-gray-200 rounded-lg bg-gray-50 text-gray-700 cursor-not-allowed"
           />
           <p className="text-xs text-gray-500 mt-1">
-            We'll send verification codes to this number
+            Using phone number from your profile. You can change it in Settings.
           </p>
         </div>
 

@@ -53,12 +53,13 @@ const SignInForm = () => {
 
       if (response.token) {
         localStorage.setItem("token", response.token);
-        if (response.user?.role)
-          localStorage.setItem("role", response.user.role);
-        if (response.user?.id)
-          localStorage.setItem("user_id", response.user.id.toString());
+        const userRole = response.user?.role || response.user?.user_role;
+        if (userRole)
+          localStorage.setItem("role", userRole);
+        if (response.user?.id || response.user?.user_id)
+          localStorage.setItem("user_id", (response.user.id || response.user.user_id).toString());
 
-        const role = response.user?.role?.toLowerCase();
+        const role = userRole?.toLowerCase();
 
         if (role === "owner" || role === "salon_owner") {
           router.push("/admin/salon-dashboard/overview");
@@ -100,12 +101,15 @@ const SignInForm = () => {
       if (response.token) {
         localStorage.setItem("token", response.token);
         localStorage.removeItem("tempToken");
-        if (response.user?.role)
-          localStorage.setItem("role", response.user.role);
-        if (response.user?.id)
-          localStorage.setItem("user_id", response.user.id.toString());
+        
+        // Handle both role and user_role from backend
+        const userRole = response.user?.role || response.user?.user_role;
+        if (userRole)
+          localStorage.setItem("role", userRole);
+        if (response.user?.id || response.user?.user_id)
+          localStorage.setItem("user_id", (response.user.id || response.user.user_id).toString());
 
-        const role = response.user?.role?.toLowerCase();
+        const role = userRole?.toLowerCase();
         console.log("Detected role:", role);
 
         if (role === "owner" || role === "salon_owner") {

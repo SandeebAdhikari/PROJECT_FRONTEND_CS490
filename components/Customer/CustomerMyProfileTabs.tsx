@@ -287,6 +287,20 @@ const SettingsContent = () => {
 
   const handleUpdateProfile = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // update localStorage with new profile data
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      const user = JSON.parse(storedUser);
+      const updatedUser = {
+        ...user,
+        full_name: profileData.fullName,
+        phone: profileData.phone,
+        email: profileData.email,
+      };
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+    }
+    
     setMessage("Profile updated successfully!");
     setTimeout(() => setMessage(""), 3000);
   };
@@ -674,8 +688,8 @@ const SettingsContent = () => {
 
       {/* Delete Account */}
       <div className="border border-red-200 bg-red-50 rounded-lg p-6">
-        <h3 className="text-xl font-semibold mb-2 text-red-900">Danger Zone</h3>
-        <p className="text-sm text-red-700 mb-4">
+        <h3 className="text-xl font-semibold mb-2 text-red-800">Delete Account</h3>
+        <p className="text-sm text-red-600 mb-4">
           Once you delete your account, there is no going back. Please be certain.
         </p>
         <button
