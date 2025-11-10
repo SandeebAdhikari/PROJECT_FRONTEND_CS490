@@ -8,25 +8,22 @@ interface DecodedToken {
 
 export function middleware(req: NextRequest) {
   const token = req.cookies.get("token")?.value;
-  const protectedRoutes = ["/admin/salon-dashboard"];
+  const isProtected = req.nextUrl.pathname.startsWith("/admin/salon-dashboard");
 
-  const isProtected = protectedRoutes.some((route) =>
-    req.nextUrl.pathname.startsWith(route)
-  );
-
-  if (isProtected) {
-    if (!token) {
+  if (isProtected && !token) {
+    const referer = req.headers.get("referer") || "";
+    if (!referer.includes("/sign-in")) {
       return NextResponse.redirect(new URL("/sign-in", req.url));
     }
+  }
 
+  if (token) {
     try {
       const decoded = jwtDecode<DecodedToken>(token);
       if (decoded.exp && decoded.exp * 1000 < Date.now()) {
-        // token expired -> redirect
         return NextResponse.redirect(new URL("/sign-in", req.url));
       }
     } catch {
-      // invalid token format -> redirect
       return NextResponse.redirect(new URL("/sign-in", req.url));
     }
   }

@@ -7,7 +7,6 @@ import { loginSchema, LoginFormData } from "@/libs/auth/auth";
 import { Eye, EyeOff, Lock, Mail } from "lucide-react";
 import { login, verify2FA } from "@/libs/api/auth";
 import { useRouter } from "next/navigation";
-
 import AuthHeader from "@/components/Auth/AuthHeader";
 
 const SignInForm = () => {
@@ -16,8 +15,6 @@ const SignInForm = () => {
   const [verificationCode, setVerificationCode] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const router = useRouter();
 
@@ -31,43 +28,47 @@ const SignInForm = () => {
   });
 
   const onSubmit = async (data: LoginFormData) => {
+    console.log("➡️ onSubmit triggered with:", data);
     setError("");
     setLoading(true);
-
     try {
-      // call login API
       const response = await login({
         email: data.emailOrPhone,
         password: data.password,
       });
+      console.log("✅ login() resolved in SignInForm:", response);
 
-      // check if 2FA is needed
       if (response.requires2FA) {
         setShowCodeInput(true);
-        setEmail(data.emailOrPhone);
-        setPassword(data.password);
-        setMessage(response.message || "Verification code sent to your phone");
+        setMessage(response.message || "Verification code sent");
         setLoading(false);
         return;
       }
 
-      // check for errors
       if (response.error) {
         setError(response.error);
         setLoading(false);
         return;
       }
 
-      // login successful
       if (response.token) {
-        // go to correct page based on role
-        if (response.user?.role === 'owner' || response.user?.role === 'salon_owner') {
+        localStorage.setItem("token", response.token);
+        if (response.user?.role)
+          localStorage.setItem("role", response.user.role);
+        if (response.user?.id)
+          localStorage.setItem("user_id", response.user.id.toString());
+
+        const role = response.user?.role?.toLowerCase();
+
+        if (role === "owner" || role === "salon_owner") {
           router.push("/admin/salon-dashboard/overview");
+        } else if (role === "staff") {
+          router.push("/staff/dashboard");
         } else {
           router.push("/customer");
         }
       }
-    } catch (err) {
+    } catch {
       setError("Login failed. Please try again.");
       setLoading(false);
     }
@@ -77,15 +78,14 @@ const SignInForm = () => {
     e.preventDefault();
     setError("");
     setLoading(true);
-
     try {
-      const tempToken = localStorage.getItem('tempToken');
+      const tempToken = localStorage.getItem("tempToken");
       if (!tempToken) {
-        setError('Session expired. Please login again.');
+        setError("Session expired. Please login again.");
         setLoading(false);
         return;
       }
-      
+
       const response = await verify2FA({
         code: verificationCode,
         tempToken: tempToken,
@@ -98,22 +98,33 @@ const SignInForm = () => {
       }
 
       if (response.token) {
-        localStorage.removeItem('tempToken');
-        
-        // Redirect based on role
-        if (response.user?.role === 'owner' || response.user?.role === 'salon_owner') {
+        localStorage.setItem("token", response.token);
+        localStorage.removeItem("tempToken");
+        if (response.user?.role)
+          localStorage.setItem("role", response.user.role);
+        if (response.user?.id)
+          localStorage.setItem("user_id", response.user.id.toString());
+
+        const role = response.user?.role?.toLowerCase();
+        console.log("Detected role:", role);
+
+        if (role === "owner" || role === "salon_owner") {
+          console.log("Redirecting → /admin/salon-dashboard/overview");
           router.push("/admin/salon-dashboard/overview");
+        } else if (role === "staff") {
+          console.log("Redirecting → /staff/dashboard");
+          router.push("/staff/dashboard");
         } else {
+          console.log("Redirecting → /customer");
           router.push("/customer");
         }
       }
-    } catch (err) {
+    } catch {
       setError("Verification failed. Please try again.");
       setLoading(false);
     }
   };
 
-  // Show 2FA code input if verification is required
   if (showCodeInput) {
     return (
       <form
@@ -124,7 +135,6 @@ const SignInForm = () => {
           title="Verify Your Code"
           subtitle={message || "Enter the verification code sent to your phone"}
         />
-
         <div className="font-inter">
           <label className="block mb-1 font-semibold text-sm">
             Verification Code *
@@ -142,9 +152,7 @@ const SignInForm = () => {
             />
           </div>
         </div>
-
         {error && <p className="text-red-500 text-sm">{error}</p>}
-
         <button
           type="submit"
           disabled={loading}
@@ -152,7 +160,6 @@ const SignInForm = () => {
         >
           {loading ? "Verifying..." : "Verify Code"}
         </button>
-
         <button
           type="button"
           onClick={() => {
@@ -168,7 +175,6 @@ const SignInForm = () => {
     );
   }
 
-  // Normal login form
   return (
     <form
       onSubmit={form.handleSubmit(onSubmit)}
@@ -178,7 +184,6 @@ const SignInForm = () => {
         title="Welcome Back"
         subtitle="Sign in to your account to continue"
       />
-
       <div className="font-inter">
         <label className="block mb-1">Email or Phone</label>
         <div className="relative">
@@ -195,7 +200,6 @@ const SignInForm = () => {
           </p>
         )}
       </div>
-
       <div className="font-inter">
         <label className="block mb-1 font-semibold text-sm">Password *</label>
         <div className="relative">
@@ -231,9 +235,7 @@ const SignInForm = () => {
           </p>
         )}
       </div>
-
       {error && <p className="text-red-500 text-sm">{error}</p>}
-
       <button
         type="submit"
         disabled={loading}

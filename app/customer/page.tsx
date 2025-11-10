@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import CustomerNavbar from "@/components/Customer/CustomerNavbar";
 import CustomerSearchCard from "@/components/Customer/CustomerSearchCard";
-import ServiceButton from "@/components/Service/ServiceButton";
+import ServiceButton from "@/components/Dashboard/Service/ServiceButton";
 import { useFavorites } from "@/hooks/useFavorites";
 import Setup2FAModal from "@/components/Auth/Setup2FAModal";
 

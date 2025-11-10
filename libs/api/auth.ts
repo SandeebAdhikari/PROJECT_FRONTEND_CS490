@@ -14,9 +14,18 @@ export interface LoginData {
   password: string;
 }
 
+export interface User {
+  id?: string;
+  full_name?: string;
+  phone?: string;
+  email?: string;
+  role?: string;
+  [key: string]: unknown;
+}
+
 export interface AuthResponse {
   token?: string;
-  user?: any;
+  user?: User;
   message?: string;
   error?: string;
   requires2FA?: boolean;
@@ -29,31 +38,37 @@ export interface Verify2FAData {
   tempToken: string;
 }
 
+export interface TwoFAMethod {
+  id?: string;
+  method: "sms" | "email" | string;
+  verified?: boolean;
+  phoneNumber?: string;
+}
+
 // Signup function
 export async function signup(data: SignupData): Promise<AuthResponse> {
   try {
     const response = await fetch(API_ENDPOINTS.AUTH.SIGNUP, {
       ...fetchConfig,
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(data),
     });
 
     const result = await response.json();
 
     if (!response.ok) {
-      return { error: result.error || 'Signup failed' };
+      return { error: result.error || "Signup failed" };
     }
 
     // Store token if received
     if (result.token) {
-      localStorage.setItem('authToken', result.token);
-      localStorage.setItem('token', result.token);
-      document.cookie = `token=${result.token}; path=/; max-age=3600; SameSite=Lax`;
+      localStorage.setItem("authToken", result.token);
+      localStorage.setItem("token", result.token);
     }
 
     return result;
-  } catch (error) {
-    return { error: 'Network error. Please try again.' };
+  } catch {
+    return { error: "Network error. Please try again." };
   }
 }
 
@@ -62,14 +77,14 @@ export async function login(data: LoginData): Promise<AuthResponse> {
   try {
     const response = await fetch(API_ENDPOINTS.AUTH.LOGIN, {
       ...fetchConfig,
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(data),
     });
 
     const result = await response.json();
 
     if (!response.ok) {
-      return { error: result.error || 'Login failed' };
+      return { error: result.error || "Login failed" };
     }
 
     if (result.token) {
@@ -83,72 +98,78 @@ export async function login(data: LoginData): Promise<AuthResponse> {
       localStorage.setItem('tempToken', result.tempToken);
     }
 
+    const storedUser = localStorage.getItem("user");
+    if (storedUser && !result.user) {
+      result.user = JSON.parse(storedUser);
+    }
+
     return result;
   } catch (error) {
-    console.error('Login error:', error);
-    return { error: 'Network error. Please try again.' };
+    console.error("Login error:", error);
+    return { error: "Network error. Please try again." };
   }
 }
 
 // Get user profile
 export async function getProfile(token?: string): Promise<AuthResponse> {
   try {
-    const t = token || localStorage.getItem('token');
-    
+    const t = token || localStorage.getItem("token");
+
     if (!t) {
-      return { error: 'No token available' };
+      return { error: "No token available" };
     }
 
     const response = await fetch(API_ENDPOINTS.AUTH.ME, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${t}`,
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${t}`,
       },
-      credentials: 'include',
+      credentials: "include",
     });
 
     const result = await response.json();
 
     if (!response.ok) {
-      return { error: result.error || 'Failed to get profile' };
+      return { error: result.error || "Failed to get profile" };
     }
 
     return result;
-  } catch (error) {
-    return { error: 'Network error. Please try again.' };
+  } catch {
+    return { error: "Network error. Please try again." };
   }
 }
 
 /**
  * Verify Firebase token
  */
-export async function verifyFirebaseToken(idToken: string): Promise<AuthResponse> {
+export async function verifyFirebaseToken(
+  idToken: string
+): Promise<AuthResponse> {
   try {
     const response = await fetch(API_ENDPOINTS.AUTH.VERIFY_FIREBASE, {
       ...fetchConfig,
-      method: 'POST',
+      method: "POST",
       headers: {
         ...fetchConfig.headers,
-        'Authorization': `Bearer ${idToken}`,
+        Authorization: `Bearer ${idToken}`,
       },
     });
 
     const result = await response.json();
 
     if (!response.ok) {
-      return { error: result.error || 'Firebase verification failed' };
+      return { error: result.error || "Firebase verification failed" };
     }
 
     if (result.token) {
-      localStorage.setItem('authToken', result.token);
-      localStorage.setItem('token', result.token);
-      document.cookie = `token=${result.token}; path=/; max-age=3600; SameSite=Lax`;
+      localStorage.setItem("authToken", result.token);
+      localStorage.setItem("token", result.token);
     }
 
     return result;
-  } catch (error) {
-    return { error: 'Network error. Please try again.' };
+  } catch {
+    return { error: "Network error. Please try again." };
   }
 }
 
@@ -161,29 +182,29 @@ export async function setUserRole(data: {
   fullName?: string;
   profilePic?: string;
   phone?: string;
-  role: 'customer' | 'owner' | 'staff';
+  role: "customer" | "owner" | "staff";
   businessName?: string;
 }): Promise<AuthResponse> {
   try {
     const response = await fetch(API_ENDPOINTS.AUTH.SET_ROLE, {
       ...fetchConfig,
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(data),
     });
 
     const result = await response.json();
 
     if (!response.ok) {
-      return { error: result.error || 'Failed to set role' };
+      return { error: result.error || "Failed to set role" };
     }
 
     if (result.token) {
-      localStorage.setItem('authToken', result.token);
+      localStorage.setItem("authToken", result.token);
     }
 
     return result;
-  } catch (error) {
-    return { error: 'Network error. Please try again.' };
+  } catch {
+    return { error: "Network error. Please try again." };
   }
 }
 
@@ -197,19 +218,19 @@ export async function logout(token?: string): Promise<void> {
     };
 
     if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
+      headers["Authorization"] = `Bearer ${token}`;
     }
 
     await fetch(API_ENDPOINTS.AUTH.LOGOUT, {
       credentials: fetchConfig.credentials,
       headers,
-      method: 'POST',
+      method: "POST",
     });
 
-    localStorage.removeItem('authToken');
+    localStorage.removeItem("authToken");
   } catch (error) {
-    console.error('Logout error:', error);
-    localStorage.removeItem('authToken');
+    console.error("Logout error:", error);
+    localStorage.removeItem("authToken");
   }
 }
 
@@ -220,45 +241,47 @@ export async function verify2FA(data: Verify2FAData): Promise<AuthResponse> {
   try {
     const response = await fetch(API_ENDPOINTS.AUTH.VERIFY_2FA, {
       ...fetchConfig,
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(data),
     });
 
     const result = await response.json();
 
     if (!response.ok) {
-      return { error: result.error || '2FA verification failed' };
+      return { error: result.error || "2FA verification failed" };
     }
 
     // Store token if received
     if (result.token) {
-      localStorage.setItem('authToken', result.token);
-      localStorage.setItem('token', result.token);
-      document.cookie = `token=${result.token}; path=/; max-age=3600; SameSite=Lax`;
+      localStorage.setItem("authToken", result.token);
+      localStorage.setItem("token", result.token);
     }
 
     return result;
-  } catch (error) {
-    return { error: 'Network error. Please try again.' };
+  } catch {
+    return { error: "Network error. Please try again." };
   }
 }
 
 /**
  * Enable 2FA
  */
-export async function enable2FA(method: 'sms' | 'email' | ' موفقن', phoneNumber?: string): Promise<{ message?: string; error?: string }> {
+export async function enable2FA(
+  method: "sms" | "email" | " موفقن",
+  phoneNumber?: string
+): Promise<{ message?: string; error?: string }> {
   try {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (!token) {
-      return { error: 'Not authenticated' };
+      return { error: "Not authenticated" };
     }
 
     const response = await fetch(API_ENDPOINTS.AUTH.ENABLE_2FA, {
       ...fetchConfig,
-      method: 'POST',
+      method: "POST",
       headers: {
         ...fetchConfig.headers,
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({ method, phoneNumber }),
     });
@@ -266,52 +289,59 @@ export async function enable2FA(method: 'sms' | 'email' | ' موفقن', phoneNu
     const result = await response.json();
 
     if (!response.ok) {
-      return { error: result.error || 'Failed to enable 2FA' };
+      return { error: result.error || "Failed to enable 2FA" };
     }
 
     return result;
-  } catch (error) {
-    return { error: 'Network error. Please try again.' };
+  } catch {
+    return { error: "Network error. Please try again." };
   }
 }
 
 /**
  * Disable 2FA
  */
-export async function disable2FA(): Promise<{ message?: string; error?: string }> {
+export async function disable2FA(): Promise<{
+  message?: string;
+  error?: string;
+}> {
   try {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (!token) {
-      return { error: 'Not authenticated' };
+      return { error: "Not authenticated" };
     }
 
     const response = await fetch(API_ENDPOINTS.AUTH.DISABLE_2FA, {
       ...fetchConfig,
-      method: 'POST',
+      method: "POST",
       headers: {
         ...fetchConfig.headers,
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     });
 
     const result = await response.json();
 
     if (!response.ok) {
-      return { error: result.error || 'Failed to disable 2FA' };
+      return { error: result.error || "Failed to disable 2FA" };
     }
 
     return result;
-  } catch (error) {
-    return { error: 'Network error. Please try again.' };
+  } catch {
+    return { error: "Network error. Please try again." };
   }
 }
 
 /**
  * Get 2FA status
  */
-export async function get2FAStatus(): Promise<{ twoFactorEnabled: boolean; methods: any[]; error?: string }> {
+export async function get2FAStatus(): Promise<{
+  twoFactorEnabled: boolean;
+  methods: TwoFAMethod[];
+  error?: string;
+}> {
   try {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (!token) {
       return { twoFactorEnabled: false, methods: [] };
     }
@@ -320,7 +350,7 @@ export async function get2FAStatus(): Promise<{ twoFactorEnabled: boolean; metho
       ...fetchConfig,
       headers: {
         ...fetchConfig.headers,
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     });
 
@@ -331,8 +361,12 @@ export async function get2FAStatus(): Promise<{ twoFactorEnabled: boolean; metho
     }
 
     return result;
-  } catch (error) {
-    return { twoFactorEnabled: false, methods: [], error: 'Network error' };
+  } catch {
+    return {
+      twoFactorEnabled: false,
+      methods: [],
+      error: "Network error. Please try again.",
+    };
   }
 }
 
@@ -369,4 +403,3 @@ export async function deleteAccount(password: string): Promise<{ message?: strin
     return { error: 'Network error' };
   }
 }
-

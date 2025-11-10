@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import StaffProfileModal from "@/components/Staff/StaffProfileModal";
+import StaffProfileModal from "@/components/Dashboard/Staff/StaffProfileModal";
 import { Star } from "lucide-react";
 
 interface StaffProfileCardProps {
