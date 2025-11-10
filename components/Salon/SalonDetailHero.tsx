@@ -15,6 +15,7 @@ import SalonRatingStar from "./SalonRatingStar";
 
 interface SalonDetailHeroProps {
   salon: {
+    id?: string;
     name: string;
     city: string;
     description: string;
@@ -101,9 +102,12 @@ const SalonDetailHero: React.FC<SalonDetailHeroProps> = ({ salon }) => {
           </div>
         </div>
         <div className="mt-3 flex gap-2">
-          <button className="border border-border py-2 px-4 rounded-xl bg-primary-light font-inter cursor-pointer soft-soft-br font-semibold text-primary-foreground hover:scale-105 transition-smooth">
-            Booking Appointment Now
-          </button>
+          <Link
+            href={`/customer/booking-page?salonId=${salon.id || "1"}`}
+            className="border border-border py-2 px-4 rounded-xl bg-primary-light font-inter cursor-pointer soft-soft-br font-semibold text-primary-foreground hover:scale-105 transition-smooth"
+          >
+            Book Appointment Now
+          </Link>
           <button className="border border-border py-2 px-4 rounded-xl  font-inter cursor-pointer shadow-soft-br font-semibold hover:bg-accent transition-smooth">
             Message Salon
           </button>

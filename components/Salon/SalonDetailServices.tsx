@@ -91,7 +91,7 @@ export default function SalonDetailServices({ salonId }: { salonId: string }) {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {items.map((service) => (
-                <SalonServiceDetailCard key={service.id} service={service} />
+                <SalonServiceDetailCard key={service.id} service={service} salonId={salonId} />
               ))}
             </div>
           </div>

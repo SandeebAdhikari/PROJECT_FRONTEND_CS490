@@ -13,9 +13,10 @@ interface ServiceCardProps {
     duration: string;
     price: number;
   };
+  salonId?: string;
 }
 
-const SalonServiceDetailCard: React.FC<ServiceCardProps> = ({ service }) => {
+const SalonServiceDetailCard: React.FC<ServiceCardProps> = ({ service, salonId = "1" }) => {
   return (
     <div
       key={service.id}
@@ -43,7 +44,7 @@ const SalonServiceDetailCard: React.FC<ServiceCardProps> = ({ service }) => {
                 <span>{service.duration}</span>
               </div>
               <Link
-                href="/customer/booking-page"
+                href={`/customer/booking-page?salonId=${salonId}&service=${encodeURIComponent(service.name)}&price=${service.price}`}
                 className="mt-2 bg-primary text-white text-sm font-medium px-4 py-2 rounded-lg hover:scale-105 transition-smooth cursor-pointer"
               >
                 Book Now
