@@ -17,6 +17,13 @@ interface AppointmentDetailsModalProps {
   appointmentId: number | null;
 }
 
+interface ServiceItem {
+  service_id: number;
+  custom_name: string;
+  duration: number;
+  price: number;
+}
+
 interface AppointmentDetails {
   appointment_id: number;
   scheduled_time: string;
@@ -25,8 +32,8 @@ interface AppointmentDetails {
   notes: string;
   customer_name: string;
   staff_name: string | null;
-  service_name: string;
   salon_name: string;
+  services?: ServiceItem[];
 }
 
 const AppointmentDetailsModal = ({
@@ -36,6 +43,7 @@ const AppointmentDetailsModal = ({
 }: AppointmentDetailsModalProps) => {
   const [details, setDetails] = useState<AppointmentDetails | null>(null);
   const [loading, setLoading] = useState(false);
+  const [showAllServices, setShowAllServices] = useState(false);
 
   useEffect(() => {
     if (!isOpen || !appointmentId) return;
@@ -61,8 +69,32 @@ const AppointmentDetailsModal = ({
 
   if (!isOpen) return null;
 
+  const truncateServices = (services: string[], limit = 1) => {
+    if (services.length <= limit) return services.join(", ");
+    return services.slice(0, limit).join(", ") + " ...";
+  };
+
+  const renderServices = () => {
+    if (!details?.services || details.services.length === 0) return "N/A";
+
+    const names = details.services.map((s) => s.custom_name);
+    const displayText = showAllServices
+      ? names.join(", ")
+      : truncateServices(names);
+
+    return (
+      <span
+        onClick={() => setShowAllServices(!showAllServices)}
+        className="cursor-pointer hover:underline transition-smooth text-right text-foreground block"
+        title={showAllServices ? "Click to collapse" : "Click to view all"}
+      >
+        {displayText}
+      </span>
+    );
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm font-inter ">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm font-inter">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto p-6 relative">
         <button
           type="button"
@@ -82,27 +114,28 @@ const AppointmentDetailsModal = ({
             </h2>
 
             <div className="space-y-4">
-              <div className="flex items-center justify-between  pb-2">
+              <div className="flex items-center justify-between pb-2">
                 <span className="flex items-center gap-2 text-gray-600">
                   <User className="w-4 h-4 text-primary" />
                   Customer
                 </span>
-                <span className="font-medium text-foreground">
+                <span className="font-medium text-foreground text-right">
                   {details.customer_name || "N/A"}
                 </span>
               </div>
 
-              <div className="flex items-center justify-between  pb-2">
+              {/* ✅ Multi-service field (clickable + smooth toggle) */}
+              <div className="flex items-start justify-between pb-2">
                 <span className="flex items-center gap-2 text-gray-600">
                   <Scissors className="w-4 h-4 text-primary" />
-                  Service
+                  Service{details?.services?.length !== 1 ? "s" : ""}
                 </span>
-                <span className="font-medium text-foreground">
-                  {details.service_name || "N/A"}
-                </span>
+                <div className="max-w-[60%] text-sm font-medium">
+                  {renderServices()}
+                </div>
               </div>
 
-              <div className="flex items-center justify-between  pb-2">
+              <div className="flex items-center justify-between pb-2">
                 <span className="flex items-center gap-2 text-gray-600">
                   <User className="w-4 h-4 text-primary" />
                   Staff
@@ -112,7 +145,7 @@ const AppointmentDetailsModal = ({
                 </span>
               </div>
 
-              <div className="flex items-center justify-between  pb-2">
+              <div className="flex items-center justify-between pb-2">
                 <span className="flex items-center gap-2 text-gray-600">
                   <Calendar className="w-4 h-4 text-primary" />
                   Date
@@ -122,7 +155,7 @@ const AppointmentDetailsModal = ({
                 </span>
               </div>
 
-              <div className="flex items-center justify-between  pb-2">
+              <div className="flex items-center justify-between pb-2">
                 <span className="flex items-center gap-2 text-gray-600">
                   <Clock className="w-4 h-4 text-primary" />
                   Time
@@ -135,7 +168,7 @@ const AppointmentDetailsModal = ({
                 </span>
               </div>
 
-              <div className="flex items-center justify-between  pb-2">
+              <div className="flex items-center justify-between pb-2">
                 <span className="flex items-center gap-2 text-gray-600">
                   <DollarSign className="w-4 h-4 text-primary" />
                   Price
@@ -145,7 +178,7 @@ const AppointmentDetailsModal = ({
                 </span>
               </div>
 
-              <div className="flex items-center justify-between  pb-2">
+              <div className="flex items-center justify-between pb-2">
                 <span className="flex items-center gap-2 text-gray-600">
                   Status
                 </span>
