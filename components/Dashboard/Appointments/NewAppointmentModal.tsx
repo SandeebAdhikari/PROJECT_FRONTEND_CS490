@@ -135,7 +135,7 @@ const NewAppointmentModal = ({
 
         if (existingMatches?.length > 0) {
           const confirmUse = confirm(
-            `⚠️ A customer named "${existingMatches[0].full_name}" already exists.\nUse their profile instead?`
+            ` A customer named "${existingMatches[0].full_name}" already exists.\nUse their profile instead?`
           );
           if (confirmUse) {
             setCreateCustomerMode(false);
@@ -225,7 +225,6 @@ const NewAppointmentModal = ({
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-5 relative">
-          {/* ✅ Customer Section (unchanged design) */}
           <div className="relative z-20">
             <label className="block text-sm font-medium mb-1">
               Customer <span className="text-primary">*</span>
@@ -404,7 +403,6 @@ const NewAppointmentModal = ({
             </select>
           </div>
 
-          {/* ✅ Multi-Service Checkbox Section (new) */}
           <div>
             <label className="block text-sm font-medium mb-1">
               Services <span className="text-red-500">*</span>
@@ -449,7 +447,6 @@ const NewAppointmentModal = ({
             </div>
           </div>
 
-          {/* ✅ Rest unchanged: Date, Time, Notes, Summary */}
           <div>
             <label className="block text-sm font-medium mb-1">
               Date <span className="text-red-500">*</span>
@@ -500,7 +497,6 @@ const NewAppointmentModal = ({
             </div>
           )}
 
-          {/* ✅ Submit button unchanged */}
           <button
             type="submit"
             disabled={loading}

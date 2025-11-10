@@ -10,7 +10,7 @@ export type StaffMember = {
   salon_id: number;
   user_id: number;
   staff_code?: string | null;
-  role: string;
+  staff_role: string;
   specialization: string | null;
   is_active: boolean;
   pin_hash?: string | null;
@@ -88,7 +88,7 @@ const StaffCard: React.FC<{ s: StaffMember }> = ({ s }) => {
             {s.full_name || "Unnamed"}
           </h3>
           <p className="text-sm text-muted-foreground font-inter">
-            {s.role || "—"}
+            {s.staff_role || "—"}
           </p>
 
           <div className="mt-1 inline-flex items-center gap-1 text-sm">

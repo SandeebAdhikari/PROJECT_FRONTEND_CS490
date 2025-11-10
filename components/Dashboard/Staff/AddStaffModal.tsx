@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { X } from "lucide-react";
+import { X, PlusCircle } from "lucide-react";
 import { fetchWithRefresh } from "@/libs/api/fetchWithRefresh";
 
 interface AddStaffModalProps {
@@ -25,7 +25,8 @@ const AddStaffModal: React.FC<AddStaffModalProps> = ({
   onAdded,
 }) => {
   const [form, setForm] = useState({
-    full_name: "",
+    first_name: "",
+    last_name: "",
     email: "",
     phone: "",
     staff_role: "",
@@ -34,11 +35,11 @@ const AddStaffModal: React.FC<AddStaffModalProps> = ({
   });
 
   const [roles, setRoles] = useState<RoleOption[]>([]);
+  const [addingRole, setAddingRole] = useState(false);
   const [newRole, setNewRole] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
-  // Fetch available staff roles
   useEffect(() => {
     const loadRoles = async () => {
       try {
@@ -56,14 +57,12 @@ const AddStaffModal: React.FC<AddStaffModalProps> = ({
 
   if (!isOpen) return null;
 
-  // handle normal text inputs
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // handle checkbox specializations
   const handleSpecializationToggle = (specialty: string) => {
     setForm((prev) => {
       const exists = prev.specialization.includes(specialty);
@@ -76,7 +75,6 @@ const AddStaffModal: React.FC<AddStaffModalProps> = ({
     });
   };
 
-  // handle adding a new role
   const handleAddNewRole = async () => {
     if (!newRole.trim()) return;
     try {
@@ -97,6 +95,7 @@ const AddStaffModal: React.FC<AddStaffModalProps> = ({
           staff_role_id: data.role.staff_role_id,
         });
         setNewRole("");
+        setAddingRole(false);
       } else {
         setMessage(data.error || "Failed to add role");
       }
@@ -109,6 +108,9 @@ const AddStaffModal: React.FC<AddStaffModalProps> = ({
     e.preventDefault();
     setLoading(true);
     setMessage("");
+
+    const full_name =
+      `${form.first_name.trim()} ${form.last_name.trim()}`.trim();
 
     try {
       const res = await fetchWithRefresh(
@@ -124,7 +126,7 @@ const AddStaffModal: React.FC<AddStaffModalProps> = ({
             staff_role_id: form.staff_role_id || null,
             specialization: form.specialization.join(", "),
             email: form.email,
-            full_name: form.full_name,
+            full_name,
             phone: form.phone,
           }),
         }
@@ -132,10 +134,11 @@ const AddStaffModal: React.FC<AddStaffModalProps> = ({
 
       const data = await res.json();
       if (res.ok) {
-        setMessage(" Staff added & onboarding email sent!");
+        setMessage("✅ Staff added & onboarding email sent!");
         onAdded?.();
         setForm({
-          full_name: "",
+          first_name: "",
+          last_name: "",
           email: "",
           phone: "",
           staff_role: "",
@@ -143,17 +146,16 @@ const AddStaffModal: React.FC<AddStaffModalProps> = ({
           specialization: [],
         });
       } else {
-        setMessage(` ${data.error || "Failed to add staff"}`);
+        setMessage(`❌ ${data.error || "Failed to add staff"}`);
       }
     } catch (err) {
       console.error("Add staff error:", err);
-      setMessage("Server error");
+      setMessage("❌ Server error");
     } finally {
       setLoading(false);
     }
   };
 
-  // sample specializations (reused from services UI)
   const specialties = [
     "Haircut",
     "Color",
@@ -164,7 +166,7 @@ const AddStaffModal: React.FC<AddStaffModalProps> = ({
   ];
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm font-inter">
       <div className="bg-white w-full max-w-md rounded-xl shadow-lg p-6 relative">
         <button
           onClick={onClose}
@@ -176,15 +178,27 @@ const AddStaffModal: React.FC<AddStaffModalProps> = ({
 
         <h2 className="text-xl font-bold mb-4">Add New Staff Member</h2>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            name="full_name"
-            placeholder="Full Name"
-            value={form.full_name}
-            onChange={handleChange}
-            required
-            className="w-full border border-border rounded-lg px-3 py-2"
-          />
+        <form onSubmit={handleSubmit} className="space-y-5">
+          {/* name fields */}
+          <div className="grid grid-cols-2 gap-3">
+            <input
+              name="first_name"
+              placeholder="First Name"
+              value={form.first_name}
+              onChange={handleChange}
+              required
+              className="border border-border rounded-lg px-3 py-2"
+            />
+            <input
+              name="last_name"
+              placeholder="Last Name"
+              value={form.last_name}
+              onChange={handleChange}
+              required
+              className="border border-border rounded-lg px-3 py-2"
+            />
+          </div>
+
           <input
             name="email"
             placeholder="Email"
@@ -194,6 +208,7 @@ const AddStaffModal: React.FC<AddStaffModalProps> = ({
             required
             className="w-full border border-border rounded-lg px-3 py-2"
           />
+
           <input
             name="phone"
             placeholder="Phone"
@@ -202,12 +217,12 @@ const AddStaffModal: React.FC<AddStaffModalProps> = ({
             className="w-full border border-border rounded-lg px-3 py-2"
           />
 
-          {/* staff role dropdown */}
+          {/* staff role */}
           <div>
-            <label className="text-sm font-medium text-gray-700">
-              Staff Role
+            <label className="block text-sm font-medium mb-1">
+              Staff Role <span className="text-red-500">*</span>
             </label>
-            <div className="flex gap-2 mt-1">
+            <div className="flex items-center gap-2">
               <select
                 name="staff_role_id"
                 value={form.staff_role_id}
@@ -222,7 +237,6 @@ const AddStaffModal: React.FC<AddStaffModalProps> = ({
                   });
                 }}
                 className="w-full border border-border rounded-lg px-3 py-2 bg-white"
-                aria-label="Select staff role"
               >
                 <option value="">Select Role</option>
                 {roles.map((r) => (
@@ -231,50 +245,58 @@ const AddStaffModal: React.FC<AddStaffModalProps> = ({
                   </option>
                 ))}
               </select>
-            </div>
 
-            {/* add new role */}
-            <div className="flex mt-2 gap-2">
-              <input
-                placeholder="Add new role"
-                value={newRole}
-                onChange={(e) => setNewRole(e.target.value)}
-                className="flex-1 border border-border rounded-lg px-3 py-2"
-              />
               <button
                 type="button"
-                onClick={handleAddNewRole}
-                className="px-3 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
+                onClick={() => setAddingRole((prev) => !prev)}
+                className="p-2 rounded-lg border border-border hover:bg-accent"
               >
-                Add
+                <PlusCircle className="h-5 w-5 text-emerald-600" />
               </button>
             </div>
+
+            {addingRole && (
+              <div className="flex mt-3 gap-2">
+                <input
+                  placeholder="New role name"
+                  value={newRole}
+                  onChange={(e) => setNewRole(e.target.value)}
+                  className="flex-1 border border-border rounded-lg px-3 py-2"
+                />
+                <button
+                  type="button"
+                  onClick={handleAddNewRole}
+                  className="px-3 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
+                >
+                  Add
+                </button>
+              </div>
+            )}
           </div>
 
-          {/* specialization checkboxes */}
+          {/* specializations */}
           <div>
-            <label className="text-sm font-medium text-gray-700">
-              Specializations
+            <label className="block text-sm font-medium mb-1">
+              Specializations <span className="text-red-500">*</span>
             </label>
-            <div className="flex flex-wrap gap-2 mt-2">
-              {specialties.map((sp) => (
-                <label
-                  key={sp}
-                  className={`px-3 py-1.5 rounded-full border text-sm cursor-pointer ${
-                    form.specialization.includes(sp)
-                      ? "bg-emerald-100 border-emerald-400 text-emerald-700"
-                      : "bg-white border-border text-gray-700"
-                  }`}
-                >
-                  <input
-                    type="checkbox"
-                    checked={form.specialization.includes(sp)}
-                    onChange={() => handleSpecializationToggle(sp)}
-                    className="hidden"
-                  />
-                  {sp}
-                </label>
-              ))}
+            <div className="border border-border rounded-lg p-3 space-y-2 max-h-40 overflow-y-auto scrollbar-hide">
+              {specialties.map((sp) => {
+                const checked = form.specialization.includes(sp);
+                return (
+                  <label
+                    key={sp}
+                    className="flex items-center gap-2 cursor-pointer text-sm"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={() => handleSpecializationToggle(sp)}
+                      className="accent-emerald-600"
+                    />
+                    <span>{sp}</span>
+                  </label>
+                );
+              })}
             </div>
           </div>
 
@@ -290,7 +312,7 @@ const AddStaffModal: React.FC<AddStaffModalProps> = ({
         {message && (
           <p
             className={`mt-3 text-sm ${
-              message.startsWith("_") ? "text-green-600" : "text-red-600"
+              message.startsWith("✅") ? "text-green-600" : "text-red-600"
             }`}
           >
             {message}

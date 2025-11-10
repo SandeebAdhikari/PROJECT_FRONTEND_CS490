@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Users, Star, DollarSign, Plus } from "lucide-react";
 import StaffCard, { StaffMember } from "./Staffcard";
 import KPI from "@/components/Dashboard/KPI";
 import Header from "@/components/Dashboard/Header";
+import AddStaffModal from "@/components/Dashboard/Staff/AddStaffModal";
 import { fetchWithRefresh } from "@/libs/api/fetchWithRefresh";
 import useSalonId from "@/hooks/useSalonId";
 
@@ -13,33 +14,32 @@ const Staff = () => {
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showModal, setShowModal] = useState(false);
 
   const { salonId, loadingSalon } = useSalonId();
 
-  useEffect(() => {
+  const loadStaff = useCallback(async () => {
     if (!salonId) return;
-
-    const loadStaff = async () => {
-      setLoading(true);
-      try {
-        const res = await fetchWithRefresh(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/staff/staff/${salonId}`,
-          { credentials: "include" }
-        );
-
-        const data = await res.json();
-        if (res.ok) setStaff(data.staff || []);
-        else setError(data.error || "Failed to load staff");
-      } catch (err) {
-        console.error("Staff fetch error:", err);
-        setError("Server error loading staff");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadStaff();
+    setLoading(true);
+    try {
+      const res = await fetchWithRefresh(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/staff/staff/${salonId}`,
+        { credentials: "include" }
+      );
+      const data = await res.json();
+      if (res.ok) setStaff(data.staff || []);
+      else setError(data.error || "Failed to load staff");
+    } catch (err) {
+      console.error("Staff fetch error:", err);
+      setError("Server error loading staff");
+    } finally {
+      setLoading(false);
+    }
   }, [salonId]);
+
+  useEffect(() => {
+    loadStaff();
+  }, [loadStaff]);
 
   if (loadingSalon) {
     return (
@@ -54,7 +54,7 @@ const Staff = () => {
     if (!t) return true;
     return (
       s.full_name?.toLowerCase().includes(t) ||
-      s.role?.toLowerCase().includes(t) ||
+      s.staff_role?.toLowerCase().includes(t) ||
       s.specialization?.toLowerCase().includes(t)
     );
   });
@@ -75,7 +75,7 @@ const Staff = () => {
         title="Staff Management"
         subtitle="Manage and track all salon appointments"
         onFilterClick={() => console.log("Filter clicked")}
-        onPrimaryClick={() => console.log("Open Add Staff modal")}
+        onPrimaryClick={() => setShowModal(true)}
         primaryLabel="Add Staff Member"
         primaryIcon={Plus}
       />
@@ -125,6 +125,17 @@ const Staff = () => {
           ))}
         </div>
       )}
+
+      <AddStaffModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        salonId={salonId || 0}
+        salonSlug={"lux-salon"}
+        onAdded={() => {
+          setShowModal(false);
+          loadStaff();
+        }}
+      />
     </section>
   );
 };
