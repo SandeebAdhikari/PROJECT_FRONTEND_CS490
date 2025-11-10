@@ -189,3 +189,18 @@
 .react-datepicker {
   border-radius: 0.75rem;
 }
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+}
+
+/* Additional webkit support for older browsers */
+.scrollbar-hide::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-hide::-webkit-scrollbar-thumb {
+  background: transparent;
+}

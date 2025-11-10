@@ -1,22 +1,57 @@
-"use client";
-
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Calendar, CheckCircle, Clock, DollarSign } from "lucide-react";
-import AppointmentCard, { Appointment } from "./AppointmentCard";
+import AppointmentCard from "./AppointmentCard";
 import KPI from "@/components/Dashboard/KPI";
 import Header from "@/components/Dashboard/Header";
-import data from "@/data/data.json";
+import NewAppointmentModal from "@/components/Dashboard/Appointments/NewAppointmentModal";
+import { fetchWithRefresh } from "@/libs/api/fetchWithRefresh";
+
+interface Appointment {
+  appointment_id: number;
+  scheduled_time: string;
+  status: string;
+  price: number;
+  notes?: string;
+  customer_name?: string;
+  staff_name?: string;
+  service_names?: string;
+}
 
 const Appointments = () => {
-  const salonId = "1";
-  const APPOINTMENTS = (data.appointments?.[salonId] ||
-    []) as unknown as Appointment[];
+  const salonId = 1;
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [isNewOpen, setIsNewOpen] = useState(false);
 
-  const today = "2024-11-06";
-  const todays = APPOINTMENTS.filter((a) => a.date === today);
-  const confirmed = APPOINTMENTS.filter((a) => a.status === "confirmed");
-  const pending = APPOINTMENTS.filter((a) => a.status === "pending");
-  const revenueToday = todays.reduce((sum, a) => sum + a.price, 0);
+  const fetchAppointments = async () => {
+    setLoading(true);
+    try {
+      const res = await fetchWithRefresh(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/appointments/salon?salon_id=${salonId}`,
+        { credentials: "include" }
+      );
+      const data = await res.json();
+      if (res.ok && Array.isArray(data.data)) {
+        setAppointments(data.data);
+      } else {
+        console.error("Failed to load appointments:", data.error);
+      }
+    } catch (err) {
+      console.error("Error fetching appointments:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAppointments();
+  }, [salonId]);
+
+  const today = new Date().toISOString().split("T")[0];
+  const todays = appointments.filter((a) => a.scheduled_time.startsWith(today));
+  const confirmed = appointments.filter((a) => a.status === "confirmed");
+  const pending = appointments.filter((a) => a.status === "pending");
+  const revenueToday = todays.reduce((sum, a) => sum + Number(a.price || 0), 0);
 
   return (
     <section className="space-y-6 font-inter">
@@ -24,10 +59,10 @@ const Appointments = () => {
         title="Appointment Management"
         subtitle="Manage and track all salon appointments"
         onFilterClick={() => console.log("Filter clicked")}
-        onPrimaryClick={() => console.log("New appointment clicked")}
+        onPrimaryClick={() => setIsNewOpen(true)}
         primaryLabel="New Appointment"
         primaryIcon={Calendar}
-        showActions={true}
+        showActions
       />
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 items-stretch">
@@ -59,12 +94,42 @@ const Appointments = () => {
 
       <div className="p-6 border border-border rounded-2xl">
         <h3 className="text-lg font-semibold mb-4">Recent Appointments</h3>
-        <div className="space-y-4">
-          {APPOINTMENTS.map((a) => (
-            <AppointmentCard key={a.id} a={a} />
-          ))}
-        </div>
+        {loading ? (
+          <p className="text-gray-500">Loading appointments...</p>
+        ) : (
+          <div className="space-y-4">
+            {appointments.map((a) => (
+              <AppointmentCard
+                key={a.appointment_id}
+                salonId={salonId}
+                onUpdated={fetchAppointments}
+                a={{
+                  appointment_id: a.appointment_id,
+                  service_names: a.service_names || "",
+                  stylist: a.staff_name || "",
+                  date: a.scheduled_time.split("T")[0],
+                  time: a.scheduled_time.split("T")[1]?.substring(0, 5) || "",
+                  status:
+                    (a.status as "confirmed" | "pending" | "canceled") ||
+                    "pending",
+                  price: a.price,
+                  customerName: a.customer_name,
+                }}
+              />
+            ))}
+          </div>
+        )}
       </div>
+
+      <NewAppointmentModal
+        isOpen={isNewOpen}
+        onClose={() => setIsNewOpen(false)}
+        salonId={salonId}
+        onCreated={() => {
+          fetchAppointments(); // ✅ reload list after new appointment
+          setIsNewOpen(false);
+        }}
+      />
     </section>
   );
 };

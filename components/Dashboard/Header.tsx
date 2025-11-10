@@ -10,7 +10,7 @@ interface HeaderProps {
   onPrimaryClick?: () => void;
   primaryLabel?: string;
   primaryIcon?: React.ComponentType<React.SVGProps<SVGSVGElement>>; // optional icon for button
-  showActions?: boolean; // ✅ new flag to toggle button visibility
+  showActions?: boolean;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -20,11 +20,10 @@ const Header: React.FC<HeaderProps> = ({
   onPrimaryClick,
   primaryLabel = "New Appointment",
   primaryIcon: PrimaryIcon = Calendar1,
-  showActions = true, // ✅ by default, buttons will show
+  showActions = true,
 }) => {
   return (
     <header className="sm:flex sm:items-start sm:justify-between">
-      {/* Title and Subtitle */}
       <div>
         <h2 className="font-inter text-2xl sm:text-3xl font-extrabold">
           {title}
@@ -34,7 +33,6 @@ const Header: React.FC<HeaderProps> = ({
         </p>
       </div>
 
-      {/* Buttons section — only render if showActions is true */}
       {showActions && (
         <div className="flex gap-3 mt-3">
           <button

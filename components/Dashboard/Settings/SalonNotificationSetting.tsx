@@ -7,7 +7,7 @@ import ToggleButton from "../ToggleButton";
 const SalonNotificationSettings = () => {
   const [enabled, setEnabled] = useState(true);
   return (
-    <div className="bg-primary-foreground border border-border rounded-2xl p-6 space-y-5">
+    <div className="sm:h-105.5 bg-primary-foreground border border-border rounded-2xl p-6">
       <div className="flex items-center gap-2 mb-4">
         <Bell className="w-5 h-5" />
         <h2 className="text-lg font-bold">Notifications</h2>

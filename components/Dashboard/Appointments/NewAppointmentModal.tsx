@@ -1,12 +1,19 @@
 "use client";
-
 import React, { useEffect, useState } from "react";
-import { X } from "lucide-react";
+import { X, PlusCircle } from "lucide-react";
 import DatePicker from "react-datepicker";
+import { fetchWithRefresh } from "@/libs/api/fetchWithRefresh";
 import "react-datepicker/dist/react-datepicker.css";
 
 interface Customer {
   user_id: number;
+  full_name: string;
+  email?: string;
+  phone?: string;
+}
+
+interface Staff {
+  staff_id: number;
   full_name: string;
 }
 
@@ -14,130 +21,175 @@ interface Service {
   service_id: number;
   custom_name: string;
   duration: number;
-  price: number;
+  price: number | string;
 }
 
 const NewAppointmentModal = ({
   isOpen,
   onClose,
   salonId,
+  onCreated,
 }: {
   isOpen: boolean;
   onClose: () => void;
   salonId: number;
+  onCreated?: () => Promise<void> | void;
 }) => {
   const [form, setForm] = useState({
-    user_id: "",
     service_id: "",
+    staff_id: "",
     date: new Date(),
     time: "",
     notes: "",
   });
 
   const [customers, setCustomers] = useState<Customer[]>([]);
+  const [customerQuery, setCustomerQuery] = useState("");
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
+    null
+  );
+  const [createCustomerMode, setCreateCustomerMode] = useState(false);
+  const [newCustomer, setNewCustomer] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    address: "",
+    city: "",
+    state: "",
+    zip: "",
+  });
+
+  const [staffList, setStaffList] = useState<Staff[]>([]);
   const [services, setServices] = useState<Service[]>([]);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!isOpen || !salonId) return;
-
-    // Parse user data from localStorage
     const userData =
       typeof window !== "undefined" ? localStorage.getItem("user") : null;
     const user = userData ? JSON.parse(userData) : null;
-
-    // Determine which salon to fetch for (owner/staff)
     const currentSalonId = user?.salon_id || salonId;
 
-    const fetchCustomers = async () => {
-      try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/users/salon-customers?salon_id=${currentSalonId}`,
-          {
-            credentials: "include",
-          }
-        );
-
-        const data = await res.json();
-        if (res.ok && Array.isArray(data)) {
-          setCustomers(data);
-        } else {
-          console.error("Failed to load customers:", data);
-          setCustomers([]);
-        }
-      } catch (error) {
-        console.error("Fetch customers error:", error);
-        setCustomers([]);
-      }
+    const fetchStaff = async () => {
+      const res = await fetchWithRefresh(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/salons/${currentSalonId}/staff`,
+        { credentials: "include" }
+      );
+      const data = await res.json();
+      if (res.ok && Array.isArray(data)) setStaffList(data);
     };
 
     const fetchServices = async () => {
-      try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/salons/${currentSalonId}/services`,
-          {
-            credentials: "include",
-          }
-        );
-        const data = await res.json();
-
-        if (res.ok && Array.isArray(data)) {
-          setServices(data);
-        } else {
-          console.error("Failed to load services:", data);
-          setServices([]);
-        }
-      } catch (error) {
-        console.error("Fetch services error:", error);
-        setServices([]);
-      }
+      const res = await fetchWithRefresh(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/salons/${currentSalonId}/services`,
+        { credentials: "include" }
+      );
+      const data = await res.json();
+      if (res.ok && Array.isArray(data))
+        setServices(data.map((s) => ({ ...s, price: Number(s.price) })));
     };
 
-    fetchCustomers();
+    fetchStaff();
     fetchServices();
   }, [isOpen, salonId]);
+
+  useEffect(() => {
+    const fetchCustomers = async () => {
+      if (!customerQuery.trim()) {
+        setCustomers([]);
+        return;
+      }
+
+      const res = await fetchWithRefresh(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/users/salon-customers?search=${customerQuery}&salon_id=${salonId}`,
+        { credentials: "include" }
+      );
+      const data = await res.json();
+      if (res.ok && Array.isArray(data)) setCustomers(data);
+    };
+
+    const delayDebounce = setTimeout(fetchCustomers, 400);
+    return () => clearTimeout(delayDebounce);
+  }, [customerQuery, salonId]);
 
   if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const dateStr = form.date.toISOString().split("T")[0];
+    setLoading(true);
 
+    // Step 1: Check for duplicate phone/email before creating customer
+    if (createCustomerMode) {
+      try {
+        const checkRes = await fetchWithRefresh(
+          `${
+            process.env.NEXT_PUBLIC_API_URL
+          }/api/users/salon-customers?salon_id=${salonId}&search=${
+            newCustomer.phone || newCustomer.email
+          }`,
+          { credentials: "include" }
+        );
+        const existingMatches = await checkRes.json();
+
+        if (existingMatches?.length > 0) {
+          const confirmUse = confirm(
+            `⚠️ A customer named "${existingMatches[0].full_name}" already exists with this contact.\n\nDo you want to use their profile instead?`
+          );
+          if (confirmUse) {
+            setCreateCustomerMode(false);
+            setSelectedCustomer(existingMatches[0]);
+            setCustomerQuery(existingMatches[0].full_name);
+            setLoading(false);
+            return;
+          } else {
+            setLoading(false);
+            return;
+          }
+        }
+      } catch (err) {
+        console.error("Customer duplicate check failed:", err);
+      }
+    }
+
+    const dateStr = form.date.toISOString().split("T")[0];
     const payload = {
-      salon_id: salonId,
-      user_id: Number(form.user_id),
-      service_id: Number(form.service_id),
-      scheduled_time: `${dateStr}T${form.time}`,
-      price: selectedService?.price || 0,
-      duration: selectedService?.duration || 0,
-      status: "booked",
+      salonId,
+      staffId: form.staff_id ? Number(form.staff_id) : null,
+      serviceId: Number(form.service_id),
+      scheduledTime: `${dateStr}T${form.time}`,
+      price: Number(selectedService?.price) || 0,
       notes: form.notes,
+      ...(createCustomerMode
+        ? { ...newCustomer }
+        : {
+            email: selectedCustomer?.email,
+            phone: selectedCustomer?.phone,
+            firstName: selectedCustomer?.full_name?.split(" ")[0] || "",
+            lastName: selectedCustomer?.full_name?.split(" ")[1] || "",
+          }),
     };
 
-    try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/appointments/create`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-          credentials: "include",
-        }
-      );
-
-      const data = await res.json();
-      if (!res.ok) {
-        alert(data.error || "Failed to create appointment");
-        return;
+    const res = await fetchWithRefresh(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/appointments/create`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+        credentials: "include",
       }
+    );
+    const data = await res.json();
 
-      alert("Appointment added successfully!");
-      console.log("Appointment created:", data);
+    if (!res.ok) alert(data.error || "Failed to create appointment");
+    else {
+      alert(" Appointment added and confirmation email sent!");
+      if (onCreated) await Promise.resolve(onCreated());
       onClose();
-    } catch (err) {
-      console.error("Error creating appointment:", err);
-      alert("Something went wrong while creating the appointment.");
     }
+
+    setLoading(false);
   };
 
   return (
@@ -146,6 +198,7 @@ const NewAppointmentModal = ({
         <button
           type="button"
           onClick={onClose}
+          title="Close"
           aria-label="Close"
           className="absolute top-3 right-3 p-2 rounded-full hover:bg-gray-100 transition-smooth"
         >
@@ -156,39 +209,190 @@ const NewAppointmentModal = ({
           Add New Appointment
         </h2>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Customer selection */}
+        <form onSubmit={handleSubmit} className="space-y-5 relative">
+          <div className="relative z-20">
+            <label className="block text-sm font-medium mb-1">
+              Customer <span className="text-primary">*</span>
+            </label>
+            {!createCustomerMode ? (
+              <>
+                <input
+                  type="text"
+                  placeholder="Search by name, phone, or email"
+                  value={customerQuery}
+                  onChange={(e) => {
+                    setCustomerQuery(e.target.value);
+                    setSelectedCustomer(null);
+                  }}
+                  className="w-full border border-border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-light"
+                />
+                {customerQuery &&
+                  (customers.length > 0 ? (
+                    <ul className="absolute left-0 right-0 border border-border rounded-lg mt-1 max-h-40 overflow-y-auto bg-white shadow-lg z-10">
+                      {customers.map((c) => (
+                        <li
+                          key={c.user_id}
+                          onClick={() => {
+                            setSelectedCustomer(c);
+                            setCustomerQuery(c.full_name);
+                            setCustomers([]);
+                          }}
+                          className={`px-3 py-2 cursor-pointer hover:bg-primary-light/10 ${
+                            selectedCustomer?.user_id === c.user_id
+                              ? "bg-primary-light/20"
+                              : ""
+                          }`}
+                        >
+                          {c.full_name}{" "}
+                          <span className="text-xs text-gray-500">
+                            ({c.phone || c.email})
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <div className="mt-2 relative z-20">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCustomers([]);
+                          setCreateCustomerMode(true);
+                        }}
+                        className="flex items-center gap-2 text-primary font-medium cursor-pointer hover:underline transition-smooth"
+                      >
+                        <PlusCircle className="w-4 h-4" /> Create new customer
+                      </button>
+                    </div>
+                  ))}
+              </>
+            ) : (
+              <div className="space-y-3 border border-border p-3 rounded-lg">
+                <h3 className="font-semibold text-sm text-foreground">
+                  New Customer Details
+                </h3>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="First name"
+                    value={newCustomer.firstName}
+                    onChange={(e) =>
+                      setNewCustomer({
+                        ...newCustomer,
+                        firstName: e.target.value,
+                      })
+                    }
+                    className="w-1/2 border border-border rounded-lg px-3 py-2"
+                    required
+                  />
+                  <input
+                    type="text"
+                    placeholder="Last name"
+                    value={newCustomer.lastName}
+                    onChange={(e) =>
+                      setNewCustomer({
+                        ...newCustomer,
+                        lastName: e.target.value,
+                      })
+                    }
+                    className="w-1/2 border border-border rounded-lg px-3 py-2"
+                    required
+                  />
+                </div>
+                <input
+                  type="email"
+                  placeholder="Email"
+                  value={newCustomer.email}
+                  onChange={(e) =>
+                    setNewCustomer({ ...newCustomer, email: e.target.value })
+                  }
+                  className="w-full border border-border rounded-lg px-3 py-2"
+                  required
+                />
+                <input
+                  type="tel"
+                  placeholder="Phone"
+                  value={newCustomer.phone}
+                  onChange={(e) =>
+                    setNewCustomer({ ...newCustomer, phone: e.target.value })
+                  }
+                  className="w-full border border-border rounded-lg px-3 py-2"
+                  required
+                />
+                <input
+                  type="text"
+                  placeholder="Address"
+                  value={newCustomer.address}
+                  onChange={(e) =>
+                    setNewCustomer({ ...newCustomer, address: e.target.value })
+                  }
+                  className="w-full border border-border rounded-lg px-3 py-2"
+                />
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="City"
+                    value={newCustomer.city}
+                    onChange={(e) =>
+                      setNewCustomer({ ...newCustomer, city: e.target.value })
+                    }
+                    className="w-1/2 border border-border rounded-lg px-3 py-2"
+                  />
+                  <input
+                    type="text"
+                    placeholder="State"
+                    value={newCustomer.state}
+                    onChange={(e) =>
+                      setNewCustomer({ ...newCustomer, state: e.target.value })
+                    }
+                    className="w-1/2 border border-border rounded-lg px-3 py-2"
+                  />
+                </div>
+                <input
+                  type="text"
+                  placeholder="ZIP"
+                  value={newCustomer.zip}
+                  onChange={(e) =>
+                    setNewCustomer({ ...newCustomer, zip: e.target.value })
+                  }
+                  className="w-full border border-border rounded-lg px-3 py-2"
+                />
+                <button
+                  type="button"
+                  onClick={() => setCreateCustomerMode(false)}
+                  className="text-sm text-foreground hover:underline cursor-pointer"
+                >
+                  Cancel create customer
+                </button>
+              </div>
+            )}
+          </div>
+
           <div>
-            <label htmlFor="user_id" className="block text-sm font-medium mb-1">
-              Customer <span className="text-red-500">*</span>
+            <label className="block text-sm font-medium mb-1">
+              Staff (optional)
             </label>
             <select
-              id="user_id"
-              name="user_id"
-              value={form.user_id}
-              onChange={(e) => setForm({ ...form, user_id: e.target.value })}
+              id="staff-select"
+              title="Select staff (optional)"
+              value={form.staff_id}
+              onChange={(e) => setForm({ ...form, staff_id: e.target.value })}
               className="w-full border border-border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-light"
-              required
             >
-              <option value="">Select customer</option>
-              {customers.map((c) => (
-                <option key={c.user_id} value={c.user_id}>
-                  {c.full_name}
+              <option value="">Auto-assign available staff</option>
+              {staffList.map((s) => (
+                <option key={s.staff_id} value={s.staff_id}>
+                  {s.full_name}
                 </option>
               ))}
             </select>
           </div>
 
           <div>
-            <label
-              htmlFor="service_id"
-              className="block text-sm font-medium mb-1"
-            >
+            <label className="block text-sm font-medium mb-1">
               Service <span className="text-red-500">*</span>
             </label>
             <select
-              id="service_id"
-              name="service_id"
+              title="Select service"
               value={form.service_id}
               onChange={(e) => {
                 const s = services.find(
@@ -203,7 +407,7 @@ const NewAppointmentModal = ({
               <option value="">Select service</option>
               {services.map((s) => (
                 <option key={s.service_id} value={s.service_id}>
-                  {s.custom_name} (${s.price})
+                  {s.custom_name} (${Number(s.price).toFixed(2)})
                 </option>
               ))}
             </select>
@@ -213,27 +417,25 @@ const NewAppointmentModal = ({
             <label className="block text-sm font-medium mb-1">
               Date <span className="text-red-500">*</span>
             </label>
-            <div className="w-full border border-border rounded-lg p-2 bg-white max-h-[330px] overflow-y-auto">
+            <div className="border border-border rounded-lg p-2">
               <DatePicker
                 selected={form.date}
                 onChange={(date) => date && setForm({ ...form, date })}
                 inline
                 minDate={new Date()}
-                calendarStartDay={0}
               />
             </div>
           </div>
 
           <div>
-            <label htmlFor="time" className="block text-sm font-medium mb-1">
+            <label className="block text-sm font-medium mb-1">
               Start Time <span className="text-red-500">*</span>
             </label>
             <input
-              id="time"
               type="time"
-              name="time"
               title="Start Time"
               placeholder="HH:MM"
+              aria-label="Start Time"
               value={form.time}
               onChange={(e) => setForm({ ...form, time: e.target.value })}
               className="w-full border border-border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-light"
@@ -243,13 +445,12 @@ const NewAppointmentModal = ({
 
           <div>
             <label className="block text-sm font-medium mb-1">
-              Notes (Optional)
+              Notes (optional)
             </label>
             <textarea
-              name="notes"
+              placeholder="Add any notes or special instructions (optional)"
               value={form.notes}
               onChange={(e) => setForm({ ...form, notes: e.target.value })}
-              placeholder="Any special requests..."
               rows={3}
               className="w-full border border-border rounded-lg px-3 py-2"
             />
@@ -258,15 +459,24 @@ const NewAppointmentModal = ({
           {selectedService && (
             <div className="flex justify-between text-sm text-gray-600 border-t pt-3">
               <span>Duration: {selectedService.duration} min</span>
-              <span>Price: ${selectedService.price.toFixed(2)}</span>
+              <span>Price: ${Number(selectedService.price).toFixed(2)}</span>
             </div>
           )}
 
           <button
             type="submit"
-            className="w-full py-2.5 rounded-lg font-semibold text-white bg-gradient-to-r from-primary to-primary-light hover:from-primary-dark hover:to-primary transition-smooth"
+            disabled={loading}
+            className={`w-full py-2.5 rounded-lg font-semibold text-white ${
+              loading
+                ? "bg-primary/70 cursor-not-allowed"
+                : "bg-gradient-to-r from-primary to-primary-light hover:from-primary-dark hover:to-primary transition-smooth"
+            }`}
           >
-            Add Appointment
+            {loading
+              ? "Adding..."
+              : createCustomerMode
+              ? "Add Customer & Book"
+              : "Add Appointment"}
           </button>
         </form>
       </div>
