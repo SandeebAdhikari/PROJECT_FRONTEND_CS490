@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Calendar, Eye, Pencil, Trash2 } from "lucide-react";
 import Header from "../Header";
 import Image from "next/image";
@@ -8,19 +8,22 @@ import NewAppointmentModal from "@/components/Dashboard/Appointments/NewAppointm
 import AppointmentDetailsModal from "@/components/Dashboard/Appointments/AppointmentDetailsModal";
 import AppointmentEditModal from "@/components/Dashboard/Appointments/AppointmentEditModal";
 import { fetchWithRefresh } from "@/libs/api/fetchWithRefresh";
+import useSalonId from "@/hooks/useSalonId";
 
 interface Appointment {
   appointment_id: number;
   scheduled_time: string;
   status: "confirmed" | "pending" | "canceled" | "booked";
   price: number;
-  service_name: string;
+  service_name?: string;
+  service_names?: string;
   customer_name: string;
   customer_avatar: string | null;
   staff_name: string;
 }
 
 const OverviewTodaySchedule = () => {
+  const { salonId, loadingSalon } = useSalonId();
   const [openModal, setOpenModal] = useState(false);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -31,8 +34,6 @@ const OverviewTodaySchedule = () => {
   const [showEdit, setShowEdit] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
-  const salonId = 6;
-
   const statusClass: Record<string, string> = {
     confirmed: "bg-emerald-100 text-emerald-700",
     booked: "bg-blue-100 text-blue-700",
@@ -40,12 +41,13 @@ const OverviewTodaySchedule = () => {
     canceled: "bg-red-100 text-red-700",
   };
 
-  const fetchAppointments = async () => {
+  const fetchAppointments = useCallback(async () => {
+    if (!salonId) return;
     try {
       setLoading(true);
       const today = new Date().toISOString().split("T")[0];
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/appointments/salon?date=${today}`,
+      const res = await fetchWithRefresh(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/appointments/salon?salon_id=${salonId}&date=${today}`,
         { credentials: "include" }
       );
 
@@ -64,11 +66,11 @@ const OverviewTodaySchedule = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [salonId]);
 
   useEffect(() => {
-    fetchAppointments();
-  }, [salonId]);
+    if (salonId) fetchAppointments();
+  }, [salonId, fetchAppointments]);
 
   const handleDelete = async (appointmentId: number) => {
     if (!confirm("Are you sure you want to delete this appointment?")) return;
@@ -94,6 +96,14 @@ const OverviewTodaySchedule = () => {
       setDeletingId(null);
     }
   };
+
+  if (loadingSalon) {
+    return (
+      <p className="text-muted-foreground mt-6 text-center">
+        Loading your salon data...
+      </p>
+    );
+  }
 
   return (
     <section className="p-6 bg-card border border-border rounded-2xl font-inter">
@@ -159,7 +169,11 @@ const OverviewTodaySchedule = () => {
                         {a.customer_name}
                       </div>
                       <div className="flex flex-col text-sm text-muted-foreground">
-                        {a.service_name} <span>with {a.staff_name}</span>
+                        {/* ✅ Show multiple or single services gracefully */}
+                        {a.service_names
+                          ? a.service_names
+                          : a.service_name || "No service listed"}
+                        <span>with {a.staff_name}</span>
                       </div>
                     </div>
                   </div>
@@ -251,12 +265,14 @@ const OverviewTodaySchedule = () => {
         </div>
       )}
 
-      <NewAppointmentModal
-        isOpen={openModal}
-        onClose={() => setOpenModal(false)}
-        salonId={Number(salonId)}
-        onCreated={fetchAppointments}
-      />
+      {salonId && (
+        <NewAppointmentModal
+          isOpen={openModal}
+          onClose={() => setOpenModal(false)}
+          salonId={Number(salonId)}
+          onCreated={fetchAppointments}
+        />
+      )}
 
       {showDetails && selectedAppointment && (
         <AppointmentDetailsModal
@@ -274,7 +290,7 @@ const OverviewTodaySchedule = () => {
             fetchAppointments();
           }}
           appointmentId={selectedAppointment.appointment_id}
-          salonId={salonId}
+          salonId={salonId!}
         />
       )}
     </section>

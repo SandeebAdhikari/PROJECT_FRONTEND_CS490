@@ -36,11 +36,12 @@ const NewAppointmentModal = ({
   onCreated?: () => Promise<void> | void;
 }) => {
   const [form, setForm] = useState({
-    service_id: "",
+    service_ids: [] as number[],
     staff_id: "",
     date: new Date(),
     time: "",
     notes: "",
+    price: 0,
   });
 
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -62,7 +63,6 @@ const NewAppointmentModal = ({
 
   const [staffList, setStaffList] = useState<Staff[]>([]);
   const [services, setServices] = useState<Service[]>([]);
-  const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -120,7 +120,7 @@ const NewAppointmentModal = ({
     e.preventDefault();
     setLoading(true);
 
-    // Step 1: Check for duplicate phone/email before creating customer
+    // Step 1: Check duplicate customers
     if (createCustomerMode) {
       try {
         const checkRes = await fetchWithRefresh(
@@ -135,7 +135,7 @@ const NewAppointmentModal = ({
 
         if (existingMatches?.length > 0) {
           const confirmUse = confirm(
-            `⚠️ A customer named "${existingMatches[0].full_name}" already exists with this contact.\n\nDo you want to use their profile instead?`
+            `⚠️ A customer named "${existingMatches[0].full_name}" already exists.\nUse their profile instead?`
           );
           if (confirmUse) {
             setCreateCustomerMode(false);
@@ -154,12 +154,26 @@ const NewAppointmentModal = ({
     }
 
     const dateStr = form.date.toISOString().split("T")[0];
+
+    const selectedServices = services
+      .filter((s) => form.service_ids.includes(s.service_id))
+      .map((s) => ({
+        service_id: s.service_id,
+        duration: s.duration,
+        price: s.price,
+      }));
+
+    const totalPrice = selectedServices.reduce(
+      (sum, s) => sum + Number(s.price),
+      0
+    );
+
     const payload = {
       salonId,
       staffId: form.staff_id ? Number(form.staff_id) : null,
-      serviceId: Number(form.service_id),
+      services: selectedServices,
       scheduledTime: `${dateStr}T${form.time}`,
-      price: Number(selectedService?.price) || 0,
+      price: totalPrice,
       notes: form.notes,
       ...(createCustomerMode
         ? { ...newCustomer }
@@ -180,11 +194,12 @@ const NewAppointmentModal = ({
         credentials: "include",
       }
     );
+
     const data = await res.json();
 
     if (!res.ok) alert(data.error || "Failed to create appointment");
     else {
-      alert(" Appointment added and confirmation email sent!");
+      alert("✅ Appointment added and confirmation email sent!");
       if (onCreated) await Promise.resolve(onCreated());
       onClose();
     }
@@ -194,7 +209,7 @@ const NewAppointmentModal = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-lg w-full max-w-md max-h-[90vh] overflow-y-auto p-6 font-inter relative">
+      <div className="bg-white rounded-2xl shadow-lg w-full max-w-md max-h-[90vh] overflow-y-auto p-6 font-inter relative scrollbar-hide">
         <button
           type="button"
           onClick={onClose}
@@ -210,6 +225,7 @@ const NewAppointmentModal = ({
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-5 relative">
+          {/* ✅ Customer Section (unchanged design) */}
           <div className="relative z-20">
             <label className="block text-sm font-medium mb-1">
               Customer <span className="text-primary">*</span>
@@ -367,6 +383,7 @@ const NewAppointmentModal = ({
             )}
           </div>
 
+          {/* ✅ Staff Section (unchanged) */}
           <div>
             <label className="block text-sm font-medium mb-1">
               Staff (optional)
@@ -387,32 +404,52 @@ const NewAppointmentModal = ({
             </select>
           </div>
 
+          {/* ✅ Multi-Service Checkbox Section (new) */}
           <div>
             <label className="block text-sm font-medium mb-1">
-              Service <span className="text-red-500">*</span>
+              Services <span className="text-red-500">*</span>
             </label>
-            <select
-              title="Select service"
-              value={form.service_id}
-              onChange={(e) => {
-                const s = services.find(
-                  (srv) => srv.service_id === Number(e.target.value)
+            <div className="border border-border rounded-lg p-3 space-y-2 max-h-40 overflow-y-auto scrollbar-hide">
+              {services.map((s) => {
+                const checked = form.service_ids.includes(s.service_id);
+                return (
+                  <label
+                    key={s.service_id}
+                    className="flex items-center gap-2 cursor-pointer"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={() => {
+                        let updated: number[];
+                        if (checked) {
+                          updated = form.service_ids.filter(
+                            (id) => id !== s.service_id
+                          );
+                        } else {
+                          updated = [...form.service_ids, s.service_id];
+                        }
+                        const total = services
+                          .filter((sv) => updated.includes(sv.service_id))
+                          .reduce((sum, sv) => sum + Number(sv.price), 0);
+                        setForm({
+                          ...form,
+                          service_ids: updated,
+                          price: total,
+                        });
+                      }}
+                      className="accent-primary"
+                    />
+                    <span className="text-sm">
+                      {s.custom_name} (${Number(s.price).toFixed(2)})
+                    </span>
+                  </label>
                 );
-                setForm({ ...form, service_id: e.target.value });
-                setSelectedService(s || null);
-              }}
-              className="w-full border border-border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-light"
-              required
-            >
-              <option value="">Select service</option>
-              {services.map((s) => (
-                <option key={s.service_id} value={s.service_id}>
-                  {s.custom_name} (${Number(s.price).toFixed(2)})
-                </option>
-              ))}
-            </select>
+              })}
+            </div>
           </div>
 
+          {/* ✅ Rest unchanged: Date, Time, Notes, Summary */}
           <div>
             <label className="block text-sm font-medium mb-1">
               Date <span className="text-red-500">*</span>
@@ -456,13 +493,14 @@ const NewAppointmentModal = ({
             />
           </div>
 
-          {selectedService && (
+          {form.price > 0 && (
             <div className="flex justify-between text-sm text-gray-600 border-t pt-3">
-              <span>Duration: {selectedService.duration} min</span>
-              <span>Price: ${Number(selectedService.price).toFixed(2)}</span>
+              <span>Total Selected Services:</span>
+              <span>${form.price.toFixed(2)}</span>
             </div>
           )}
 
+          {/* ✅ Submit button unchanged */}
           <button
             type="submit"
             disabled={loading}

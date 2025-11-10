@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from "react";
+"use client";
+import React, { useEffect, useState, useCallback } from "react";
 import { Calendar, CheckCircle, Clock, DollarSign } from "lucide-react";
 import AppointmentCard from "./AppointmentCard";
 import KPI from "@/components/Dashboard/KPI";
 import Header from "@/components/Dashboard/Header";
 import NewAppointmentModal from "@/components/Dashboard/Appointments/NewAppointmentModal";
 import { fetchWithRefresh } from "@/libs/api/fetchWithRefresh";
+import useSalonId from "@/hooks/useSalonId";
 
 interface Appointment {
   appointment_id: number;
@@ -18,12 +20,13 @@ interface Appointment {
 }
 
 const Appointments = () => {
-  const salonId = 1;
+  const { salonId, loadingSalon } = useSalonId();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(false);
   const [isNewOpen, setIsNewOpen] = useState(false);
 
-  const fetchAppointments = async () => {
+  const fetchAppointments = useCallback(async () => {
+    if (!salonId) return;
     setLoading(true);
     try {
       const res = await fetchWithRefresh(
@@ -31,27 +34,31 @@ const Appointments = () => {
         { credentials: "include" }
       );
       const data = await res.json();
-      if (res.ok && Array.isArray(data.data)) {
-        setAppointments(data.data);
-      } else {
-        console.error("Failed to load appointments:", data.error);
-      }
+      if (res.ok && Array.isArray(data.data)) setAppointments(data.data);
+      else console.error("Failed to load appointments:", data.error);
     } catch (err) {
       console.error("Error fetching appointments:", err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [salonId]);
 
   useEffect(() => {
-    fetchAppointments();
-  }, [salonId]);
+    if (salonId) fetchAppointments();
+  }, [salonId, fetchAppointments]);
 
   const today = new Date().toISOString().split("T")[0];
   const todays = appointments.filter((a) => a.scheduled_time.startsWith(today));
   const confirmed = appointments.filter((a) => a.status === "confirmed");
   const pending = appointments.filter((a) => a.status === "pending");
   const revenueToday = todays.reduce((sum, a) => sum + Number(a.price || 0), 0);
+
+  if (loadingSalon)
+    return (
+      <p className="text-center mt-6 text-muted-foreground">
+        Loading salon data...
+      </p>
+    );
 
   return (
     <section className="space-y-6 font-inter">
@@ -101,7 +108,7 @@ const Appointments = () => {
             {appointments.map((a) => (
               <AppointmentCard
                 key={a.appointment_id}
-                salonId={salonId}
+                salonId={salonId!}
                 onUpdated={fetchAppointments}
                 a={{
                   appointment_id: a.appointment_id,
@@ -121,15 +128,17 @@ const Appointments = () => {
         )}
       </div>
 
-      <NewAppointmentModal
-        isOpen={isNewOpen}
-        onClose={() => setIsNewOpen(false)}
-        salonId={salonId}
-        onCreated={() => {
-          fetchAppointments(); // ✅ reload list after new appointment
-          setIsNewOpen(false);
-        }}
-      />
+      {salonId && (
+        <NewAppointmentModal
+          isOpen={isNewOpen}
+          onClose={() => setIsNewOpen(false)}
+          salonId={salonId}
+          onCreated={() => {
+            fetchAppointments();
+            setIsNewOpen(false);
+          }}
+        />
+      )}
     </section>
   );
 };

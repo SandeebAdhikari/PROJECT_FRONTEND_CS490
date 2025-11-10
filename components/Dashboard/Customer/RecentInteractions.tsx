@@ -82,7 +82,6 @@ const RecentInteractions: React.FC<RecentInteractionsProps> = ({
                 {getInteractionIcon(interaction.type)}
               </div>
 
-              {/* Content */}
               <div className="flex-1">
                 <div className="flex items-start justify-between">
                   <div>
@@ -102,7 +101,6 @@ const RecentInteractions: React.FC<RecentInteractionsProps> = ({
                   </span>
                 </div>
 
-                {/* Details */}
                 <div className="mt-2 flex flex-wrap gap-4 text-xs text-muted-foreground">
                   <div className="flex items-center gap-1">
                     <Calendar className="w-3 h-3" />
@@ -115,12 +113,13 @@ const RecentInteractions: React.FC<RecentInteractionsProps> = ({
                   {interaction.rating && (
                     <div className="flex items-center gap-1">
                       <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                      <span className="font-semibold">{interaction.rating}.0</span>
+                      <span className="font-semibold">
+                        {interaction.rating}.0
+                      </span>
                     </div>
                   )}
                 </div>
 
-                {/* Notes */}
                 {interaction.notes && (
                   <div className="mt-2 p-2 bg-accent rounded text-xs">
                     <span className="font-medium">Notes:</span>{" "}
@@ -133,7 +132,6 @@ const RecentInteractions: React.FC<RecentInteractionsProps> = ({
         ))}
       </div>
 
-      {/* View All Button */}
       <div className="p-4 border-t border-border text-center">
         <button className="text-sm text-primary-light font-semibold hover:underline">
           View All Interactions
