@@ -1,7 +1,4 @@
-/**
- * Authentication API functions
- */
-
+// Authentication API functions
 import { API_ENDPOINTS, fetchConfig } from './config';
 
 export interface SignupData {
@@ -32,9 +29,7 @@ export interface Verify2FAData {
   tempToken: string;
 }
 
-/**
- * Manual signup
- */
+// Signup function
 export async function signup(data: SignupData): Promise<AuthResponse> {
   try {
     const response = await fetch(API_ENDPOINTS.AUTH.SIGNUP, {
@@ -62,48 +57,30 @@ export async function signup(data: SignupData): Promise<AuthResponse> {
   }
 }
 
-/**
- * Manual login
- */
+// Login function
 export async function login(data: LoginData): Promise<AuthResponse> {
   try {
-    console.log('login function called with:', data);
-    console.log('API endpoint:', API_ENDPOINTS.AUTH.LOGIN);
-    
     const response = await fetch(API_ENDPOINTS.AUTH.LOGIN, {
       ...fetchConfig,
       method: 'POST',
       body: JSON.stringify(data),
     });
 
-    console.log('Response status:', response.status);
     const result = await response.json();
-    console.log('Response result:', result);
 
     if (!response.ok) {
       return { error: result.error || 'Login failed' };
     }
 
-    // Store token and user if received
     if (result.token) {
-      console.log('Storing token in localStorage');
       localStorage.setItem('authToken', result.token);
       localStorage.setItem('token', result.token);
       
-      // Store user info if available
       if (result.user) {
         localStorage.setItem('user', JSON.stringify(result.user));
-        console.log('User info stored:', result.user);
       }
-      
-      console.log('Token stored successfully!');
-      console.log('Verifying token in localStorage:', localStorage.getItem('token'));
     } else if (result.tempToken) {
-      // Store temporary token for 2FA verification
-      console.log('Storing temp token for 2FA');
       localStorage.setItem('tempToken', result.tempToken);
-    } else {
-      console.log('No token in response');
     }
 
     return result;
@@ -113,9 +90,7 @@ export async function login(data: LoginData): Promise<AuthResponse> {
   }
 }
 
-/**
- * Get user profile
- */
+// Get user profile
 export async function getProfile(token?: string): Promise<AuthResponse> {
   try {
     const t = token || localStorage.getItem('token');
@@ -358,6 +333,40 @@ export async function get2FAStatus(): Promise<{ twoFactorEnabled: boolean; metho
     return result;
   } catch (error) {
     return { twoFactorEnabled: false, methods: [], error: 'Network error' };
+  }
+}
+
+export async function deleteAccount(password: string): Promise<{ message?: string; error?: string }> {
+  try {
+    const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+    if (!token) {
+      return { error: 'Not authenticated' };
+    }
+
+    const response = await fetch(API_ENDPOINTS.AUTH.DELETE_ACCOUNT, {
+      ...fetchConfig,
+      method: 'DELETE',
+      headers: {
+        ...fetchConfig.headers,
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ password }),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      return { error: result.error || 'Failed to delete account' };
+    }
+
+    localStorage.clear();
+    document.cookie.split(";").forEach((c) => {
+      document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+    });
+
+    return result;
+  } catch (error) {
+    return { error: 'Network error' };
   }
 }
 
