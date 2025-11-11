@@ -7,6 +7,7 @@ import SalonBookingSettings from "./SalonBookingSetting";
 import SalonBusinessInformation from "./SalonBusinessInformation";
 import SalonBusinessHours from "./SalonBusinessHours";
 import SalonNotificationSettings from "./SalonNotificationSetting";
+import SalonServicesManagement from "./SalonServicesManagement";
 import SaveButton from "./SaveButton";
 import { deleteAccount } from "@/libs/api/auth";
 import { useRouter } from "next/navigation";
@@ -60,6 +61,7 @@ const Settings = () => {
       <div className="space-y-6 sm:grid sm:grid-cols-2 sm:gap-4">
         <SalonBusinessInformation />
         <SalonBusinessHours />
+        <SalonServicesManagement />
         <SalonBookingSettings />
         <SalonNotificationSettings />
       </div>
