@@ -6,4 +6,5 @@ export * from './photos';
 export * from './history';
 export * from './shop';
 export * from './appointments';
+export * from './salons';
 

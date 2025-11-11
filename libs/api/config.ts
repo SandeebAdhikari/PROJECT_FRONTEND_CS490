@@ -42,6 +42,11 @@ export const API_ENDPOINTS = {
   APPOINTMENTS: {
     BOOK: `${API_BASE_URL}/api/appointments`,
   },
+  SALONS: {
+    CREATE: `${API_BASE_URL}/api/salons`,
+    LIST: `${API_BASE_URL}/api/salons`,
+    CHECK_OWNER: `${API_BASE_URL}/api/salons/check-owner`,
+  },
   HEALTH: `${API_BASE_URL}/health`,
 };
 
