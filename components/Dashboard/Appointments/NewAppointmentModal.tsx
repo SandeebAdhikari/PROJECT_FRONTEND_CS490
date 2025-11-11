@@ -419,7 +419,6 @@ const NewAppointmentModal = ({
             )}
           </div>
 
-          {/* ✅ Staff Section (unchanged) */}
           <div>
             <label className="block text-sm font-medium mb-1">
               Staff (optional)
@@ -449,6 +448,7 @@ const NewAppointmentModal = ({
               Status <span className="text-primary">*</span>
             </label>
             <select
+              title="Select appointment status"
               value={form.status}
               onChange={(e) =>
                 setForm({
