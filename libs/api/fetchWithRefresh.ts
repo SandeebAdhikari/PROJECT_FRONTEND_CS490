@@ -44,7 +44,7 @@ export const fetchWithRefresh = async (
         }
       }
     } catch (err) {
-      console.error("🔴 Refresh token failed:", err);
+      console.error("Refresh token failed:", err);
     }
   }
 

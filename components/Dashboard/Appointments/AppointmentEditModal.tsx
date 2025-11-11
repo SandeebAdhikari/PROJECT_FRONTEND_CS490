@@ -3,6 +3,11 @@ import React, { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import DatePicker from "react-datepicker";
 import { fetchWithRefresh } from "@/libs/api/fetchWithRefresh";
+import {
+  AppointmentStatus,
+  appointmentStatusOptions,
+  normalizeAppointmentStatus,
+} from "@/libs/constants/appointments";
 import "react-datepicker/dist/react-datepicker.css";
 
 interface AppointmentEditModalProps {
@@ -16,7 +21,7 @@ interface AppointmentEditModalProps {
 interface AppointmentDetails {
   appointment_id: number;
   scheduled_time: string;
-  status: string;
+  status: AppointmentStatus;
   price: number;
   notes: string;
   staff_id: number | null;
@@ -93,13 +98,20 @@ const AppointmentEditModal = ({
               ? apptData.services.map((s: ServiceResponse) => s.service_id)
               : [apptData.service_id],
             staff_id: apptData.staff_id,
-            status: apptData.status || "booked",
+            status: normalizeAppointmentStatus(apptData.status),
             price: apptData.price || 0,
             notes: apptData.notes || "",
           });
         }
 
-        if (Array.isArray(staffData)) setStaffList(staffData);
+        if (staffRes.ok) {
+          const normalizedStaff = Array.isArray(staffData)
+            ? staffData
+            : Array.isArray((staffData as { staff?: Staff[] })?.staff)
+            ? (staffData as { staff: Staff[] }).staff
+            : [];
+          setStaffList(normalizedStaff);
+        }
         if (Array.isArray(serviceData))
           setServices(
             serviceData.map((s) => ({ ...s, price: Number(s.price) }))
@@ -149,7 +161,7 @@ const AppointmentEditModal = ({
       scheduledTime: `${dateStr}T${timeStr}`,
       notes: form.notes || "",
       price: Number(form.price) || 0,
-      status: form.status || "booked",
+      status: form.status,
     };
 
     try {
@@ -350,12 +362,19 @@ const AppointmentEditModal = ({
             <select
               title="Select appointment status"
               value={form.status}
-              onChange={(e) => setForm({ ...form, status: e.target.value })}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  status: normalizeAppointmentStatus(e.target.value),
+                })
+              }
               className="w-full border border-border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-light"
             >
-              <option value="booked">Booked</option>
-              <option value="completed">Completed</option>
-              <option value="cancelled">Cancelled</option>
+              {appointmentStatusOptions().map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
             </select>
           </div>
 

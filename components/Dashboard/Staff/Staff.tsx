@@ -1,35 +1,116 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
-import { Users, Star } from "lucide-react";
+import React, { useEffect, useState, useCallback } from "react";
+import { Users, Star, DollarSign, Plus } from "lucide-react";
 import StaffCard, { StaffMember } from "./Staffcard";
 import KPI from "@/components/Dashboard/KPI";
-import data from "@/data/data.json";
 import Header from "@/components/Dashboard/Header";
+import AddStaffModal from "@/components/Dashboard/Staff/AddStaffModal";
+import EditStaffModal from "@/components/Dashboard/Staff/EditStaffModal";
+import { fetchWithRefresh } from "@/libs/api/fetchWithRefresh";
+import useSalonId from "@/hooks/useSalonId";
 
 const Staff = () => {
-  const [q, setQ] = useState("");
-  const salonId = "1";
-  const staffList = useMemo(() => {
-    return (data.staff[salonId] || []) as unknown as StaffMember[];
+  const [staff, setStaff] = useState<StaffMember[]>([]);
+  const [query, setQuery] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [showModal, setShowModal] = useState(false);
+  const [editStaff, setEditStaff] = useState<StaffMember | null>(null);
+  const [salonSlug, setSalonSlug] = useState("lux-salon");
+
+  const { salonId, loadingSalon } = useSalonId();
+
+  const loadSalon = useCallback(async () => {
+    if (!salonId) return;
+    try {
+      const res = await fetchWithRefresh(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/salons/check-owner`,
+        { credentials: "include" }
+      );
+      const data = await res.json();
+      if (res.ok && data.hasSalon && data.salon) {
+        // Generate slug from salon name
+        const generatedSlug = data.salon.salon_name
+          ? data.salon.salon_name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+          : 'lux-salon';
+        setSalonSlug(generatedSlug);
+      }
+    } catch (err) {
+      console.error("Salon fetch error:", err);
+    }
   }, [salonId]);
 
-  const staff = useMemo(() => {
-    const t = q.trim().toLowerCase();
-    if (!t) return staffList;
-    return staffList.filter(
-      (s) =>
-        s.name.toLowerCase().includes(t) ||
-        s.role.toLowerCase().includes(t) ||
-        s.specialties.some((sp) => sp.toLowerCase().includes(t))
-    );
-  }, [q, staffList]);
+  const loadStaff = useCallback(async () => {
+    if (!salonId) return;
+    setLoading(true);
+    try {
+      const res = await fetchWithRefresh(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/staff/salon/${salonId}/staff`,
+        { credentials: "include" }
+      );
+      const data = await res.json();
+      if (res.ok) setStaff(data.staff || []);
+      else setError(data.error || "Failed to load staff");
+    } catch (err) {
+      console.error("Staff fetch error:", err);
+      setError("Server error loading staff");
+    } finally {
+      setLoading(false);
+    }
+  }, [salonId]);
 
-  const total = staff.length;
+  useEffect(() => {
+    loadSalon();
+    loadStaff();
+  }, [loadSalon, loadStaff]);
+
+  if (loadingSalon) {
+    return (
+      <section className="space-y-6 font-inter">
+        <p className="text-muted-foreground">Loading salon information...</p>
+      </section>
+    );
+  }
+
+  const filtered = staff.filter((s: StaffMember) => {
+    const t = query.trim().toLowerCase();
+    if (!t) return true;
+    return (
+      s.full_name?.toLowerCase().includes(t) ||
+      s.staff_role?.toLowerCase().includes(t) ||
+      s.specialization?.toLowerCase().includes(t)
+    );
+  });
+
+  const total = filtered.length;
   const avgRating = (
-    staff.reduce((a, s) => a + (s.rating || 0), 0) / Math.max(1, total)
+    filtered.reduce((a, s) => a + (Number(s.avg_rating) || 0), 0) /
+    Math.max(1, total)
   ).toFixed(1);
-  const totalRevenue = staff.reduce((a, s) => a + (s.monthlyRevenue || 0), 0);
+  const totalRevenue = filtered.reduce(
+    (a, s) => a + (Number(s.total_revenue) || 0),
+    0
+  );
+
+  const handleDelete = async (id: number) => {
+    if (!confirm("Are you sure you want to delete this staff member?")) return;
+    try {
+      const res = await fetchWithRefresh(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/staff/staff/${id}`,
+        { method: "DELETE", credentials: "include" }
+      );
+      if (res.ok) {
+        alert("Staff deleted successfully");
+        loadStaff();
+      } else {
+        const data = await res.json();
+        alert(data.error || "Failed to delete staff");
+      }
+    } catch {
+      alert("Server error deleting staff");
+    }
+  };
 
   return (
     <section className="space-y-6 font-inter">
@@ -37,8 +118,9 @@ const Staff = () => {
         title="Staff Management"
         subtitle="Manage and track all salon appointments"
         onFilterClick={() => console.log("Filter clicked")}
-        onPrimaryClick={() => console.log("New appointment clicked")}
-        primaryLabel="Add Staff Member"
+        onPrimaryClick={() => setShowModal(true)}
+        primaryLabel="Add New Staff"
+        primaryIcon={Plus}
       />
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 items-stretch">
@@ -57,25 +139,68 @@ const Staff = () => {
         <KPI
           label="Monthly Revenue"
           value={`$${totalRevenue.toLocaleString()}`}
-          Icon={Star}
+          Icon={DollarSign}
           iconClass="bg-emerald-100 text-emerald-600"
         />
       </div>
 
       <div className="flex items-center">
         <input
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
           placeholder="Search by name, role, or specialty…"
           className="w-full max-w-md border border-border rounded-lg px-3 py-2"
         />
       </div>
 
-      <div className="grid gap-5 md:grid-cols-2">
-        {staff.map((s) => (
-          <StaffCard key={s.id} s={s} />
-        ))}
-      </div>
+      {loading ? (
+        <p className="text-muted-foreground">Loading staff...</p>
+      ) : error ? (
+        <p className="text-red-500">{error}</p>
+      ) : filtered.length === 0 ? (
+        <p className="text-muted-foreground text-center py-6">
+          No staff added yet.
+        </p>
+      ) : (
+        <div className="grid gap-5 md:grid-cols-2">
+          {filtered.map((s: StaffMember) => (
+            <StaffCard
+              key={s.staff_id}
+              s={s}
+              onEdit={(staff) => setEditStaff(staff)}
+              onDelete={(id) => handleDelete(id)}
+            />
+          ))}
+        </div>
+      )}
+
+      <AddStaffModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        salonId={salonId || 0}
+        salonSlug={salonSlug}
+        onAdded={() => {
+          setShowModal(false);
+          loadStaff();
+        }}
+      />
+
+      {editStaff && editStaff.full_name && (
+        <EditStaffModal
+          isOpen={!!editStaff}
+          onClose={() => setEditStaff(null)}
+          staff={{
+            ...editStaff,
+            staff_role_id: 0,
+            full_name: editStaff.full_name,
+          }}
+          salonId={salonId || 0}
+          onUpdated={() => {
+            setEditStaff(null);
+            loadStaff();
+          }}
+        />
+      )}
     </section>
   );
 };

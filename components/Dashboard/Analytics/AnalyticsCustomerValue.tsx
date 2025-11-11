@@ -2,15 +2,35 @@
 
 import React, { useEffect } from "react";
 import { Activity } from "lucide-react";
+import { CustomerValueTier } from "@/libs/types/analytics";
 
-const AnalyticsCustomerValue = () => {
+interface CustomerValueProps {
+  data: {
+    avgLtv: number;
+    avgVisitsPerYear: number;
+    tiers: CustomerValueTier[];
+    totalCustomerValue: number;
+    activeCustomers: number;
+  };
+}
+
+const AnalyticsCustomerValue: React.FC<CustomerValueProps> = ({ data }) => {
   useEffect(() => {
     const bars = document.querySelectorAll<HTMLDivElement>(".progress-bar");
     bars.forEach((bar) => {
       const progress = bar.dataset.progress;
       if (progress) bar.style.setProperty("--progress", `${progress}%`);
     });
-  }, []);
+  }, [data]);
+
+  const tiers =
+    data.tiers.length > 0
+      ? data.tiers
+      : [
+          { label: "VIP Customers", avg: 0 },
+          { label: "Regular Customers", avg: 0 },
+          { label: "Occasional Customers", avg: 0 },
+        ];
 
   return (
     <>
@@ -27,54 +47,49 @@ const AnalyticsCustomerValue = () => {
         <div className="grid grid-cols-2 gap-4 mb-6">
           <div className="bg-muted p-4 rounded-xl text-center">
             <p className="text-sm text-subtle-foreground">Avg LTV</p>
-            <p className="text-3xl font-bold text-foreground">$2,450</p>
+            <p className="text-3xl font-bold text-foreground">
+              ${data.avgLtv.toFixed(2)}
+            </p>
           </div>
           <div className="bg-muted p-4 rounded-xl text-center">
             <p className="text-sm text-subtle-foreground">Avg Visits/Year</p>
-            <p className="text-3xl font-bold text-foreground">8.5</p>
+            <p className="text-3xl font-bold text-foreground">
+              {data.avgVisitsPerYear.toFixed(1)}
+            </p>
           </div>
         </div>
 
         {/* Progress Bars */}
         <div className="space-y-4">
-          <div>
-            <div className="flex justify-between text-sm text-foreground mb-1">
-              <span>VIP Customers</span>
-              <span className="font-semibold">$4,800 avg</span>
+          {tiers.map((tier, idx) => (
+            <div key={tier.label}>
+              <div className="flex justify-between text-sm text-foreground mb-1">
+                <span>{tier.label}</span>
+                <span className="font-semibold">
+                  ${tier.avg.toFixed(2)} avg
+                </span>
+              </div>
+              <div className="w-full bg-muted h-3 rounded-full overflow-hidden">
+                <div
+                  className={`progress-bar rounded-full ${
+                    idx === 0
+                      ? "bg-primary"
+                      : idx === 1
+                      ? "bg-primary-light"
+                      : "bg-accent-dark"
+                  }`}
+                  data-progress={
+                    data.avgLtv > 0
+                      ? Math.min(
+                          100,
+                          Math.round((tier.avg / Math.max(data.avgLtv, 1)) * 100)
+                        )
+                      : 0
+                  }
+                ></div>
+              </div>
             </div>
-            <div className="w-full bg-muted h-3 rounded-full overflow-hidden">
-              <div
-                className="progress-bar bg-primary rounded-full"
-                data-progress="90"
-              ></div>
-            </div>
-          </div>
-
-          <div>
-            <div className="flex justify-between text-sm text-foreground mb-1">
-              <span>Regular Customers</span>
-              <span className="font-semibold">$2,200 avg</span>
-            </div>
-            <div className="w-full bg-muted h-3 rounded-full overflow-hidden">
-              <div
-                className="progress-bar bg-primary-light rounded-full"
-                data-progress="65"
-              ></div>
-            </div>
-          </div>
-
-          <div>
-            <div className="flex justify-between text-sm text-foreground mb-1">
-              <span>Occasional Customers</span>
-              <span className="font-semibold">$850 avg</span>
-            </div>
-            <div className="w-full bg-muted h-3 rounded-full overflow-hidden">
-              <div
-                className="progress-bar bg-accent-dark rounded-full"
-                data-progress="30"
-              ></div>
-            </div>
-          </div>
+          ))}
         </div>
 
         {/* Summary Card */}
@@ -82,9 +97,14 @@ const AnalyticsCustomerValue = () => {
           <p className="text-sm uppercase tracking-wide opacity-90">
             Total Customer Value
           </p>
-          <p className="text-4xl font-bold">$487,500</p>
+          <p className="text-4xl font-bold">
+            ${data.totalCustomerValue.toLocaleString()}
+          </p>
           <p className="text-sm opacity-90 mt-1">
-            Based on <span className="font-semibold">199 active customers</span>
+            Based on{" "}
+            <span className="font-semibold">
+              {data.activeCustomers} active customers
+            </span>
           </p>
         </div>
       </div>

@@ -3,6 +3,11 @@ import React, { useEffect, useState } from "react";
 import { X, PlusCircle } from "lucide-react";
 import DatePicker from "react-datepicker";
 import { fetchWithRefresh } from "@/libs/api/fetchWithRefresh";
+import {
+  AppointmentStatus,
+  appointmentStatusOptions,
+  normalizeAppointmentStatus,
+} from "@/libs/constants/appointments";
 import "react-datepicker/dist/react-datepicker.css";
 
 interface Customer {
@@ -42,6 +47,7 @@ const NewAppointmentModal = ({
     time: "",
     notes: "",
     price: 0,
+    status: "pending" as AppointmentStatus,
   });
 
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -74,11 +80,19 @@ const NewAppointmentModal = ({
 
     const fetchStaff = async () => {
       const res = await fetchWithRefresh(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/salons/${currentSalonId}/staff`,
-        { credentials: "include" }
+        `${process.env.NEXT_PUBLIC_API_URL}/api/staff/salon/${currentSalonId}/staff`
       );
+
       const data = await res.json();
-      if (res.ok && Array.isArray(data)) setStaffList(data);
+      if (res.ok) {
+        const normalizedStaff = Array.isArray(data)
+          ? data
+          : Array.isArray((data as { staff?: Staff[] })?.staff)
+          ? (data as { staff: Staff[] }).staff
+          : [];
+
+        setStaffList(normalizedStaff);
+      }
     };
 
     const fetchServices = async () => {
@@ -135,7 +149,7 @@ const NewAppointmentModal = ({
 
         if (existingMatches?.length > 0) {
           const confirmUse = confirm(
-            `⚠️ A customer named "${existingMatches[0].full_name}" already exists.\nUse their profile instead?`
+            ` A customer named "${existingMatches[0].full_name}" already exists.\nUse their profile instead?`
           );
           if (confirmUse) {
             setCreateCustomerMode(false);
@@ -175,6 +189,7 @@ const NewAppointmentModal = ({
       scheduledTime: `${dateStr}T${form.time}`,
       price: totalPrice,
       notes: form.notes,
+      status: form.status,
       ...(createCustomerMode
         ? { ...newCustomer }
         : {
@@ -199,9 +214,31 @@ const NewAppointmentModal = ({
 
     if (!res.ok) alert(data.error || "Failed to create appointment");
     else {
-      alert("✅ Appointment added and confirmation email sent!");
+      alert("Appointment added and confirmation email sent!");
       if (onCreated) await Promise.resolve(onCreated());
       onClose();
+      setForm({
+        service_ids: [],
+        staff_id: "",
+        date: new Date(),
+        time: "",
+        notes: "",
+        price: 0,
+        status: "pending",
+      });
+      setSelectedCustomer(null);
+      setCustomerQuery("");
+      setCreateCustomerMode(false);
+      setNewCustomer({
+        firstName: "",
+        lastName: "",
+        email: "",
+        phone: "",
+        address: "",
+        city: "",
+        state: "",
+        zip: "",
+      });
     }
 
     setLoading(false);
@@ -225,7 +262,6 @@ const NewAppointmentModal = ({
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-5 relative">
-          {/* ✅ Customer Section (unchanged design) */}
           <div className="relative z-20">
             <label className="block text-sm font-medium mb-1">
               Customer <span className="text-primary">*</span>
@@ -383,7 +419,6 @@ const NewAppointmentModal = ({
             )}
           </div>
 
-          {/* ✅ Staff Section (unchanged) */}
           <div>
             <label className="block text-sm font-medium mb-1">
               Staff (optional)
@@ -397,14 +432,40 @@ const NewAppointmentModal = ({
             >
               <option value="">Auto-assign available staff</option>
               {staffList.map((s) => (
-                <option key={s.staff_id} value={s.staff_id}>
+                <option
+                  key={s.staff_id}
+                  value={s.staff_id}
+                  className="text-border"
+                >
                   {s.full_name}
                 </option>
               ))}
             </select>
           </div>
 
-          {/* ✅ Multi-Service Checkbox Section (new) */}
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              Status <span className="text-primary">*</span>
+            </label>
+            <select
+              title="Select appointment status"
+              value={form.status}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  status: normalizeAppointmentStatus(e.target.value),
+                })
+              }
+              className="w-full border border-border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-light"
+            >
+              {appointmentStatusOptions().map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
           <div>
             <label className="block text-sm font-medium mb-1">
               Services <span className="text-red-500">*</span>
@@ -449,7 +510,6 @@ const NewAppointmentModal = ({
             </div>
           </div>
 
-          {/* ✅ Rest unchanged: Date, Time, Notes, Summary */}
           <div>
             <label className="block text-sm font-medium mb-1">
               Date <span className="text-red-500">*</span>
@@ -500,7 +560,6 @@ const NewAppointmentModal = ({
             </div>
           )}
 
-          {/* ✅ Submit button unchanged */}
           <button
             type="submit"
             disabled={loading}

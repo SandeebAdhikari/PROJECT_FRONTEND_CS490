@@ -49,7 +49,6 @@ const Settings = () => {
       setDeleteLoading(false);
     }
   };
-
   return (
     <div className="font-inter space-y-6 ">
       <Header

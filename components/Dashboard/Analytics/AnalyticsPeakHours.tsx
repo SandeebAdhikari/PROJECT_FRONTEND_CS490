@@ -2,18 +2,15 @@
 
 import React, { useEffect } from "react";
 import { Clock } from "lucide-react";
+import { PeakHour } from "@/libs/types/analytics";
 
-const peakData = [
-  { time: "9:00 - 11:00 AM", bookings: 45 },
-  { time: "11:00 AM - 1:00 PM", bookings: 38 },
-  { time: "1:00 - 3:00 PM", bookings: 52 },
-  { time: "3:00 - 5:00 PM", bookings: 60 },
-  { time: "5:00 - 7:00 PM", bookings: 48 },
-  { time: "7:00 - 9:00 PM", bookings: 25 },
-];
+interface PeakProps {
+  data: PeakHour[];
+}
 
-const AnalyticsPeakHours = () => {
-  const maxBookings = Math.max(...peakData.map((d) => d.bookings));
+const AnalyticsPeakHours: React.FC<PeakProps> = ({ data }) => {
+  const peakData = data.length > 0 ? data : [{ label: "—", bookings: 0 }];
+  const maxBookings = Math.max(...peakData.map((d) => d.bookings || 0)) || 1;
 
   useEffect(() => {
     const bars = document.querySelectorAll<HTMLDivElement>(".progress-bar");
@@ -21,7 +18,7 @@ const AnalyticsPeakHours = () => {
       const progress = bar.dataset.progress;
       if (progress) bar.style.setProperty("--progress", `${progress}%`);
     });
-  }, []);
+  }, [peakData]);
 
   return (
     <>
@@ -32,9 +29,9 @@ const AnalyticsPeakHours = () => {
 
         <div className="space-y-4">
           {peakData.map((slot) => (
-            <div key={slot.time}>
+            <div key={slot.label}>
               <div className="flex justify-between text-sm text-muted-foreground mb-1">
-                <span>{slot.time}</span>
+                <span>{slot.label}</span>
                 <span className="font-medium">{slot.bookings} bookings</span>
               </div>
 

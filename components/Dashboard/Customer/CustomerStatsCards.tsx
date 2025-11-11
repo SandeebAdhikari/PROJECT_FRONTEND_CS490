@@ -1,13 +1,11 @@
 import React from "react";
 import { Users, DollarSign, Star, Activity } from "lucide-react";
 
-interface CustomerStats {
+export interface CustomerStats {
   totalCustomers: number;
-  activeCustomers: number;
-  newThisMonth: number;
-  averageLifetimeValue: number;
-  averageSatisfaction: number;
-  retentionRate: number;
+  vipCustomers: number;
+  totalRevenue: number;
+  avgSpend: number;
 }
 
 interface CustomerStatsCardsProps {
@@ -37,7 +35,7 @@ const CustomerStatsCards: React.FC<CustomerStatsCardsProps> = ({ stats }) => {
         <div>
           <p className="text-xs sm:text-sm text-gray-500 mb-1">VIP Customers</p>
           <p className="text-2xl sm:text-3xl font-bold">
-            {Math.floor(stats.totalCustomers * 0.15)}
+            {stats.vipCustomers}
           </p>
         </div>
         <div className="flex items-center justify-between mb-2">
@@ -51,10 +49,7 @@ const CustomerStatsCards: React.FC<CustomerStatsCardsProps> = ({ stats }) => {
         <div>
           <p className="text-xs sm:text-sm text-gray-500 mb-1">Total Revenue</p>
           <p className="text-2xl sm:text-3xl font-bold">
-            $
-            {(
-              stats.totalCustomers * stats.averageLifetimeValue
-            ).toLocaleString()}
+            ${stats.totalRevenue.toLocaleString()}
           </p>
         </div>
         <div className="flex items-center justify-between mb-2">
@@ -68,7 +63,7 @@ const CustomerStatsCards: React.FC<CustomerStatsCardsProps> = ({ stats }) => {
         <div>
           <p className="text-xs sm:text-sm text-gray-500 mb-1">Avg Spend</p>
           <p className="text-2xl sm:text-3xl font-bold">
-            ${stats.averageLifetimeValue}
+            ${stats.avgSpend.toFixed(2)}
           </p>
         </div>
         <div className="flex items-center justify-between mb-2">

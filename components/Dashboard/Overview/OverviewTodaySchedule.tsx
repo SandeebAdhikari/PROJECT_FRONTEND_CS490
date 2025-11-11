@@ -169,7 +169,6 @@ const OverviewTodaySchedule = () => {
                         {a.customer_name}
                       </div>
                       <div className="flex flex-col text-sm text-muted-foreground">
-                        {/* ✅ Show multiple or single services gracefully */}
                         {a.service_names
                           ? a.service_names
                           : a.service_name || "No service listed"}
@@ -219,7 +218,6 @@ const OverviewTodaySchedule = () => {
                   </div>
                 </div>
 
-                {/* Mobile controls */}
                 <div className="flex sm:hidden flex-col items-center justify-center mt-3 border-t border-border pt-3">
                   <div className="flex items-center justify-between w-full">
                     <div className="text-sm font-semibold text-foreground">

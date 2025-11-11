@@ -9,14 +9,28 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import {
+  StaffHighlights,
+  StaffPerformanceEntry,
+} from "@/libs/types/analytics";
 
-const data = [
-  { name: "Maria", revenue: 140, rating: 80 },
-  { name: "Lisa", revenue: 100, rating: 95 },
-  { name: "James", revenue: 160, rating: 90 },
-];
+interface StaffPerformanceProps {
+  data: {
+    chart: StaffPerformanceEntry[];
+    highlights: StaffHighlights;
+  };
+}
 
-const AnalyticsStaffPerformance = () => {
+const AnalyticsStaffPerformance: React.FC<StaffPerformanceProps> = ({
+  data,
+}) => {
+  const chartData =
+    data.chart.length > 0
+      ? data.chart
+      : [{ name: "No Data", revenue: 0, rating: 0, efficiency: 0 }];
+
+  const { highlights } = data;
+
   return (
     <div className="bg-card border border-border rounded-2xl p-6 shadow-sm hover:shadow-soft-br transition-smooth font-inter">
       <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center mb-6 gap-4">
@@ -28,30 +42,45 @@ const AnalyticsStaffPerformance = () => {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full lg:w-auto">
           <div className="bg-muted p-3 rounded-lg text-center">
             <p className="text-sm text-subtle-foreground">Top Performer</p>
-            <p className="font-semibold text-foreground">Maria Rodriguez</p>
-            <p className="text-primary text-sm">$8,420 revenue</p>
+            <p className="font-semibold text-foreground">
+              {highlights.topPerformer?.name || "—"}
+            </p>
+            <p className="text-primary text-sm">
+              $
+              {highlights.topPerformer
+                ? highlights.topPerformer.revenue.toLocaleString()
+                : 0}{" "}
+              revenue
+            </p>
           </div>
 
           <div className="bg-muted p-3 rounded-lg text-center">
             <p className="text-sm text-subtle-foreground">Highest Rating</p>
-            <p className="font-semibold text-foreground">Maria Rodriguez</p>
+            <p className="font-semibold text-foreground">
+              {highlights.highestRating?.name || "—"}
+            </p>
             <p className="text-primary text-sm flex justify-center items-center gap-1">
-              4.9 ⭐{" "}
-              <span className="text-muted-foreground">(142 reviews)</span>
+              {(highlights.highestRating?.rating ?? 0).toFixed(1)} ⭐
             </p>
           </div>
 
           <div className="bg-muted p-3 rounded-lg text-center">
             <p className="text-sm text-subtle-foreground">Most Efficient</p>
-            <p className="font-semibold text-foreground">James Wilson</p>
-            <p className="text-primary text-sm">96% efficiency</p>
+            <p className="font-semibold text-foreground">
+              {highlights.mostEfficient?.name || "—"}
+            </p>
+            <p className="text-primary text-sm">
+              {highlights.mostEfficient
+                ? `${highlights.mostEfficient.efficiency}% efficiency`
+                : "—"}
+            </p>
           </div>
         </div>
       </div>
 
       <div className="h-72 w-full">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} barGap={8}>
+          <BarChart data={chartData} barGap={8}>
             <CartesianGrid
               strokeDasharray="3 3"
               vertical={false}

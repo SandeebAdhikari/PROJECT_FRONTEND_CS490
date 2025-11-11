@@ -1,54 +1,95 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Calendar, CheckCircle, Clock, DollarSign } from "lucide-react";
 import AppointmentCard from "./AppointmentCard";
 import KPI from "@/components/Dashboard/KPI";
 import Header from "@/components/Dashboard/Header";
 import NewAppointmentModal from "@/components/Dashboard/Appointments/NewAppointmentModal";
-import { getSalonAppointments, Appointment } from "@/libs/api/appointments";
+import { fetchWithRefresh } from "@/libs/api/fetchWithRefresh";
+import useSalonId from "@/hooks/useSalonId";
+import {
+  AppointmentStatus,
+  normalizeAppointmentStatus,
+} from "@/libs/constants/appointments";
+
+interface Appointment {
+  appointment_id: number;
+  scheduled_time: string;
+  status: AppointmentStatus;
+  price: number;
+  notes?: string;
+  customer_name?: string;
+  staff_name?: string;
+  service_names?: string;
+}
 
 const Appointments = () => {
+  const { salonId, loadingSalon } = useSalonId();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    todays_appointments: 0,
+    confirmed: 0,
+    pending: 0,
+    revenue_today: 0,
+  });
+
+  const [loading, setLoading] = useState(false);
   const [isNewOpen, setIsNewOpen] = useState(false);
-  const [salonId, setSalonId] = useState<string>("");
 
-  useEffect(() => {
-    // Get salon_id from localStorage (set in layout)
-    const storedSalonId = localStorage.getItem("salon_id");
-    if (storedSalonId) {
-      setSalonId(storedSalonId);
-    }
-  }, []);
-
-  const fetchAppointments = async () => {
+  const fetchAppointments = useCallback(async () => {
+    if (!salonId) return;
     setLoading(true);
     try {
-      const result = await getSalonAppointments();
-      if (result.appointments) {
-        setAppointments(result.appointments);
-      }
+      const res = await fetchWithRefresh(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/appointments/salon?salon_id=${salonId}`,
+        { credentials: "include" }
+      );
+      const data = await res.json();
+      if (res.ok && Array.isArray(data.data))
+        setAppointments(
+          [...data.data]
+            .map((appt) => ({
+              ...appt,
+              status: normalizeAppointmentStatus(appt.status),
+            }))
+            .sort(
+              (a, b) =>
+                new Date(b.scheduled_time).getTime() -
+                new Date(a.scheduled_time).getTime()
+            )
+        );
+      else console.error("Failed to load appointments:", data.error);
     } catch (err) {
       console.error("Error fetching appointments:", err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [salonId]);
+
+  const fetchStats = useCallback(async () => {
+    if (!salonId) return;
+    try {
+      const res = await fetchWithRefresh(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/appointments/salon-stats?salon_id=${salonId}`,
+        { credentials: "include" }
+      );
+      const data = await res.json();
+      if (res.ok) setStats(data);
+      else console.error("Failed to load stats:", data.error);
+    } catch (err) {
+      console.error("Error fetching stats:", err);
+    }
+  }, [salonId]);
 
   useEffect(() => {
-    fetchAppointments();
-  }, []);
+    if (salonId) fetchAppointments();
+    fetchStats();
+  }, [salonId, fetchAppointments, fetchStats]);
 
-  const today = new Date().toISOString().split("T")[0];
-  const todays = appointments.filter((a) => a.scheduled_time?.startsWith(today));
-  const confirmed = appointments.filter((a) => a.status === "confirmed" || a.status === "booked");
-  const pending = appointments.filter((a) => a.status === "pending");
-  const revenueToday = todays.reduce((sum, a) => sum + Number(a.price || 0), 0);
-
-  if (loading && appointments.length === 0)
+  if (loadingSalon)
     return (
       <p className="text-center mt-6 text-muted-foreground">
-        Loading appointments...
+        Loading salon data...
       </p>
     );
 
@@ -67,25 +108,25 @@ const Appointments = () => {
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 items-stretch">
         <KPI
           label="Today's Appointments"
-          value={todays.length}
+          value={stats.todays_appointments}
           Icon={Calendar}
           iconClass="text-blue-500 bg-blue-50"
         />
         <KPI
           label="Confirmed"
-          value={confirmed.length}
+          value={stats.confirmed}
           Icon={CheckCircle}
           iconClass="text-emerald-500 bg-emerald-50"
         />
         <KPI
           label="Pending"
-          value={pending.length}
+          value={stats.pending}
           Icon={Clock}
           iconClass="text-amber-500 bg-amber-50"
         />
         <KPI
           label="Revenue Today"
-          value={`$${revenueToday}`}
+          value={`$${stats.revenue_today}`}
           Icon={DollarSign}
           iconClass="text-purple-500 bg-purple-50"
         />
@@ -108,9 +149,7 @@ const Appointments = () => {
                   stylist: a.staff_name || "",
                   date: a.scheduled_time.split("T")[0],
                   time: a.scheduled_time.split("T")[1]?.substring(0, 5) || "",
-                  status:
-                    (a.status as "confirmed" | "pending" | "canceled") ||
-                    "pending",
+                  status: a.status,
                   price: a.price,
                   customerName: a.customer_name,
                 }}
