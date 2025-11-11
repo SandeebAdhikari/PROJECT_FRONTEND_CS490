@@ -19,6 +19,7 @@ import {
   History,
   Gift,
   User,
+  Image,
 } from "lucide-react";
 
 export const icons = {
@@ -42,4 +43,5 @@ export const icons = {
   History,
   Gift,
   User,
+  Image,
 };
