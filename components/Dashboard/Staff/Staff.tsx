@@ -6,7 +6,7 @@ import StaffCard, { StaffMember } from "./Staffcard";
 import KPI from "@/components/Dashboard/KPI";
 import Header from "@/components/Dashboard/Header";
 import AddStaffModal from "@/components/Dashboard/Staff/AddStaffModal";
-import EditStaffModal from "@/components/Dashboard/Staff/EditStaffModal"; // ✅ added
+import EditStaffModal from "@/components/Dashboard/Staff/EditStaffModal";
 import { fetchWithRefresh } from "@/libs/api/fetchWithRefresh";
 import useSalonId from "@/hooks/useSalonId";
 
@@ -16,7 +16,7 @@ const Staff = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const [editStaff, setEditStaff] = useState<StaffMember | null>(null); // ✅ added
+  const [editStaff, setEditStaff] = useState<StaffMember | null>(null);
 
   const { salonId, loadingSalon } = useSalonId();
 
@@ -97,7 +97,7 @@ const Staff = () => {
         subtitle="Manage and track all salon appointments"
         onFilterClick={() => console.log("Filter clicked")}
         onPrimaryClick={() => setShowModal(true)}
-        primaryLabel="Add Staff Member"
+        primaryLabel="Add New Staff"
         primaryIcon={Plus}
       />
 
@@ -145,8 +145,8 @@ const Staff = () => {
             <StaffCard
               key={s.staff_id}
               s={s}
-              onEdit={(staff) => setEditStaff(staff)} // ✅ added
-              onDelete={(id) => handleDelete(id)} // ✅ added
+              onEdit={(staff) => setEditStaff(staff)}
+              onDelete={(id) => handleDelete(id)}
             />
           ))}
         </div>

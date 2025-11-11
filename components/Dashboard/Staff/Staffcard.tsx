@@ -42,7 +42,7 @@ const StaffCard: React.FC<StaffCardProps> = ({ s, onEdit, onDelete }) => {
   const revenueDisplay =
     s.total_revenue && s.total_revenue > 0
       ? `$${s.total_revenue.toLocaleString()}`
-      : "N/A";
+      : "-";
 
   const initials = s.full_name
     ? s.full_name

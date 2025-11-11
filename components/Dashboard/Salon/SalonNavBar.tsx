@@ -1,13 +1,29 @@
+"use client";
+
 import NextImage from "next/image";
 import Icon9 from "@/public/icons/9.png";
 import { Bell, Search } from "lucide-react";
+import useSalonId from "@/hooks/useSalonId";
 
 const SalonNavBar = () => {
+  const { salonName, ownerInitials, ownerName } = useSalonId();
+  const displaySalonName = salonName || "Stygo";
+  const initials = ownerInitials || "NA";
+
   return (
     <div className="p-4 sm:px-8 flex justify-between items-center w-full border border-b border-border">
       <div className="flex items-center gap-2">
         <NextImage src={Icon9} alt="app-icon" width={40} height={40} />
-        <h1 className="font-extrabold text-lg">Stygo</h1>
+        <div>
+          <h1 className="font-extrabold text-lg capitalize">
+            {displaySalonName}
+          </h1>
+          {ownerName && (
+            <p className="text-xs text-muted-foreground">
+              Owner: {ownerName.split(" ")[0]}
+            </p>
+          )}
+        </div>
       </div>
       <div className="flex items-center gap-3">
         <div className="hidden sm:flex  gap-3">
@@ -46,8 +62,8 @@ const SalonNavBar = () => {
           Logout
         </button>
 
-        <div className="rounded-full w-10 h-10 border border-border text-center pt-1">
-          SA
+        <div className="rounded-full w-10 h-10 border border-border text-center pt-2 font-semibold text-sm">
+          {initials}
         </div>
       </div>
     </div>

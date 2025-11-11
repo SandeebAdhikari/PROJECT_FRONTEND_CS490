@@ -10,6 +10,11 @@ import {
   FileText,
 } from "lucide-react";
 import { fetchWithRefresh } from "@/libs/api/fetchWithRefresh";
+import {
+  APPOINTMENT_STATUS_META,
+  AppointmentStatus,
+  normalizeAppointmentStatus,
+} from "@/libs/constants/appointments";
 
 interface AppointmentDetailsModalProps {
   isOpen: boolean;
@@ -27,7 +32,7 @@ interface ServiceItem {
 interface AppointmentDetails {
   appointment_id: number;
   scheduled_time: string;
-  status: string;
+  status: AppointmentStatus | string;
   price: number;
   notes: string;
   customer_name: string;
@@ -182,17 +187,19 @@ const AppointmentDetailsModal = ({
                 <span className="flex items-center gap-2 text-gray-600">
                   Status
                 </span>
-                <span
-                  className={`px-2 py-1 rounded-lg text-xs font-semibold ${
-                    details.status === "booked"
-                      ? "bg-emerald-100 text-emerald-700"
-                      : details.status === "cancelled"
-                      ? "bg-red-100 text-red-700"
-                      : "bg-amber-100 text-amber-700"
-                  }`}
-                >
-                  {details.status}
-                </span>
+                {(() => {
+                  const normalized = normalizeAppointmentStatus(details.status);
+                  const meta =
+                    APPOINTMENT_STATUS_META[normalized] ||
+                    APPOINTMENT_STATUS_META.pending;
+                  return (
+                    <span
+                      className={`px-2 py-1 rounded-lg text-xs font-semibold ${meta.badgeClass}`}
+                    >
+                      {meta.label}
+                    </span>
+                  );
+                })()}
               </div>
 
               {details.notes && (

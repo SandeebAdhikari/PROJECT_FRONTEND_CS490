@@ -74,11 +74,19 @@ const NewAppointmentModal = ({
 
     const fetchStaff = async () => {
       const res = await fetchWithRefresh(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/salons/${currentSalonId}/staff`,
-        { credentials: "include" }
+        `${process.env.NEXT_PUBLIC_API_URL}/api/staff/salon/${currentSalonId}/staff`
       );
+
       const data = await res.json();
-      if (res.ok && Array.isArray(data)) setStaffList(data);
+      if (res.ok) {
+        const normalizedStaff = Array.isArray(data)
+          ? data
+          : Array.isArray((data as { staff?: Staff[] })?.staff)
+          ? (data as { staff: Staff[] }).staff
+          : [];
+
+        setStaffList(normalizedStaff);
+      }
     };
 
     const fetchServices = async () => {
@@ -199,7 +207,7 @@ const NewAppointmentModal = ({
 
     if (!res.ok) alert(data.error || "Failed to create appointment");
     else {
-      alert("✅ Appointment added and confirmation email sent!");
+      alert("Appointment added and confirmation email sent!");
       if (onCreated) await Promise.resolve(onCreated());
       onClose();
     }

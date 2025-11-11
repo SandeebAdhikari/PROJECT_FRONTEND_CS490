@@ -6,6 +6,10 @@ import { Eye, Pencil, Trash2 } from "lucide-react";
 import AppointmentEditModal from "@/components/Dashboard/Appointments/AppointmentEditModal";
 import AppointmentDetailsModal from "@/components/Dashboard/Appointments/AppointmentDetailsModal";
 import { fetchWithRefresh } from "@/libs/api/fetchWithRefresh";
+import {
+  APPOINTMENT_STATUS_META,
+  AppointmentStatus,
+} from "@/libs/constants/appointments";
 
 export type Appointment = {
   appointment_id: number;
@@ -18,7 +22,7 @@ export type Appointment = {
   time?: string;
   scheduled_time?: string;
   price: number;
-  status: "confirmed" | "pending" | "canceled" | "booked";
+  status: AppointmentStatus;
   avatarUrl?: string;
   salon_id?: number;
 };
@@ -40,12 +44,8 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
   const displayName = a.customer || a.customerName || "Guest";
   const serviceLabel = a.service_names || "Multiple Services";
 
-  const statusClasses: Record<Appointment["status"], string> = {
-    confirmed: "bg-emerald-500 text-white",
-    pending: "bg-amber-400 text-white",
-    canceled: "bg-red-500 text-white",
-    booked: "bg-blue-500 text-white",
-  };
+  const statusMeta =
+    APPOINTMENT_STATUS_META[a.status] || APPOINTMENT_STATUS_META.pending;
 
   const handleDelete = async () => {
     if (!confirm(`Delete appointment for ${displayName}?`)) return;
@@ -123,11 +123,9 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
             ${Number(a.price).toFixed(2)}
           </div>
           <span
-            className={`text-xs px-3 py-1 rounded-full font-semibold capitalize ${
-              statusClasses[a.status]
-            }`}
+            className={`text-xs px-3 py-1 rounded-full font-semibold capitalize ${statusMeta.badgeClass}`}
           >
-            {a.status}
+            {statusMeta.label}
           </span>
           <div className="flex items-center gap-3 text-gray-500">
             <Eye

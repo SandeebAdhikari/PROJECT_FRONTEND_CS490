@@ -7,11 +7,15 @@ import Header from "@/components/Dashboard/Header";
 import NewAppointmentModal from "@/components/Dashboard/Appointments/NewAppointmentModal";
 import { fetchWithRefresh } from "@/libs/api/fetchWithRefresh";
 import useSalonId from "@/hooks/useSalonId";
+import {
+  AppointmentStatus,
+  normalizeAppointmentStatus,
+} from "@/libs/constants/appointments";
 
 interface Appointment {
   appointment_id: number;
   scheduled_time: string;
-  status: string;
+  status: AppointmentStatus;
   price: number;
   notes?: string;
   customer_name?: string;
@@ -41,7 +45,19 @@ const Appointments = () => {
         { credentials: "include" }
       );
       const data = await res.json();
-      if (res.ok && Array.isArray(data.data)) setAppointments(data.data);
+      if (res.ok && Array.isArray(data.data))
+        setAppointments(
+          [...data.data]
+            .map((appt) => ({
+              ...appt,
+              status: normalizeAppointmentStatus(appt.status),
+            }))
+            .sort(
+              (a, b) =>
+                new Date(b.scheduled_time).getTime() -
+                new Date(a.scheduled_time).getTime()
+            )
+        );
       else console.error("Failed to load appointments:", data.error);
     } catch (err) {
       console.error("Error fetching appointments:", err);
@@ -133,9 +149,7 @@ const Appointments = () => {
                   stylist: a.staff_name || "",
                   date: a.scheduled_time.split("T")[0],
                   time: a.scheduled_time.split("T")[1]?.substring(0, 5) || "",
-                  status:
-                    (a.status as "confirmed" | "pending" | "canceled") ||
-                    "pending",
+                  status: a.status,
                   price: a.price,
                   customerName: a.customer_name,
                 }}

@@ -40,7 +40,6 @@ const AddStaffModal: React.FC<AddStaffModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
-  // Define available specializations
   const specialties = [
     "Hair Cutting",
     "Hair Coloring",
@@ -148,7 +147,9 @@ const AddStaffModal: React.FC<AddStaffModalProps> = ({
 
       const data = await res.json();
       if (res.ok) {
-        setMessage("Staff added & onboarding email sent!");
+        setMessage(
+          `Staff added! Code ${data.staff_code} emailed from stygo.notification@gmail.com.`
+        );
         onAdded?.();
         setForm({
           first_name: "",
