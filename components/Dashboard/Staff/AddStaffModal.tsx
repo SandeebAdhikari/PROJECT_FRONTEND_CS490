@@ -40,11 +40,25 @@ const AddStaffModal: React.FC<AddStaffModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
+  // Define available specializations
+  const specialties = [
+    "Hair Cutting",
+    "Hair Coloring",
+    "Hair Styling",
+    "Manicure",
+    "Pedicure",
+    "Facial",
+    "Massage",
+    "Eyebrow Threading",
+    "Waxing",
+    "Makeup",
+  ];
+
   useEffect(() => {
     const loadRoles = async () => {
       try {
         const res = await fetchWithRefresh(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/staff/roles?salon_id=${salonId}`
+          `${process.env.NEXT_PUBLIC_API_URL}/api/staff/staff_roles?salon_id=${salonId}`
         );
         const data = await res.json();
         if (res.ok) setRoles(data.roles || []);
@@ -79,7 +93,7 @@ const AddStaffModal: React.FC<AddStaffModalProps> = ({
     if (!newRole.trim()) return;
     try {
       const res = await fetchWithRefresh(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/staff/roles`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/staff/staff_roles`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -134,7 +148,7 @@ const AddStaffModal: React.FC<AddStaffModalProps> = ({
 
       const data = await res.json();
       if (res.ok) {
-        setMessage("✅ Staff added & onboarding email sent!");
+        setMessage("Staff added & onboarding email sent!");
         onAdded?.();
         setForm({
           first_name: "",
@@ -146,24 +160,15 @@ const AddStaffModal: React.FC<AddStaffModalProps> = ({
           specialization: [],
         });
       } else {
-        setMessage(`❌ ${data.error || "Failed to add staff"}`);
+        setMessage(`${data.error || "Failed to add staff"}`);
       }
     } catch (err) {
       console.error("Add staff error:", err);
-      setMessage("❌ Server error");
+      setMessage("Server error");
     } finally {
       setLoading(false);
     }
   };
-
-  const specialties = [
-    "Haircut",
-    "Color",
-    "Styling",
-    "Nails",
-    "Facial",
-    "Massage",
-  ];
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm font-inter">
@@ -179,7 +184,6 @@ const AddStaffModal: React.FC<AddStaffModalProps> = ({
         <h2 className="text-xl font-bold mb-4">Add New Staff Member</h2>
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* name fields */}
           <div className="grid grid-cols-2 gap-3">
             <input
               name="first_name"
@@ -217,13 +221,16 @@ const AddStaffModal: React.FC<AddStaffModalProps> = ({
             className="w-full border border-border rounded-lg px-3 py-2"
           />
 
-          {/* staff role */}
           <div>
-            <label className="block text-sm font-medium mb-1">
+            <label
+              htmlFor="staff_role_id"
+              className="block text-sm font-medium mb-1"
+            >
               Staff Role <span className="text-red-500">*</span>
             </label>
             <div className="flex items-center gap-2">
               <select
+                id="staff_role_id"
                 name="staff_role_id"
                 value={form.staff_role_id}
                 onChange={(e) => {
@@ -250,6 +257,7 @@ const AddStaffModal: React.FC<AddStaffModalProps> = ({
                 type="button"
                 onClick={() => setAddingRole((prev) => !prev)}
                 className="p-2 rounded-lg border border-border hover:bg-accent"
+                aria-label="Add new role"
               >
                 <PlusCircle className="h-5 w-5 text-emerald-600" />
               </button>
@@ -274,7 +282,6 @@ const AddStaffModal: React.FC<AddStaffModalProps> = ({
             )}
           </div>
 
-          {/* specializations */}
           <div>
             <label className="block text-sm font-medium mb-1">
               Specializations <span className="text-red-500">*</span>
@@ -312,7 +319,7 @@ const AddStaffModal: React.FC<AddStaffModalProps> = ({
         {message && (
           <p
             className={`mt-3 text-sm ${
-              message.startsWith("✅") ? "text-green-600" : "text-red-600"
+              message.startsWith("-") ? "text-green-600" : "text-red-600"
             }`}
           >
             {message}

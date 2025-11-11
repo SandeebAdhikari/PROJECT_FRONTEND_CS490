@@ -6,6 +6,7 @@ import StaffCard, { StaffMember } from "./Staffcard";
 import KPI from "@/components/Dashboard/KPI";
 import Header from "@/components/Dashboard/Header";
 import AddStaffModal from "@/components/Dashboard/Staff/AddStaffModal";
+import EditStaffModal from "@/components/Dashboard/Staff/EditStaffModal"; // ✅ added
 import { fetchWithRefresh } from "@/libs/api/fetchWithRefresh";
 import useSalonId from "@/hooks/useSalonId";
 
@@ -15,6 +16,7 @@ const Staff = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [editStaff, setEditStaff] = useState<StaffMember | null>(null); // ✅ added
 
   const { salonId, loadingSalon } = useSalonId();
 
@@ -69,6 +71,25 @@ const Staff = () => {
     0
   );
 
+  const handleDelete = async (id: number) => {
+    if (!confirm("Are you sure you want to delete this staff member?")) return;
+    try {
+      const res = await fetchWithRefresh(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/staff/staff/${id}`,
+        { method: "DELETE", credentials: "include" }
+      );
+      if (res.ok) {
+        alert("Staff deleted successfully");
+        loadStaff();
+      } else {
+        const data = await res.json();
+        alert(data.error || "Failed to delete staff");
+      }
+    } catch {
+      alert("Server error deleting staff");
+    }
+  };
+
   return (
     <section className="space-y-6 font-inter">
       <Header
@@ -121,7 +142,12 @@ const Staff = () => {
       ) : (
         <div className="grid gap-5 md:grid-cols-2">
           {filtered.map((s: StaffMember) => (
-            <StaffCard key={s.staff_id} s={s} />
+            <StaffCard
+              key={s.staff_id}
+              s={s}
+              onEdit={(staff) => setEditStaff(staff)} // ✅ added
+              onDelete={(id) => handleDelete(id)} // ✅ added
+            />
           ))}
         </div>
       )}
@@ -136,6 +162,19 @@ const Staff = () => {
           loadStaff();
         }}
       />
+
+      {editStaff && (
+        <EditStaffModal
+          isOpen={!!editStaff}
+          onClose={() => setEditStaff(null)}
+          staff={{ ...editStaff, staff_role_id: 0 }}
+          salonId={salonId || 0}
+          onUpdated={() => {
+            setEditStaff(null);
+            loadStaff();
+          }}
+        />
+      )}
     </section>
   );
 };

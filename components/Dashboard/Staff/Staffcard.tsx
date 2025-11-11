@@ -2,7 +2,7 @@
 
 import React from "react";
 import Image from "next/image";
-import { Eye, Pencil, Star } from "lucide-react";
+import { Pencil, Star, Trash2 } from "lucide-react";
 import MetricBar from "@/components/Dashboard/Staff/StaffMetricBar";
 
 export type StaffMember = {
@@ -31,7 +31,13 @@ export type StaffMember = {
   total_revenue?: number;
 };
 
-const StaffCard: React.FC<{ s: StaffMember }> = ({ s }) => {
+interface StaffCardProps {
+  s: StaffMember;
+  onEdit?: (staff: StaffMember) => void;
+  onDelete?: (id: number) => void;
+}
+
+const StaffCard: React.FC<StaffCardProps> = ({ s, onEdit, onDelete }) => {
   const revenueDisplay =
     s.total_revenue && s.total_revenue > 0
       ? `$${s.total_revenue.toLocaleString()}`
@@ -46,7 +52,6 @@ const StaffCard: React.FC<{ s: StaffMember }> = ({ s }) => {
         .toUpperCase()
     : "NA";
 
-  // Convert specialization string to array
   const specialties =
     s.specialization && s.specialization.length > 0
       ? s.specialization.split(",").map((sp) => sp.trim())
@@ -67,7 +72,6 @@ const StaffCard: React.FC<{ s: StaffMember }> = ({ s }) => {
         </span>
       </div>
 
-      {/* Avatar + name */}
       <div className="flex items-start gap-4">
         {s.avatar_url ? (
           <Image
@@ -105,7 +109,6 @@ const StaffCard: React.FC<{ s: StaffMember }> = ({ s }) => {
         </div>
       </div>
 
-      {/* Email + specialties */}
       <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2">
         <div className="text-base">
           <div className="text-muted-foreground font-inter">Email:</div>
@@ -116,7 +119,8 @@ const StaffCard: React.FC<{ s: StaffMember }> = ({ s }) => {
           <div className="mt-5 text-muted-foreground font-inter">
             Specialties:
           </div>
-          <div className="mt-2 flex flex-wrap gap-2.5">
+
+          <div className="mt-2 flex flex-wrap gap-2.5 ">
             {specialties.length > 0 ? (
               specialties.map((tag) => (
                 <span
@@ -140,7 +144,6 @@ const StaffCard: React.FC<{ s: StaffMember }> = ({ s }) => {
         </div>
       </div>
 
-      {/* Metrics */}
       <div className="mt-6 space-y-5">
         <MetricBar
           label="Efficiency"
@@ -154,7 +157,6 @@ const StaffCard: React.FC<{ s: StaffMember }> = ({ s }) => {
 
       <div className="mt-6 border-t border-border" />
 
-      {/* Revenue + actions */}
       <div className="mt-4 flex items-center justify-between">
         <div className="text-sm">
           <div className="text-muted-foreground font-inter">
@@ -167,16 +169,18 @@ const StaffCard: React.FC<{ s: StaffMember }> = ({ s }) => {
 
         <div className="flex items-center gap-3 text-muted-foreground">
           <button
-            title="View"
-            className="rounded p-1 hover:text-foreground transition-smooth"
-          >
-            <Eye className="h-5 w-5" />
-          </button>
-          <button
             title="Edit"
-            className="rounded p-1 hover:text-foreground transition-smooth"
+            onClick={() => onEdit?.(s)}
+            className="rounded p-1 hover:text-foreground transition-smooth hover:cursor-pointer"
           >
             <Pencil className="h-5 w-5" />
+          </button>
+          <button
+            title="Delete"
+            onClick={() => onDelete?.(s.staff_id)}
+            className="rounded p-1 hover:text-foreground transition-smooth hover:cursor-pointer text-red-600"
+          >
+            <Trash2 className="h-5 w-5" />
           </button>
         </div>
       </div>
