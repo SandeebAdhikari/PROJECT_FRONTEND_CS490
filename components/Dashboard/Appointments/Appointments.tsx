@@ -1,62 +1,54 @@
 "use client";
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import { Calendar, CheckCircle, Clock, DollarSign } from "lucide-react";
 import AppointmentCard from "./AppointmentCard";
 import KPI from "@/components/Dashboard/KPI";
 import Header from "@/components/Dashboard/Header";
 import NewAppointmentModal from "@/components/Dashboard/Appointments/NewAppointmentModal";
-import { fetchWithRefresh } from "@/libs/api/fetchWithRefresh";
-import useSalonId from "@/hooks/useSalonId";
-
-interface Appointment {
-  appointment_id: number;
-  scheduled_time: string;
-  status: string;
-  price: number;
-  notes?: string;
-  customer_name?: string;
-  staff_name?: string;
-  service_names?: string;
-}
+import { getSalonAppointments, Appointment } from "@/libs/api/appointments";
 
 const Appointments = () => {
-  const { salonId, loadingSalon } = useSalonId();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [isNewOpen, setIsNewOpen] = useState(false);
+  const [salonId, setSalonId] = useState<string>("");
 
-  const fetchAppointments = useCallback(async () => {
-    if (!salonId) return;
+  useEffect(() => {
+    // Get salon_id from localStorage (set in layout)
+    const storedSalonId = localStorage.getItem("salon_id");
+    if (storedSalonId) {
+      setSalonId(storedSalonId);
+    }
+  }, []);
+
+  const fetchAppointments = async () => {
     setLoading(true);
     try {
-      const res = await fetchWithRefresh(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/appointments/salon?salon_id=${salonId}`,
-        { credentials: "include" }
-      );
-      const data = await res.json();
-      if (res.ok && Array.isArray(data.data)) setAppointments(data.data);
-      else console.error("Failed to load appointments:", data.error);
+      const result = await getSalonAppointments();
+      if (result.appointments) {
+        setAppointments(result.appointments);
+      }
     } catch (err) {
       console.error("Error fetching appointments:", err);
     } finally {
       setLoading(false);
     }
-  }, [salonId]);
+  };
 
   useEffect(() => {
-    if (salonId) fetchAppointments();
-  }, [salonId, fetchAppointments]);
+    fetchAppointments();
+  }, []);
 
   const today = new Date().toISOString().split("T")[0];
-  const todays = appointments.filter((a) => a.scheduled_time.startsWith(today));
-  const confirmed = appointments.filter((a) => a.status === "confirmed");
+  const todays = appointments.filter((a) => a.scheduled_time?.startsWith(today));
+  const confirmed = appointments.filter((a) => a.status === "confirmed" || a.status === "booked");
   const pending = appointments.filter((a) => a.status === "pending");
   const revenueToday = todays.reduce((sum, a) => sum + Number(a.price || 0), 0);
 
-  if (loadingSalon)
+  if (loading && appointments.length === 0)
     return (
       <p className="text-center mt-6 text-muted-foreground">
-        Loading salon data...
+        Loading appointments...
       </p>
     );
 

@@ -91,6 +91,12 @@
     },
     {
       "id": 6,
+      "label": "Gallery",
+      "shortLabel": "Photos",
+      "icon": "Image"
+    },
+    {
+      "id": 7,
       "label": "Settings",
       "shortLabel": "Config",
       "icon": "Settings"

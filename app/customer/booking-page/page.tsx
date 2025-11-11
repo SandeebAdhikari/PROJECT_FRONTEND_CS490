@@ -51,18 +51,82 @@ const BookingPage = () => {
   const selectedStaff = availableStaff.find(s => s.id.toString() === formData.staffId);
 
   useEffect(() => {
-    const staffData = (data.staff as Record<string, Staff[]>)[salonId] || [];
-    const servicesData = (data.services as Record<string, Service[]>)[salonId] || [];
-    
-    setAvailableStaff(staffData);
-    setAvailableServices(servicesData);
+    const fetchSalonData = async () => {
+      try {
+        // Try to fetch from backend first (for real salons)
+        const token = localStorage.getItem('token');
+        
+        const [staffResponse, servicesResponse] = await Promise.all([
+          fetch(`http://localhost:4000/api/salons/${salonId}/staff`, {
+            headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+          }),
+          fetch(`http://localhost:4000/api/salons/${salonId}/services`, {
+            headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+          }),
+        ]);
 
-    if (preSelectedService && servicesData.length > 0) {
-      const matchingService = servicesData.find(s => s.name === preSelectedService);
-      if (matchingService) {
-        setFormData(prev => ({ ...prev, serviceId: matchingService.id.toString() }));
+        if (staffResponse.ok && servicesResponse.ok) {
+          // Backend data available (real salon)
+          const backendStaff = await staffResponse.json();
+          const backendServices = await servicesResponse.json();
+          
+          // Transform backend staff to match mock data structure
+          const transformedStaff = backendStaff.map((s: any) => ({
+            id: s.staff_id,
+            name: s.full_name || 'Staff Member',
+            role: s.role || 'Stylist',
+            rating: 4.5,
+            reviews: 0,
+            specialties: s.specialization ? [s.specialization] : [],
+            color: 'bg-blue-400'
+          }));
+          
+          // Transform backend services to match mock data structure
+          const transformedServices = backendServices.map((s: any) => ({
+            id: s.service_id,
+            name: s.custom_name || s.category_name,
+            category: s.category_name,
+            description: s.description || 'Professional service',
+            duration: `${s.duration || 30} min`,
+            price: parseFloat(s.price || 0)
+          }));
+          
+          setAvailableStaff(transformedStaff);
+          setAvailableServices(transformedServices);
+          
+          if (preSelectedService && transformedServices.length > 0) {
+            const matchingService = transformedServices.find((s: any) => s.name === preSelectedService);
+            if (matchingService) {
+              setFormData(prev => ({ ...prev, serviceId: matchingService.id.toString() }));
+            }
+          }
+        } else {
+          // Fallback to mock data (for mock salons)
+          const staffData = (data.staff as Record<string, Staff[]>)[salonId] || [];
+          const servicesData = (data.services as Record<string, Service[]>)[salonId] || [];
+          
+          setAvailableStaff(staffData);
+          setAvailableServices(servicesData);
+
+          if (preSelectedService && servicesData.length > 0) {
+            const matchingService = servicesData.find(s => s.name === preSelectedService);
+            if (matchingService) {
+              setFormData(prev => ({ ...prev, serviceId: matchingService.id.toString() }));
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching salon data:', error);
+        // Fallback to mock data on error
+        const staffData = (data.staff as Record<string, Staff[]>)[salonId] || [];
+        const servicesData = (data.services as Record<string, Service[]>)[salonId] || [];
+        
+        setAvailableStaff(staffData);
+        setAvailableServices(servicesData);
       }
-    }
+    };
+
+    fetchSalonData();
   }, [salonId, preSelectedService]);
 
   useEffect(() => {

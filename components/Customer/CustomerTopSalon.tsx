@@ -1,8 +1,25 @@
 import React, { useMemo } from "react";
 import SalonCard from "../Salon/SalonCard";
-import data from "@/data/data.json";
+
+interface Salon {
+  salon_id?: number;
+  id?: string;
+  name: string;
+  address?: string;
+  city?: string;
+  description?: string;
+  phone?: string;
+  status?: string;
+  imageUrl?: string;
+  profile_picture?: string;
+  category?: string;
+  rating?: number;
+  totalReviews?: number;
+  priceFrom?: number;
+}
 
 interface CustomerTopSalonProps {
+  salons: Salon[];
   selectedService?: string;
   searchQuery?: string;
   onToggleFavorite?: (id: string) => void;
@@ -10,42 +27,28 @@ interface CustomerTopSalonProps {
 }
 
 const CustomerTopSalon: React.FC<CustomerTopSalonProps> = ({
+  salons = [],
   selectedService = "all",
   searchQuery = "",
   onToggleFavorite,
   isFavorite,
 }) => {
   const filteredSalons = useMemo(() => {
-    let filtered = data.salons;
-
-    // Filter by service
-    if (selectedService && selectedService !== "all") {
-      filtered = filtered.filter((salon) => {
-        const category = salon.category.toLowerCase();
-        const service = selectedService.toLowerCase();
-        
-        if (service === "haircut") return category.includes("hair");
-        if (service === "coloring") return category.includes("hair");
-        if (service === "nails") return category.includes("nail");
-        if (service === "eyebrows") return category.includes("brow");
-        if (service === "makeup") return category.includes("makeup");
-        
-        return true;
-      });
-    }
+    let filtered = salons.filter((s) => s.status === "active" || !s.status);
 
     // Filter by search query
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter((salon) =>
         salon.name.toLowerCase().includes(query) ||
-        salon.city.toLowerCase().includes(query) ||
-        salon.description.toLowerCase().includes(query)
+        (salon.city && salon.city.toLowerCase().includes(query)) ||
+        (salon.description && salon.description.toLowerCase().includes(query)) ||
+        (salon.address && salon.address.toLowerCase().includes(query))
       );
     }
 
     return filtered;
-  }, [selectedService, searchQuery]);
+  }, [salons, selectedService, searchQuery]);
 
   if (filteredSalons.length === 0) {
     return (
@@ -70,22 +73,31 @@ const CustomerTopSalon: React.FC<CustomerTopSalonProps> = ({
         </p>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 lg:gap-6 max-w-[1600px] mx-auto">
-        {filteredSalons.map((salon) => (
-        <SalonCard
-          key={salon.id}
-          id={salon.id}
-          name={salon.name}
-          city={salon.city}
-          description={salon.description}
-          category={salon.category}
-          rating={salon.rating}
-          totalReviews={salon.totalReviews}
-          priceFrom={salon.priceFrom}
-          imageUrl={salon.imageUrl}
-            isFavorite={isFavorite?.(salon.id) || false}
-            onToggleFavorite={onToggleFavorite}
-        />
-      ))}
+        {filteredSalons.map((salon) => {
+          const salonId = salon.salon_id?.toString() || salon.id || "";
+          
+          // Use salon's actual image: profile_picture from backend OR imageUrl from mock data
+          const imageUrl = salon.profile_picture 
+            ? `http://localhost:4000${salon.profile_picture}` 
+            : salon.imageUrl || "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=400&h=300&fit=crop";
+          
+          return (
+            <SalonCard
+              key={salonId}
+              id={salonId}
+              name={salon.name}
+              city={salon.city || "Location TBD"}
+              description={salon.description || "A professional salon"}
+              category={salon.category || "Beauty Services"}
+              rating={salon.rating || 4.5}
+              totalReviews={salon.totalReviews || 0}
+              priceFrom={salon.priceFrom || 50}
+              imageUrl={imageUrl}
+              isFavorite={isFavorite?.(salonId) || false}
+              onToggleFavorite={onToggleFavorite}
+            />
+          );
+        })}
       </div>
     </div>
   );
