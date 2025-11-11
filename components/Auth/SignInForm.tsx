@@ -53,6 +53,12 @@ const SignInForm = () => {
 
       if (response.token) {
         localStorage.setItem("token", response.token);
+        
+        // Save user object with phone for 2FA modal
+        if (response.user) {
+          localStorage.setItem("user", JSON.stringify(response.user));
+        }
+        
         const userRole = response.user?.role || response.user?.user_role;
         if (userRole)
           localStorage.setItem("role", userRole);
@@ -101,6 +107,11 @@ const SignInForm = () => {
       if (response.token) {
         localStorage.setItem("token", response.token);
         localStorage.removeItem("tempToken");
+        
+        // Save user object with phone for 2FA modal
+        if (response.user) {
+          localStorage.setItem("user", JSON.stringify(response.user));
+        }
         
         // Handle both role and user_role from backend
         const userRole = response.user?.role || response.user?.user_role;

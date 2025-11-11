@@ -48,6 +48,12 @@ const SignUpForm = () => {
         return;
       }
 
+      // Clear any old 2FA flags so popup shows on first login
+      localStorage.removeItem("2fa_setup_completed");
+      localStorage.removeItem("2fa_setup_skipped");
+      localStorage.removeItem("2fa_first_prompt_shown");
+      localStorage.removeItem("2fa_last_prompt");
+
       alert("Account created successfully!");
       window.location.href = "/sign-in";
     } catch (error) {
