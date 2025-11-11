@@ -2,30 +2,19 @@
 
 import React, { useEffect, useState } from "react";
 import { X } from "lucide-react";
+import { StaffMember } from "@/components/Dashboard/Staff/Staffcard";
 import { fetchWithRefresh } from "@/libs/api/fetchWithRefresh";
 
 interface EditStaffModalProps {
   isOpen: boolean;
   onClose: () => void;
-  staff: Staff;
+  staff: StaffMember;
   salonId: number;
   onUpdated?: () => void;
 }
-
 interface RoleOption {
   staff_role_id: number;
   staff_role_name: string;
-}
-
-interface Staff {
-  staff_id: number;
-  user_id: number;
-  full_name: string;
-  email: string;
-  phone: string;
-  staff_role: string;
-  staff_role_id: number;
-  specialization?: string;
 }
 
 const EditStaffModal: React.FC<EditStaffModalProps> = ({
@@ -116,9 +105,9 @@ const EditStaffModal: React.FC<EditStaffModalProps> = ({
             staff_role: form.staff_role,
             staff_role_id: form.staff_role_id,
             specialization: form.specialization.join(", "),
-            full_name: form.full_name, // ✅ new
-            phone: form.phone, // ✅ new
-            email: form.email, // ✅ new
+            full_name: form.full_name,
+            phone: form.phone,
+            email: form.email,
           }),
         }
       );
@@ -254,7 +243,7 @@ const EditStaffModal: React.FC<EditStaffModalProps> = ({
           <p
             className={`mt-3 text-sm ${
               message.startsWith("Staff updated")
-                ? "text-green-600"
+                ? "text-primary-light"
                 : "text-red-600"
             }`}
           >

@@ -29,6 +29,7 @@ export type StaffMember = {
   review_count?: number;
   efficiency_percentage?: number;
   total_revenue?: number;
+  staff_role_id?: number;
 };
 
 interface StaffCardProps {
@@ -59,7 +60,6 @@ const StaffCard: React.FC<StaffCardProps> = ({ s, onEdit, onDelete }) => {
 
   return (
     <div className="border border-border bg-muted/40 rounded-xl p-6 shadow-sm hover:shadow-lg transform hover:-translate-y-1 transition-all duration-300 ease-out relative overflow-hidden">
-      {/* Active badge */}
       <div className="absolute right-4 top-4">
         <span
           className={`px-3 py-1.5 rounded-full text-sm font-medium border border-transparent shadow-sm ${

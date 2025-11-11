@@ -163,11 +163,15 @@ const Staff = () => {
         }}
       />
 
-      {editStaff && (
+      {editStaff && editStaff.full_name && (
         <EditStaffModal
           isOpen={!!editStaff}
           onClose={() => setEditStaff(null)}
-          staff={{ ...editStaff, staff_role_id: 0 }}
+          staff={{
+            ...editStaff,
+            staff_role_id: 0,
+            full_name: editStaff.full_name,
+          }}
           salonId={salonId || 0}
           onUpdated={() => {
             setEditStaff(null);

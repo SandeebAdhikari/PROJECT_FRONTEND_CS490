@@ -22,6 +22,13 @@ interface Appointment {
 const Appointments = () => {
   const { salonId, loadingSalon } = useSalonId();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [stats, setStats] = useState({
+    todays_appointments: 0,
+    confirmed: 0,
+    pending: 0,
+    revenue_today: 0,
+  });
+
   const [loading, setLoading] = useState(false);
   const [isNewOpen, setIsNewOpen] = useState(false);
 
@@ -43,15 +50,25 @@ const Appointments = () => {
     }
   }, [salonId]);
 
+  const fetchStats = useCallback(async () => {
+    if (!salonId) return;
+    try {
+      const res = await fetchWithRefresh(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/appointments/salon-stats?salon_id=${salonId}`,
+        { credentials: "include" }
+      );
+      const data = await res.json();
+      if (res.ok) setStats(data);
+      else console.error("Failed to load stats:", data.error);
+    } catch (err) {
+      console.error("Error fetching stats:", err);
+    }
+  }, [salonId]);
+
   useEffect(() => {
     if (salonId) fetchAppointments();
-  }, [salonId, fetchAppointments]);
-
-  const today = new Date().toISOString().split("T")[0];
-  const todays = appointments.filter((a) => a.scheduled_time.startsWith(today));
-  const confirmed = appointments.filter((a) => a.status === "confirmed");
-  const pending = appointments.filter((a) => a.status === "pending");
-  const revenueToday = todays.reduce((sum, a) => sum + Number(a.price || 0), 0);
+    fetchStats();
+  }, [salonId, fetchAppointments, fetchStats]);
 
   if (loadingSalon)
     return (
@@ -75,25 +92,25 @@ const Appointments = () => {
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 items-stretch">
         <KPI
           label="Today's Appointments"
-          value={todays.length}
+          value={stats.todays_appointments}
           Icon={Calendar}
           iconClass="text-blue-500 bg-blue-50"
         />
         <KPI
           label="Confirmed"
-          value={confirmed.length}
+          value={stats.confirmed}
           Icon={CheckCircle}
           iconClass="text-emerald-500 bg-emerald-50"
         />
         <KPI
           label="Pending"
-          value={pending.length}
+          value={stats.pending}
           Icon={Clock}
           iconClass="text-amber-500 bg-amber-50"
         />
         <KPI
           label="Revenue Today"
-          value={`$${revenueToday}`}
+          value={`$${stats.revenue_today}`}
           Icon={DollarSign}
           iconClass="text-purple-500 bg-purple-50"
         />
