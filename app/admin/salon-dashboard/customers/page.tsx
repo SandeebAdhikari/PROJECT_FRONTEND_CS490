@@ -1,13 +1,95 @@
 "use client";
 
-import React from "react";
-import CustomerStatsCards from "@/components/Dashboard/Customer/CustomerStatsCards";
+import React, { useCallback, useEffect, useState } from "react";
+import CustomerStatsCards, {
+  CustomerStats,
+} from "@/components/Dashboard/Customer/CustomerStatsCards";
 import CustomerCard from "@/components/Dashboard/Customer/CustomerListTable";
-import data from "@/data/staff-customer-management.json" assert { type: "json" };
 import Header from "@/components/Dashboard/Header";
 import { UserPlus } from "lucide-react";
+import { fetchWithRefresh } from "@/libs/api/fetchWithRefresh";
+import useSalonId from "@/hooks/useSalonId";
+import AddCustomerModal from "@/components/Dashboard/Customer/AddCustomerModal";
+
+interface DirectoryCustomer {
+  user_id: number;
+  full_name: string;
+  email: string;
+  phone?: string;
+  total_visits: number;
+  total_spent: number;
+  last_visit?: string | null;
+  favorite_staff?: string | null;
+  membership_tier?: string;
+}
+
+const defaultStats: CustomerStats = {
+  totalCustomers: 0,
+  vipCustomers: 0,
+  totalRevenue: 0,
+  avgSpend: 0,
+};
+
 const CustomersPage = () => {
-  const customers = data.customers || [];
+  const { salonId, loadingSalon } = useSalonId();
+  const [stats, setStats] = useState<CustomerStats>(defaultStats);
+  const [customers, setCustomers] = useState<DirectoryCustomer[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const loadData = useCallback(async () => {
+    if (!salonId) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const statsPromise = fetchWithRefresh(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/users/salon-customers/stats?salon_id=${salonId}`,
+        { credentials: "include" }
+      );
+      const directoryPromise = fetchWithRefresh(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/users/salon-customers/directory?salon_id=${salonId}`,
+        { credentials: "include" }
+      );
+
+      const [statsRes, directoryRes] = await Promise.all([
+        statsPromise,
+        directoryPromise,
+      ]);
+
+      const statsPayload = await statsRes.json();
+      const directoryPayload = await directoryRes.json();
+
+      if (!statsRes.ok) {
+        throw new Error(statsPayload?.error || "Failed to load stats");
+      }
+      if (!directoryRes.ok) {
+        throw new Error(directoryPayload?.error || "Failed to load customers");
+      }
+
+      setStats({
+        totalCustomers: Number(statsPayload?.stats?.total_customers ?? 0),
+        vipCustomers: Number(statsPayload?.stats?.vip_customers ?? 0),
+        totalRevenue: Number(statsPayload?.stats?.total_revenue ?? 0),
+        avgSpend: Number(statsPayload?.stats?.avg_spend ?? 0),
+      });
+
+      setCustomers(directoryPayload?.customers || []);
+    } catch (err) {
+      console.error("Customer dashboard load error:", err);
+      setError(
+        err instanceof Error ? err.message : "Failed to load customer data"
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, [salonId]);
+
+  useEffect(() => {
+    if (salonId) {
+      loadData();
+    }
+  }, [salonId, loadData]);
 
   return (
     <div className="space-y-6 font-inter p-6 sm:p-8">
@@ -16,34 +98,55 @@ const CustomersPage = () => {
         subtitle="Track your loyal customers and their details"
         primaryLabel="Add Customer"
         primaryIcon={UserPlus}
-        showActions={true}
+        showActions
+        onPrimaryClick={() => setIsModalOpen(true)}
       />
 
-      <CustomerStatsCards stats={data.customerStats} />
+      {error && (
+        <p className="text-sm text-destructive bg-destructive/10 px-4 py-2 rounded-lg">
+          {error}
+        </p>
+      )}
 
-      <section>
-        <h2 className="text-xl font-semibold mb-4">Customer Directory</h2>
-        <div className="space-y-4">
-          {customers.map((customer) => (
-            <CustomerCard
-              key={customer.id}
-              name={customer.name}
-              email={customer.email}
-              phone={customer.phone}
-              totalVisits={customer.totalAppointments}
-              totalSpent={customer.totalSpent}
-              lastVisit={customer.lastVisit}
-              favoriteStaff={customer.favoriteService?.split(" ")[0] || "N/A"}
-              membershipTier={
-                customer.membershipTier === "Gold" ||
-                customer.membershipTier === "Platinum"
-                  ? "VIP"
-                  : ""
-              }
-            />
-          ))}
-        </div>
-      </section>
+      {loadingSalon || loading ? (
+        <p className="text-sm text-muted-foreground">Loading customer data…</p>
+      ) : (
+        <>
+          <CustomerStatsCards stats={stats} />
+
+          <section>
+            <h2 className="text-xl font-semibold mb-4">Customer Directory</h2>
+            {customers.length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                No customers yet. Add your first client to get started.
+              </p>
+            ) : (
+              <div className="space-y-4">
+                {customers.map((customer) => (
+                  <CustomerCard
+                    key={customer.user_id}
+                    name={customer.full_name}
+                    email={customer.email}
+                    phone={customer.phone}
+                    totalVisits={customer.total_visits}
+                    totalSpent={customer.total_spent}
+                    lastVisit={customer.last_visit || undefined}
+                    favoriteStaff={customer.favorite_staff || undefined}
+                    membershipTier={customer.membership_tier}
+                  />
+                ))}
+              </div>
+            )}
+          </section>
+        </>
+      )}
+
+      <AddCustomerModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        salonId={salonId}
+        onAdded={loadData}
+      />
     </div>
   );
 };

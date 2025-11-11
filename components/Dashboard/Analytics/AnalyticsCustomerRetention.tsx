@@ -11,17 +11,26 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { Users } from "lucide-react";
+import { RetentionPoint } from "@/libs/types/analytics";
 
-const data = [
-  { month: "Jan", retention: 180, customers: 90 },
-  { month: "Feb", retention: 170, customers: 85 },
-  { month: "Mar", retention: 200, customers: 95 },
-  { month: "Apr", retention: 220, customers: 100 },
-  { month: "May", retention: 210, customers: 98 },
-  { month: "Jun", retention: 240, customers: 105 },
-];
+interface RetentionProps {
+  data: {
+    chart: RetentionPoint[];
+    retentionRate: number;
+    newCustomers: number;
+  };
+}
 
-const AnalyticsCustomerRetention = () => {
+const AnalyticsCustomerRetention: React.FC<RetentionProps> = ({ data }) => {
+  const chartData =
+    data.chart.length > 0
+      ? data.chart.map((point) => ({
+          month: point.month,
+          retention: point.retention,
+          customers: point.customers,
+        }))
+      : [{ month: "—", retention: 0, customers: 0 }];
+
   return (
     <div className=" bg-card border border-border rounded-2xl p-6 shadow-sm hover:shadow-soft-br transition-smooth font-inter">
       <div className="flex items-center gap-2 mb-4">
@@ -34,19 +43,23 @@ const AnalyticsCustomerRetention = () => {
       <div className="grid grid-cols-2 gap-4 mb-6">
         <div className="bg-muted p-4 rounded-xl text-center">
           <p className="text-sm text-subtle-foreground">Retention Rate</p>
-          <p className="text-3xl font-bold text-foreground">94%</p>
-          <p className="text-primary text-sm">+2.1% vs last month</p>
+          <p className="text-3xl font-bold text-foreground">
+            {data.retentionRate.toFixed(0)}%
+          </p>
+          <p className="text-primary text-sm">Current period</p>
         </div>
         <div className="bg-muted p-4 rounded-xl text-center">
           <p className="text-sm text-subtle-foreground">New Customers</p>
-          <p className="text-3xl font-bold text-foreground">67</p>
-          <p className="text-primary text-sm">+34.1% vs last month</p>
+          <p className="text-3xl font-bold text-foreground">
+            {data.newCustomers}
+          </p>
+          <p className="text-primary text-sm">Last 7 days</p>
         </div>
       </div>
 
       <div className="h-[250px] sm:h-[300px] flex justify-center items-center">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data}>
+          <LineChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
             <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" />
             <YAxis stroke="hsl(var(--muted-foreground))" />

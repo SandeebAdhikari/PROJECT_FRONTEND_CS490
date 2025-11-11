@@ -1,5 +1,4 @@
 export const APPOINTMENT_STATUSES = [
-  "booked",
   "pending",
   "confirmed",
   "completed",
@@ -49,6 +48,7 @@ export const normalizeAppointmentStatus = (
   if (!status) return DEFAULT_APPOINTMENT_STATUS;
   const normalized = status.trim().toLowerCase();
   if (normalized === "canceled") return "cancelled";
+  if (normalized === "booked") return "confirmed";
   if (
     (APPOINTMENT_STATUSES as readonly string[]).includes(
       normalized
@@ -59,14 +59,11 @@ export const normalizeAppointmentStatus = (
   return DEFAULT_APPOINTMENT_STATUS;
 };
 
-export const appointmentStatusOptions = (
-  includeLegacyBooked = false
-): Array<{ value: AppointmentStatus; label: string }> => {
-  const statuses = APPOINTMENT_STATUSES.filter((status) =>
-    includeLegacyBooked ? true : status !== "booked"
-  );
-  return statuses.map((status) => ({
+export const appointmentStatusOptions = (): Array<{
+  value: AppointmentStatus;
+  label: string;
+}> =>
+  APPOINTMENT_STATUSES.map((status) => ({
     value: status,
     label: APPOINTMENT_STATUS_META[status].label,
   }));
-};

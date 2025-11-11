@@ -370,15 +370,11 @@ const AppointmentEditModal = ({
               }
               className="w-full border border-border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-light"
             >
-              {appointmentStatusOptions(form.status === "booked").map(
-                (option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.value === "booked"
-                      ? `${option.label} (legacy)`
-                      : option.label}
-                  </option>
-                )
-              )}
+              {appointmentStatusOptions().map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
             </select>
           </div>
 

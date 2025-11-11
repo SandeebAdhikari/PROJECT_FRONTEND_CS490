@@ -11,17 +11,22 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { TrendingUp } from "lucide-react";
+import { GrowthPoint, GrowthSummary } from "@/libs/types/analytics";
 
-const data = [
-  { month: "Jan", revenue: 32000, customers: 180, retention: 91 },
-  { month: "Feb", revenue: 29500, customers: 170, retention: 89 },
-  { month: "Mar", revenue: 33000, customers: 190, retention: 90 },
-  { month: "Apr", revenue: 37000, customers: 205, retention: 92 },
-  { month: "May", revenue: 38000, customers: 210, retention: 91 },
-  { month: "Jun", revenue: 45000, customers: 240, retention: 94 },
-];
+interface GrowthOverviewProps {
+  data: {
+    chart: GrowthPoint[];
+    summary: GrowthSummary;
+  };
+}
 
-const AnalyticsGrowthOverview = () => {
+const AnalyticsGrowthOverview: React.FC<GrowthOverviewProps> = ({ data }) => {
+  const chartData =
+    data.chart.length > 0
+      ? data.chart
+      : [{ month: "—", revenue: 0, customers: 0, retention: 0 }];
+  const { summary } = data;
+
   return (
     <div className="bg-card border border-border rounded-2xl p-6 shadow-sm hover:shadow-soft-br transition-smooth font-inter">
       <div className="flex items-center gap-2 mb-4">
@@ -33,7 +38,7 @@ const AnalyticsGrowthOverview = () => {
 
       <div className="h-[280px] sm:h-[340px] flex justify-center items-center mb-6">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data}>
+          <LineChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
             <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" />
             <YAxis stroke="hsl(var(--muted-foreground))" />
@@ -76,24 +81,28 @@ const AnalyticsGrowthOverview = () => {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-muted rounded-xl p-4 text-center">
           <p className="text-sm text-subtle-foreground">Revenue Growth</p>
-          <p className="text-2xl font-semibold text-foreground">+40.6%</p>
-          <p className="text-sm text-muted-foreground">
-            $32k → $45k (6 months)
+          <p className="text-2xl font-semibold text-foreground">
+            {summary.revenueGrowth.toFixed(1)}%
           </p>
+          <p className="text-sm text-muted-foreground">Last 6 months</p>
         </div>
 
         <div className="bg-muted rounded-xl p-4 text-center">
           <p className="text-sm text-subtle-foreground">Customer Growth</p>
-          <p className="text-2xl font-semibold text-foreground">+33.3%</p>
-          <p className="text-sm text-muted-foreground">180 → 240 customers</p>
+          <p className="text-2xl font-semibold text-foreground">
+            {summary.customerGrowth.toFixed(1)}%
+          </p>
+          <p className="text-sm text-muted-foreground">Last 6 months</p>
         </div>
 
         <div className="bg-muted rounded-xl p-4 text-center">
           <p className="text-sm text-subtle-foreground">
             Retention Improvement
           </p>
-          <p className="text-2xl font-semibold text-foreground">+3.3%</p>
-          <p className="text-sm text-muted-foreground">91% → 94% retention</p>
+          <p className="text-2xl font-semibold text-foreground">
+            {summary.retentionGrowth.toFixed(1)}%
+          </p>
+          <p className="text-sm text-muted-foreground">Last 6 months</p>
         </div>
       </div>
     </div>

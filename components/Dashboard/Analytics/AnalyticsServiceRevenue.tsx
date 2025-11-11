@@ -2,23 +2,19 @@
 
 import React, { useEffect } from "react";
 import { Target } from "lucide-react";
+import { ServiceRevenueItem } from "@/libs/types/analytics";
 
-const serviceData = [
-  { service: "Women's Haircut", revenue: 2925, bookings: 45, avg: 65 },
-  { service: "Men's Haircut", revenue: 1800, bookings: 40, avg: 45 },
-  { service: "Full Color", revenue: 4900, bookings: 35, avg: 140 },
-  { service: "Highlights", revenue: 3600, bookings: 30, avg: 120 },
-  { service: "Beard Trim", revenue: 625, bookings: 25, avg: 25 },
-  {
-    service: "Deep Conditioning Treatment",
-    revenue: 1100,
-    bookings: 20,
-    avg: 55,
-  },
-];
+interface ServiceRevenueProps {
+  data: ServiceRevenueItem[];
+}
 
-const AnalyticsServiceRevenue = () => {
-  const maxRevenue = Math.max(...serviceData.map((d) => d.revenue));
+const AnalyticsServiceRevenue: React.FC<ServiceRevenueProps> = ({ data }) => {
+  const serviceData =
+    data.length > 0
+      ? data
+      : [{ service: "No data", revenue: 0, bookings: 0, average: 0 }];
+  const maxRevenue =
+    Math.max(...serviceData.map((d) => d.revenue || 0)) || 1;
 
   useEffect(() => {
     const bars = document.querySelectorAll<HTMLDivElement>(".progress-bar");
@@ -26,7 +22,7 @@ const AnalyticsServiceRevenue = () => {
       const progress = bar.dataset.progress;
       if (progress) bar.style.setProperty("--progress", `${progress}%`);
     });
-  }, []);
+  }, [serviceData]);
 
   return (
     <>
@@ -55,7 +51,7 @@ const AnalyticsServiceRevenue = () => {
 
               <div className="flex justify-between text-sm text-muted-foreground">
                 <span>{srv.bookings} bookings</span>
-                <span>${srv.avg}/service</span>
+                <span>${srv.average.toFixed(2)}/service</span>
               </div>
             </div>
           ))}

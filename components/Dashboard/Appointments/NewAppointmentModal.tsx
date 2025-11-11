@@ -3,6 +3,11 @@ import React, { useEffect, useState } from "react";
 import { X, PlusCircle } from "lucide-react";
 import DatePicker from "react-datepicker";
 import { fetchWithRefresh } from "@/libs/api/fetchWithRefresh";
+import {
+  AppointmentStatus,
+  appointmentStatusOptions,
+  normalizeAppointmentStatus,
+} from "@/libs/constants/appointments";
 import "react-datepicker/dist/react-datepicker.css";
 
 interface Customer {
@@ -42,6 +47,7 @@ const NewAppointmentModal = ({
     time: "",
     notes: "",
     price: 0,
+    status: "pending" as AppointmentStatus,
   });
 
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -183,6 +189,7 @@ const NewAppointmentModal = ({
       scheduledTime: `${dateStr}T${form.time}`,
       price: totalPrice,
       notes: form.notes,
+      status: form.status,
       ...(createCustomerMode
         ? { ...newCustomer }
         : {
@@ -210,6 +217,28 @@ const NewAppointmentModal = ({
       alert("Appointment added and confirmation email sent!");
       if (onCreated) await Promise.resolve(onCreated());
       onClose();
+      setForm({
+        service_ids: [],
+        staff_id: "",
+        date: new Date(),
+        time: "",
+        notes: "",
+        price: 0,
+        status: "pending",
+      });
+      setSelectedCustomer(null);
+      setCustomerQuery("");
+      setCreateCustomerMode(false);
+      setNewCustomer({
+        firstName: "",
+        lastName: "",
+        email: "",
+        phone: "",
+        address: "",
+        city: "",
+        state: "",
+        zip: "",
+      });
     }
 
     setLoading(false);
@@ -404,8 +433,34 @@ const NewAppointmentModal = ({
             >
               <option value="">Auto-assign available staff</option>
               {staffList.map((s) => (
-                <option key={s.staff_id} value={s.staff_id}>
+                <option
+                  key={s.staff_id}
+                  value={s.staff_id}
+                  className="text-border"
+                >
                   {s.full_name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              Status <span className="text-primary">*</span>
+            </label>
+            <select
+              value={form.status}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  status: normalizeAppointmentStatus(e.target.value),
+                })
+              }
+              className="w-full border border-border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-light"
+            >
+              {appointmentStatusOptions().map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
                 </option>
               ))}
             </select>

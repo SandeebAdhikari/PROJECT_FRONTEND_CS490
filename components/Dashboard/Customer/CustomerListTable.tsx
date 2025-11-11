@@ -6,11 +6,11 @@ import { Eye, Edit, Phone, Mail } from "lucide-react";
 interface CustomerCardProps {
   name: string;
   email: string;
-  phone: string;
+  phone?: string | null;
   totalVisits: number;
   totalSpent: number;
-  lastVisit: string;
-  favoriteStaff: string;
+  lastVisit?: string | null;
+  favoriteStaff?: string | null;
   membershipTier?: string;
 }
 
@@ -31,6 +31,11 @@ const CustomerCard: React.FC<CustomerCardProps> = ({
     .join("")
     .toUpperCase();
 
+  const formattedSpent = `$${Number(totalSpent || 0).toFixed(2)}`;
+  const formattedLastVisit = lastVisit
+    ? new Date(lastVisit).toLocaleDateString()
+    : "—";
+
   return (
     <div className="border border-border bg-white rounded-xl p-4 sm:p-5 hover:shadow-md transition-smooth flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
       <div className="flex items-start sm:items-center gap-4 flex-1 min-w-[250px]">
@@ -48,7 +53,7 @@ const CustomerCard: React.FC<CustomerCardProps> = ({
             )}
           </div>
           <p className="text-sm text-gray-500">{email}</p>
-          <p className="text-sm text-gray-500">{phone}</p>
+          {phone && <p className="text-sm text-gray-500">{phone}</p>}
         </div>
       </div>
 
@@ -58,15 +63,17 @@ const CustomerCard: React.FC<CustomerCardProps> = ({
           <p className="text-sm text-gray-500">Visits</p>
         </div>
         <div>
-          <p className="text-lg font-semibold">${totalSpent}</p>
+          <p className="text-lg font-semibold">{formattedSpent}</p>
           <p className="text-sm text-gray-500">Total Spent</p>
         </div>
         <div>
-          <p className="text-sm font-semibold">{lastVisit}</p>
+          <p className="text-sm font-semibold">{formattedLastVisit}</p>
           <p className="text-sm text-gray-500">Last Visit</p>
         </div>
         <div>
-          <p className="text-sm font-semibold">{favoriteStaff}</p>
+          <p className="text-sm font-semibold">
+            {favoriteStaff || "—"}
+          </p>
           <p className="text-sm text-gray-500">Favorite Staff</p>
         </div>
       </div>

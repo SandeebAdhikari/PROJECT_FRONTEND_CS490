@@ -10,7 +10,6 @@ import {
   APPOINTMENT_STATUS_META,
   AppointmentStatus,
 } from "@/libs/constants/appointments";
-
 export type Appointment = {
   appointment_id: number;
   customer?: string;
@@ -22,7 +21,6 @@ export type Appointment = {
   time?: string;
   scheduled_time?: string;
   price: number;
-  status: AppointmentStatus;
   avatarUrl?: string;
   salon_id?: number;
 };

@@ -3,14 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 import { PieChart as PieIcon } from "lucide-react";
-
-const data = [
-  { name: "Haircuts", value: 35 },
-  { name: "Coloring", value: 25 },
-  { name: "Styling", value: 20 },
-  { name: "Treatments", value: 15 },
-  { name: "Other", value: 5 },
-];
+import { ServiceDistributionItem } from "@/libs/types/analytics";
 
 const COLORS = [
   "hsl(260, 85%, 65%)",
@@ -20,7 +13,11 @@ const COLORS = [
   "hsl(0, 80%, 60%)",
 ];
 
-const AnalyticsServiceChart = () => {
+interface ServiceChartProps {
+  data: ServiceDistributionItem[];
+}
+
+const AnalyticsServiceChart: React.FC<ServiceChartProps> = ({ data }) => {
   const [radius, setRadius] = useState(80);
 
   useEffect(() => {
@@ -51,16 +48,26 @@ const AnalyticsServiceChart = () => {
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
-                data={data}
+                data={
+                  data.length > 0
+                    ? data
+                    : [{ name: "No Data", value: 1, percent: 100 }]
+                }
                 cx="50%"
                 cy="50%"
                 outerRadius={radius}
                 dataKey="value"
-                label={({ name, value }) => `${name}: ${value}%`}
+                label={({ name, payload }) =>
+                  `${name}: ${payload?.percent?.toFixed?.(1) ?? 0}%`
+                }
                 labelLine
                 stroke="hsl(var(--color-background))"
               >
-                {data.map((entry, index) => (
+                {(
+                  data.length > 0
+                    ? data
+                    : [{ name: "No Data", value: 1, percent: 100 }]
+                ).map((entry, index) => (
                   <Cell
                     key={`cell-${index}`}
                     fill={COLORS[index % COLORS.length]}
