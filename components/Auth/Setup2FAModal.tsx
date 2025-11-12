@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Shield, X } from "lucide-react";
 import { enable2FA } from "@/libs/api/auth";
 
@@ -18,6 +18,23 @@ const Setup2FAModal: React.FC<Setup2FAModalProps> = ({
   const [phoneNumber, setPhoneNumber] = useState(userPhone);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Try to get phone from localStorage if not provided via props
+  useEffect(() => {
+    if (!phoneNumber && isOpen) {
+      try {
+        const storedUser = localStorage.getItem("user");
+        if (storedUser) {
+          const user = JSON.parse(storedUser);
+          if (user.phone) {
+            setPhoneNumber(user.phone);
+          }
+        }
+      } catch (err) {
+        console.error("Error loading phone from localStorage:", err);
+      }
+    }
+  }, [isOpen, phoneNumber]);
 
   if (!isOpen) return null;
 

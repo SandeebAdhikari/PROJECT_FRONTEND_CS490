@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fix User Phone in LocalStorage</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        button {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #059669;
+        }
+        .success {
+            color: green;
+            margin-top: 20px;
+        }
+        .error {
+            color: red;
+            margin-top: 20px;
+        }
+        pre {
+            background: #f3f4f6;
+            padding: 12px;
+            border-radius: 6px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Fix User Phone Number</h1>
+    <p>This will add the phone number (2017479556) to your localStorage user object.</p>
+    
+    <button onclick="fixPhone()">Fix Phone Number</button>
+    
+    <div id="result"></div>
+
+    <script>
+        function fixPhone() {
+            const resultDiv = document.getElementById('result');
+            
+            try {
+                // Get current user from localStorage
+                const userStr = localStorage.getItem('user');
+                
+                if (!userStr) {
+                    resultDiv.innerHTML = '<p class="error">No user found in localStorage. Please login first.</p>';
+                    return;
+                }
+                
+                const user = JSON.parse(userStr);
+                
+                resultDiv.innerHTML = '<p>Current user object:</p><pre>' + JSON.stringify(user, null, 2) + '</pre>';
+                
+                // Add phone number
+                user.phone = '2017479556';
+                
+                // Save back to localStorage
+                localStorage.setItem('user', JSON.stringify(user));
+                
+                resultDiv.innerHTML += '<p class="success">✅ Phone number added successfully!</p>';
+                resultDiv.innerHTML += '<p>Updated user object:</p><pre>' + JSON.stringify(user, null, 2) + '</pre>';
+                resultDiv.innerHTML += '<p><strong>Please refresh the page to see the changes.</strong></p>';
+                
+            } catch (err) {
+                resultDiv.innerHTML = '<p class="error">Error: ' + err.message + '</p>';
+            }
+        }
+    </script>
+</body>
+</html>
+
