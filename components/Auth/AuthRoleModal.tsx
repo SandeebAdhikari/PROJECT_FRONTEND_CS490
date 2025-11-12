@@ -54,7 +54,7 @@ const RoleModal: React.FC<AuthRoleModalProps> = ({
           <button
             type="button"
             onClick={() => setSelectedRole("admin")}
-            className={`border rounded-lg py-2 font-medium hover:bg-primary hover:text-white transition ${selectedRole === "customer" ? "bg-primary text-white" : ""
+            className={`border rounded-lg py-2 font-medium hover:bg-primary hover:text-white transition ${selectedRole === "admin" ? "bg-primary text-white" : ""
               }`}
           >
             Admin
