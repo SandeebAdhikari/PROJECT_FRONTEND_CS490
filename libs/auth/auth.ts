@@ -43,10 +43,12 @@ const ownerSchema = z.object({
   userType: z.literal("owner"),
   ownerName: z.string().min(1, "Owner name is required"),
   businessName: z.string().min(1, "Business name is required"),
+  businessAddress: z.string().min(1, "Business address is required"),
   businessEmail: z.string().email("Invalid business email"),
   businessPhone: z
     .string()
     .regex(/^\+?[\d\s\-\(\)]+$/, "Invalid business phone"),
+  businessWebsite: z.string().optional(),
   ...baseFields,
 });
 

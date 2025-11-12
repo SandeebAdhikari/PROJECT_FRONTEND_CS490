@@ -1,5 +1,6 @@
 import { Download, Plus } from "lucide-react";
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import SalonDashboardCard from "./SalonDashboardCard";
 import { icons } from "@/libs/dashboard/dashboard.icons";
 import useSalonId from "@/hooks/useSalonId";
@@ -19,6 +20,7 @@ interface DashboardStats {
 }
 
 const SalonDashboard = () => {
+  const router = useRouter();
   const { salonId, loadingSalon } = useSalonId();
   const [userName, setUserName] = useState("");
   const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -81,9 +83,9 @@ const SalonDashboard = () => {
             </button>
           </div>
 
-          <div className="relative transition-smooth hover:scale-108">
-            <Plus className="absolute w-4 h-4 top-3 left-3 text-white sm:top-4 sm:left-4" />
-            <button className="border border-border rounded-lg py-3 px-4 text-xs sm:text-sm font-inter font-semibold bg-primary-light text-white hover:cursor-pointer shadow-soft-br">
+          <div className="relative">
+            <Plus className="absolute w-4 h-4 top-3 left-3 text-primary-foreground sm:top-4 sm:left-4" />
+            <button className="border border-border rounded-lg py-3 px-4 text-xs sm:text-sm font-inter font-semibold bg-primary-light text-primary-foreground hover:cursor-pointer shadow-soft-br transition-smooth">
               <span className="sm:hidden ml-6">Actions</span>
               <span className="hidden sm:flex ml-6">Quick Actions</span>
             </button>
@@ -92,7 +94,7 @@ const SalonDashboard = () => {
       </div>
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mt-6">
-        {(loading || loadingSalon) ? (
+        {loadingSalon || loading ? (
           <div className="col-span-full text-center py-8 text-muted-foreground">
             Loading dashboard...
           </div>

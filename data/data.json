@@ -73,8 +73,8 @@
     },
     {
       "id": 3,
-      "label": "Staffs",
-      "shortLabel": "Staffs",
+      "label": "Staff",
+      "shortLabel": "Staff",
       "icon": "Users"
     },
     {
@@ -97,8 +97,14 @@
     },
     {
       "id": 7,
-      "label": "Settings",
-      "shortLabel": "Config",
+      "label": "Salon Settings",
+      "shortLabel": "Salon",
+      "icon": "Building2"
+    },
+    {
+      "id": 8,
+      "label": "Account Settings",
+      "shortLabel": "Account",
       "icon": "Settings"
     }
   ],

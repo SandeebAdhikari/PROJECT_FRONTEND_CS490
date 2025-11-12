@@ -27,12 +27,7 @@ export default function Layout({
       if (role === "owner" || role === "salon_owner") {
         const result = await checkOwnerSalon();
         
-        if (!result.hasSalon) {
-          router.push("/admin/register-salon");
-          return;
-        }
-        
-        // Store salon_id for later use
+        // Store salon_id for later use (if they have one)
         if (result.salon?.salon_id) {
           localStorage.setItem("salon_id", result.salon.salon_id.toString());
         }

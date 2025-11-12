@@ -69,7 +69,18 @@ export async function createSalon(data: CreateSalonData, profilePicture?: File |
 // Get all salons for browsing
 export async function getAllSalons(): Promise<{ salons?: Salon[]; error?: string }> {
   try {
-    const response = await fetch(API_ENDPOINTS.SALONS.LIST, fetchConfig);
+    const token = localStorage.getItem('token');
+    if (!token) {
+      return { error: 'Not authenticated' };
+    }
+
+    const response = await fetch(API_ENDPOINTS.SALONS.LIST, {
+      ...fetchConfig,
+      headers: {
+        ...fetchConfig.headers,
+        'Authorization': `Bearer ${token}`,
+      },
+    });
 
     const result = await response.json();
 
@@ -108,5 +119,74 @@ export async function checkOwnerSalon(): Promise<{ hasSalon: boolean; salon?: Sa
     return result;
   } catch (error) {
     return { hasSalon: false, error: 'Network error' };
+  }
+}
+
+// Get salon by ID (for settings view)
+export async function getSalonById(salonId: number): Promise<{ salon?: Salon; error?: string }> {
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      return { error: 'Not authenticated' };
+    }
+
+    const response = await fetch(`${API_ENDPOINTS.SALONS.LIST}/${salonId}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      return { error: result.error || 'Failed to fetch salon' };
+    }
+
+    return { salon: result };
+  } catch (error) {
+    console.error('Network error:', error);
+    return { error: 'Network error. Please try again.' };
+  }
+}
+
+// Update salon settings
+export async function updateSalon(salonId: number, data: CreateSalonData, profilePicture?: File | null): Promise<{ salon?: Salon; message?: string; error?: string }> {
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      return { error: 'Not authenticated' };
+    }
+
+    const formData = new FormData();
+    if (data.name) formData.append('name', data.name);
+    if (data.address) formData.append('address', data.address);
+    if (data.phone) formData.append('phone', data.phone);
+    if (data.city) formData.append('city', data.city);
+    if (data.description) formData.append('description', data.description);
+    if (data.email) formData.append('email', data.email);
+    if (data.website) formData.append('website', data.website);
+    if (profilePicture) {
+      formData.append('profile_picture', profilePicture);
+    }
+
+    const response = await fetch(`${API_ENDPOINTS.SALONS.LIST}/${salonId}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      body: formData,
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      return { error: result.error || 'Failed to update salon' };
+    }
+
+    return result;
+  } catch (error) {
+    console.error('Network error:', error);
+    return { error: 'Network error. Please try again.' };
   }
 }

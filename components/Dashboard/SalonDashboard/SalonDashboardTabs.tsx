@@ -13,18 +13,19 @@ const SalonDashboardTabs = ({ activeTab }: { activeTab?: string }) => {
 
   return (
     <div className="p-4 sm:p-8">
-      <div className="grid w-full grid-cols-3 sm:grid-cols-6 bg-secondary rounded-2xl p-1 sm:p-2 scrollbar-hide">
+      <div className="grid w-full grid-cols-4 sm:grid-cols-8 bg-secondary rounded-2xl p-1 sm:p-2 scrollbar-hide">
         {typedData.menu.map((tab) => {
           const Icon = icons[tab.icon];
+          const urlPath = tab.label.toLowerCase().replace(/\s+/g, "-");
           const isActive =
-            pathname.endsWith(tab.label.toLowerCase()) ||
+            pathname.endsWith(urlPath) ||
             activeTab === tab.label;
 
           return (
             <Link
               key={tab.id}
-              href={`/admin/salon-dashboard/${tab.label.toLowerCase()}`}
-              className={`flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-1 rounded-xl font-inter text-sm sm:text-base font-medium transition-smooth cursor-pointer ${
+              href={`/admin/salon-dashboard/${urlPath}`}
+              className={`flex items-center justify-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-xl font-inter text-xs sm:text-sm font-medium transition-smooth cursor-pointer ${
                 isActive
                   ? "bg-white text-black shadow-soft-br"
                   : "text-muted-foreground hover:text-foreground"

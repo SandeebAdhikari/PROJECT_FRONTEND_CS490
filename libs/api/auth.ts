@@ -184,6 +184,9 @@ export async function setUserRole(data: {
   phone?: string;
   role: "customer" | "owner" | "staff";
   businessName?: string;
+  businessEmail?: string;
+  businessPhone?: string;
+  businessWebsite?: string;
 }): Promise<AuthResponse> {
   try {
     const response = await fetch(API_ENDPOINTS.AUTH.SET_ROLE, {

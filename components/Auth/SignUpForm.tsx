@@ -18,7 +18,7 @@ const SignUpForm = () => {
 
   const onSubmit = async (data: SignUpFormData) => {
     try {
-      const payload = {
+      const payload: any = {
         full_name:
           data.userType === "owner"
             ? data.ownerName
@@ -31,6 +31,13 @@ const SignUpForm = () => {
         password: data.password,
         role: data.userType,
       };
+
+      // Add business info for owners
+      if (data.userType === "owner") {
+        payload.businessName = data.businessName;
+        payload.businessAddress = data.businessAddress;
+        payload.businessWebsite = data.businessWebsite || null;
+      }
 
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/auth/signup`,

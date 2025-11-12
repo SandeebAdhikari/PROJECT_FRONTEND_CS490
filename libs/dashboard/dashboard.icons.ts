@@ -20,6 +20,7 @@ import {
   Gift,
   User,
   Image,
+  Building2,
 } from "lucide-react";
 
 export const icons = {
@@ -44,4 +45,5 @@ export const icons = {
   Gift,
   User,
   Image,
+  Building2,
 };

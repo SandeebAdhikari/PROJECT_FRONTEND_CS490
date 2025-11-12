@@ -34,7 +34,7 @@ const CustomerTopSalon: React.FC<CustomerTopSalonProps> = ({
   isFavorite,
 }) => {
   const filteredSalons = useMemo(() => {
-    let filtered = salons.filter((s) => s.status === "active" || !s.status);
+    let filtered = salons.filter((s) => s.status === "active" || s.status === "pending" || !s.status);
 
     // Filter by search query
     if (searchQuery.trim()) {
@@ -76,7 +76,6 @@ const CustomerTopSalon: React.FC<CustomerTopSalonProps> = ({
         {filteredSalons.map((salon) => {
           const salonId = salon.salon_id?.toString() || salon.id || "";
           
-          // Use salon's actual image: profile_picture from backend OR imageUrl from mock data
           const imageUrl = salon.profile_picture 
             ? `http://localhost:4000${salon.profile_picture}` 
             : salon.imageUrl || "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=400&h=300&fit=crop";
