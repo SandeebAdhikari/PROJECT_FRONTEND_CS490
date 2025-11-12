@@ -37,9 +37,8 @@ const RoleModal: React.FC<AuthRoleModalProps> = ({
           <button
             type="button"
             onClick={() => setSelectedRole("owner")}
-            className={`border rounded-lg py-2 font-medium hover:bg-primary hover:text-white transition ${
-              selectedRole === "owner" ? "bg-primary text-white" : ""
-            }`}
+            className={`border rounded-lg py-2 font-medium hover:bg-primary hover:text-white transition ${selectedRole === "owner" ? "bg-primary text-white" : ""
+              }`}
           >
             Salon Owner
           </button>
@@ -47,11 +46,18 @@ const RoleModal: React.FC<AuthRoleModalProps> = ({
           <button
             type="button"
             onClick={() => setSelectedRole("customer")}
-            className={`border rounded-lg py-2 font-medium hover:bg-primary hover:text-white transition ${
-              selectedRole === "customer" ? "bg-primary text-white" : ""
-            }`}
+            className={`border rounded-lg py-2 font-medium hover:bg-primary hover:text-white transition ${selectedRole === "customer" ? "bg-primary text-white" : ""
+              }`}
           >
             Customer
+          </button>
+          <button
+            type="button"
+            onClick={() => setSelectedRole("admin")}
+            className={`border rounded-lg py-2 font-medium hover:bg-primary hover:text-white transition ${selectedRole === "customer" ? "bg-primary text-white" : ""
+              }`}
+          >
+            Admin
           </button>
         </div>
 
