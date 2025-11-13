@@ -5,9 +5,21 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema, LoginFormData } from "@/libs/auth/auth";
 import { Eye, EyeOff, Lock, Mail } from "lucide-react";
-import { login, verify2FA } from "@/libs/api/auth";
+import { login, verify2FA, User } from "@/libs/api/auth";
 import { useRouter } from "next/navigation";
 import AuthHeader from "@/components/Auth/AuthHeader";
+
+type ExtendedUser = User & {
+  user_role?: string;
+  user_id?: string | number;
+  phone?: string;
+};
+
+const resolveUserRole = (user?: ExtendedUser): string | undefined =>
+  user?.role ?? user?.user_role;
+
+const resolveUserId = (user?: ExtendedUser): string | number | undefined =>
+  user?.id ?? user?.user_id;
 
 const SignInForm = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -53,17 +65,21 @@ const SignInForm = () => {
 
       if (response.token) {
         localStorage.setItem("token", response.token);
-        
-        // Save user object with phone for 2FA modal
-        if (response.user) {
-          localStorage.setItem("user", JSON.stringify(response.user));
+
+        const user = response.user as ExtendedUser | undefined;
+        if (user) {
+          localStorage.setItem("user", JSON.stringify(user));
         }
-        
-        const userRole = response.user?.role || response.user?.user_role;
-        if (userRole)
+
+        const userRole = resolveUserRole(user);
+        if (userRole) {
           localStorage.setItem("role", userRole);
-        if (response.user?.id || response.user?.user_id)
-          localStorage.setItem("user_id", (response.user.id || response.user.user_id).toString());
+        }
+
+        const userId = resolveUserId(user);
+        if (typeof userId === "string" || typeof userId === "number") {
+          localStorage.setItem("user_id", String(userId));
+        }
 
         const role = userRole?.toLowerCase();
 
@@ -107,18 +123,21 @@ const SignInForm = () => {
       if (response.token) {
         localStorage.setItem("token", response.token);
         localStorage.removeItem("tempToken");
-        
-        // Save user object with phone for 2FA modal
-        if (response.user) {
-          localStorage.setItem("user", JSON.stringify(response.user));
+
+        const user = response.user as ExtendedUser | undefined;
+        if (user) {
+          localStorage.setItem("user", JSON.stringify(user));
         }
-        
-        // Handle both role and user_role from backend
-        const userRole = response.user?.role || response.user?.user_role;
-        if (userRole)
+
+        const userRole = resolveUserRole(user);
+        if (userRole) {
           localStorage.setItem("role", userRole);
-        if (response.user?.id || response.user?.user_id)
-          localStorage.setItem("user_id", (response.user.id || response.user.user_id).toString());
+        }
+
+        const userId = resolveUserId(user);
+        if (typeof userId === "string" || typeof userId === "number") {
+          localStorage.setItem("user_id", String(userId));
+        }
 
         const role = userRole?.toLowerCase();
         console.log("Detected role:", role);

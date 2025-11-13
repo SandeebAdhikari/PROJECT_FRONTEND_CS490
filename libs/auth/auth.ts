@@ -44,11 +44,22 @@ const ownerSchema = z.object({
   ownerName: z.string().min(1, "Owner name is required"),
   businessName: z.string().min(1, "Business name is required"),
   businessAddress: z.string().min(1, "Business address is required"),
+  businessCity: z.string().min(1, "City is required"),
+  businessState: z.string().min(1, "State or region is required"),
+  businessZip: z
+    .string()
+    .min(3, "Postal code is required")
+    .max(10, "Postal code is too long"),
+  businessCountry: z.string().min(1, "Country is required"),
   businessEmail: z.string().email("Invalid business email"),
   businessPhone: z
     .string()
     .regex(/^\+?[\d\s\-\(\)]+$/, "Invalid business phone"),
-  businessWebsite: z.string().optional(),
+  businessWebsite: z
+    .string()
+    .url("Invalid website URL")
+    .optional()
+    .or(z.literal("")),
   ...baseFields,
 });
 

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, FieldErrors } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signUpSchema, SignUpFormData } from "@/libs/auth/auth";
 
@@ -18,7 +18,7 @@ const SignUpForm = () => {
 
   const onSubmit = async (data: SignUpFormData) => {
     try {
-      const payload: any = {
+      const payload: Record<string, unknown> = {
         full_name:
           data.userType === "owner"
             ? data.ownerName
@@ -34,9 +34,19 @@ const SignUpForm = () => {
 
       // Add business info for owners
       if (data.userType === "owner") {
-        payload.businessName = data.businessName;
-        payload.businessAddress = data.businessAddress;
-        payload.businessWebsite = data.businessWebsite || null;
+        Object.assign(payload, {
+          business_name: data.businessName,
+          businessAddress: data.businessAddress,
+          businessCity: data.businessCity,
+          businessState: data.businessState,
+          businessZip: data.businessZip,
+          businessCountry: data.businessCountry,
+          businessWebsite: data.businessWebsite || null,
+          business_city: data.businessCity,
+          business_state: data.businessState,
+          business_zip: data.businessZip,
+          business_country: data.businessCountry,
+        });
       }
 
       const res = await fetch(
@@ -69,8 +79,8 @@ const SignUpForm = () => {
     }
   };
 
-  const onError = (errors: any) => {
-    // Validation errors are shown in the form
+  const onError = (errors: FieldErrors<SignUpFormData>) => {
+    console.warn("Sign-up validation errors:", errors);
   };
 
   const userType = form.watch("userType");

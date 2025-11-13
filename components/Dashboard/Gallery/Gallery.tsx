@@ -20,19 +20,24 @@ const Gallery = () => {
   const [caption, setCaption] = useState("");
   const [previewUrl, setPreviewUrl] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [salonId, setSalonId] = useState<string | null>(null);
 
-  const salonId = localStorage.getItem("salon_id");
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setSalonId(localStorage.getItem("salon_id"));
+    }
+  }, []);
 
   useEffect(() => {
     if (salonId) {
-      fetchGallery();
+      fetchGallery(salonId);
     }
   }, [salonId]);
 
-  const fetchGallery = async () => {
+  const fetchGallery = async (currentSalonId: string) => {
     try {
       const response = await fetch(
-        `http://localhost:4000/api/photos/salon/${salonId}`
+        `http://localhost:4000/api/photos/salon/${currentSalonId}`
       );
       if (response.ok) {
         const data = await response.json();
@@ -86,7 +91,9 @@ const Gallery = () => {
         setCaption("");
         setPreviewUrl("");
         setShowAddModal(false);
-        fetchGallery();
+        if (salonId) {
+          fetchGallery(salonId);
+        }
       } else {
         const data = await response.json();
         alert(data.error || "Failed to add photo");
@@ -116,7 +123,9 @@ const Gallery = () => {
       );
 
       if (response.ok) {
-        fetchGallery();
+        if (salonId) {
+          fetchGallery(salonId);
+        }
       } else {
         alert("Failed to delete photo");
       }
@@ -284,4 +293,3 @@ const Gallery = () => {
 };
 
 export default Gallery;
-

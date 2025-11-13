@@ -1,14 +1,21 @@
 "use client";
 
 import { User, Mail, Phone, MapPin } from "lucide-react";
-import { UseFormReturn } from "react-hook-form";
+import { FieldErrors, UseFormReturn } from "react-hook-form";
 import { SignUpFormData } from "@/libs/auth/auth";
 
 type AuthCustomerProps = {
   form: UseFormReturn<SignUpFormData>;
 };
 
+type CustomerFormValues = Extract<SignUpFormData, { userType: "customer" }>;
+
 const AuthCustomer = ({ form }: AuthCustomerProps) => {
+  const customerRegister =
+    form.register as UseFormReturn<CustomerFormValues>["register"];
+  const customerErrors = form.formState
+    .errors as FieldErrors<CustomerFormValues>;
+
   return (
     <div className="font-inter space-y-2">
       <div className="flex gap-3">
@@ -19,14 +26,14 @@ const AuthCustomer = ({ form }: AuthCustomerProps) => {
           <div className="relative">
             <User className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
             <input
-              {...form.register("firstName")}
+              {...customerRegister("firstName")}
               placeholder="First name"
               className="w-full border border-muted rounded-lg p-2 pl-10 focus:ring-1 focus:ring-primary outline-none"
             />
           </div>
-          {form.formState.errors.firstName && (
+          {customerErrors.firstName && (
             <p className="text-red-500 text-sm">
-              {form.formState.errors.firstName.message}
+              {customerErrors.firstName.message}
             </p>
           )}
         </div>
@@ -36,13 +43,13 @@ const AuthCustomer = ({ form }: AuthCustomerProps) => {
             Last Name *
           </label>
           <input
-            {...form.register("lastName")}
+            {...customerRegister("lastName")}
             placeholder="Last name"
             className="w-full border border-muted rounded-lg p-2 focus:ring-1 focus:ring-primary outline-none"
           />
-          {form.formState.errors.lastName && (
+          {customerErrors.lastName && (
             <p className="text-red-500 text-sm">
-              {form.formState.errors.lastName.message}
+              {customerErrors.lastName.message}
             </p>
           )}
         </div>
@@ -56,15 +63,13 @@ const AuthCustomer = ({ form }: AuthCustomerProps) => {
           <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
           <input
             type="email"
-            {...form.register("email")}
+            {...customerRegister("email")}
             placeholder="Enter your email"
             className="w-full border border-muted rounded-lg p-2 pl-10 focus:ring-1 focus:ring-primary outline-none"
           />
         </div>
-        {form.formState.errors.email && (
-          <p className="text-red-500 text-sm">
-            {form.formState.errors.email.message}
-          </p>
+        {customerErrors.email && (
+          <p className="text-red-500 text-sm">{customerErrors.email.message}</p>
         )}
       </div>
 
@@ -76,14 +81,14 @@ const AuthCustomer = ({ form }: AuthCustomerProps) => {
           <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
           <input
             type="tel"
-            {...form.register("phone")}
+            {...customerRegister("phone")}
             placeholder="Enter your phone number"
             className="w-full border border-muted rounded-lg p-2 pl-10 focus:ring-1 focus:ring-primary outline-none"
           />
         </div>
-        {form.formState.errors.phone && (
+        {customerErrors.phone && (
           <p className="text-red-500 text-sm">
-            {form.formState.errors.phone.message}
+            {customerErrors.phone?.message}
           </p>
         )}
       </div>
@@ -94,7 +99,7 @@ const AuthCustomer = ({ form }: AuthCustomerProps) => {
             Gender (Optional)
           </label>
           <select
-            {...form.register("gender")}
+            {...customerRegister("gender")}
             className="w-full border border-muted rounded-lg p-2 focus:ring-1 focus:ring-primary outline-none"
           >
             <option value="">Select Gender</option>
@@ -111,7 +116,7 @@ const AuthCustomer = ({ form }: AuthCustomerProps) => {
             <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
             <input
               type="tel"
-              {...form.register("zipcode")}
+              {...customerRegister("zipcode")}
               placeholder="12345"
               className="w-full border border-muted rounded-lg p-2 pl-10 focus:ring-1 focus:ring-primary outline-none"
             />

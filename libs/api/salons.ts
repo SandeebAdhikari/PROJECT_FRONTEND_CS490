@@ -7,6 +7,9 @@ export interface Salon {
   address: string;
   phone: string;
   city?: string;
+  state?: string;
+  zip?: string;
+  country?: string;
   description?: string;
   email?: string;
   website?: string;
@@ -20,6 +23,9 @@ export interface CreateSalonData {
   address: string;
   phone: string;
   city?: string;
+  state?: string;
+  zip?: string;
+  country?: string;
   description?: string;
   email?: string;
   website?: string;
@@ -41,6 +47,9 @@ export async function createSalon(data: CreateSalonData, profilePicture?: File |
     if (data.description) formData.append('description', data.description);
     if (data.email) formData.append('email', data.email);
     if (data.website) formData.append('website', data.website);
+    if (data.state) formData.append('state', data.state);
+    if (data.zip) formData.append('zip', data.zip);
+    if (data.country) formData.append('country', data.country);
     if (profilePicture) {
       formData.append('profile_picture', profilePicture);
     }
@@ -163,6 +172,9 @@ export async function updateSalon(salonId: number, data: CreateSalonData, profil
     if (data.address) formData.append('address', data.address);
     if (data.phone) formData.append('phone', data.phone);
     if (data.city) formData.append('city', data.city);
+    if (data.state) formData.append('state', data.state);
+    if (data.zip) formData.append('zip', data.zip);
+    if (data.country) formData.append('country', data.country);
     if (data.description) formData.append('description', data.description);
     if (data.email) formData.append('email', data.email);
     if (data.website) formData.append('website', data.website);

@@ -23,8 +23,13 @@ const SalonServicesManagement = () => {
     duration: 30,
     price: 0,
   });
+  const [salonId, setSalonId] = useState<string | null>(null);
 
-  const salonId = localStorage.getItem("salon_id");
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setSalonId(localStorage.getItem("salon_id"));
+    }
+  }, []);
 
   const categories = [
     "Haircuts",
@@ -38,16 +43,16 @@ const SalonServicesManagement = () => {
 
   useEffect(() => {
     if (salonId) {
-      fetchServices();
+      fetchServices(salonId);
     }
   }, [salonId]);
 
   // Fetch services from backend
-  const fetchServices = async () => {
+  const fetchServices = async (currentSalonId: string) => {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `http://localhost:4000/api/salons/${salonId}/services`,
+        `http://localhost:4000/api/salons/${currentSalonId}/services`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -93,7 +98,9 @@ const SalonServicesManagement = () => {
         setShowModal(false);
         setEditingService(null);
         setFormData({ name: "", category: "Haircuts", duration: 30, price: 0 });
-        fetchServices();
+        if (salonId) {
+          fetchServices(salonId);
+        }
       } else {
         const error = await response.json();
         alert(error.error || "Failed to save service");
@@ -131,7 +138,9 @@ const SalonServicesManagement = () => {
       );
 
       if (response.ok) {
-        fetchServices();
+        if (salonId) {
+          fetchServices(salonId);
+        }
       } else {
         alert("Failed to delete service");
       }
@@ -320,4 +329,3 @@ const SalonServicesManagement = () => {
 };
 
 export default SalonServicesManagement;
-

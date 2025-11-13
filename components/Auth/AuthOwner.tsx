@@ -1,5 +1,6 @@
 "use client";
 
+import React, { useEffect, useState } from "react";
 import { User, Mail, Phone, Building, Globe, MapPin } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
 import { SignUpFormData } from "@/libs/auth/auth";
@@ -9,6 +10,26 @@ type AuthOwnerProps = {
 };
 
 const AuthOwner = ({ form }: AuthOwnerProps) => {
+  const [showLocationFields, setShowLocationFields] = useState(false);
+
+  const businessAddress = form.watch("businessAddress");
+  const businessCity = form.watch("businessCity");
+  const businessState = form.watch("businessState");
+  const businessZip = form.watch("businessZip");
+  const businessCountry = form.watch("businessCountry");
+
+  useEffect(() => {
+    if (
+      businessAddress ||
+      businessCity ||
+      businessState ||
+      businessZip ||
+      businessCountry
+    ) {
+      setShowLocationFields(true);
+    }
+  }, [businessAddress, businessCity, businessState, businessZip, businessCountry]);
+
   return (
     <div className="font-inter space-y-2">
       <div>
@@ -42,15 +63,60 @@ const AuthOwner = ({ form }: AuthOwnerProps) => {
           Business Address *
         </label>
         <div className="relative">
-          <MapPin className="absolute left-3 top-3 text-muted-foreground w-4 h-4" />
-          <textarea
+          <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
+          <input
             {...form.register("businessAddress")}
-            placeholder="Enter business address"
+            onFocus={() => setShowLocationFields(true)}
+            placeholder="123 Main Street"
             className="w-full border border-muted rounded-lg p-2 pl-10 focus:ring-1 focus:ring-primary outline-none"
-            rows={2}
           />
         </div>
       </div>
+
+      {showLocationFields && (
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div>
+            <label className="block mb-1 font-semibold text-sm">
+              City *
+            </label>
+            <input
+              {...form.register("businessCity")}
+              placeholder="City"
+              className="w-full border border-muted rounded-lg p-2 focus:ring-1 focus:ring-primary outline-none"
+            />
+          </div>
+          <div>
+            <label className="block mb-1 font-semibold text-sm">
+              State / Region *
+            </label>
+            <input
+              {...form.register("businessState")}
+              placeholder="State or region"
+              className="w-full border border-muted rounded-lg p-2 focus:ring-1 focus:ring-primary outline-none"
+            />
+          </div>
+          <div>
+            <label className="block mb-1 font-semibold text-sm">
+              Postal Code *
+            </label>
+            <input
+              {...form.register("businessZip")}
+              placeholder="ZIP / Postal code"
+              className="w-full border border-muted rounded-lg p-2 focus:ring-1 focus:ring-primary outline-none"
+            />
+          </div>
+          <div>
+            <label className="block mb-1 font-semibold text-sm">
+              Country *
+            </label>
+            <input
+              {...form.register("businessCountry")}
+              placeholder="Country"
+              className="w-full border border-muted rounded-lg p-2 focus:ring-1 focus:ring-primary outline-none"
+            />
+          </div>
+        </div>
+      )}
 
       <div>
         <label className="block mb-1 font-semibold text-sm">
@@ -89,7 +155,7 @@ const AuthOwner = ({ form }: AuthOwnerProps) => {
         <div className="relative">
           <Globe className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
           <input
-            type="text"
+            type="url"
             {...form.register("businessWebsite")}
             placeholder="https://your-website.com"
             className="w-full border border-muted rounded-lg p-2 pl-10 focus:ring-1 focus:ring-primary outline-none"

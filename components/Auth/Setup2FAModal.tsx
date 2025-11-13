@@ -50,13 +50,16 @@ const Setup2FAModal: React.FC<Setup2FAModalProps> = ({
     try {
       const result = await enable2FA("sms", phoneNumber);
       if (!result.error) {
-        alert("2FA enabled successfully! You'll receive a verification code on your next login.");
+        alert(
+          "2FA enabled successfully! You'll receive a verification code on your next login."
+        );
         localStorage.setItem("2fa_setup_completed", "true");
         onClose();
       } else {
         setError(result.error);
       }
     } catch (err) {
+      console.error("2FA setup error:", err);
       setError("Failed to enable 2FA. Please try again.");
     } finally {
       setLoading(false);
@@ -92,7 +95,8 @@ const Setup2FAModal: React.FC<Setup2FAModalProps> = ({
           Secure Your Account
         </h2>
         <p className="text-center text-gray-600 text-sm mb-6">
-          Enable Two-Factor Authentication to add an extra layer of security to your account
+          Enable Two-Factor Authentication to add an extra layer of security to
+          your account
         </p>
 
         {/* Benefits */}
@@ -154,13 +158,12 @@ const Setup2FAModal: React.FC<Setup2FAModalProps> = ({
 
         {/* Phone input */}
         <div className="mb-6">
-          <label className="block text-sm font-medium mb-2">
-            Phone Number
-          </label>
+          <label className="block text-sm font-medium mb-2">Phone Number</label>
           <input
             type="tel"
             value={phoneNumber}
             disabled
+            placeholder="Enter your phone number"
             className="w-full px-4 py-3 border border-gray-200 rounded-lg bg-gray-50 text-gray-700 cursor-not-allowed"
           />
           <p className="text-xs text-gray-500 mt-1">
@@ -201,4 +204,3 @@ const Setup2FAModal: React.FC<Setup2FAModalProps> = ({
 };
 
 export default Setup2FAModal;
-
