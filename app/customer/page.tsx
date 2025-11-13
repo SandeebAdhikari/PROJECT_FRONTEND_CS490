@@ -6,7 +6,7 @@ import CustomerSearchCard from "@/components/Customer/CustomerSearchCard";
 import ServiceButton from "@/components/Dashboard/Service/ServiceButton";
 import { useFavorites } from "@/hooks/useFavorites";
 import Setup2FAModal from "@/components/Auth/Setup2FAModal";
-import { getAllSalons } from "@/libs/api/salons";
+import { getAllSalons, type Salon as ApiSalon } from "@/libs/api/salons";
 import data from "@/data/data.json"; // Import mock data
 
 import { Scissors, Palette, Sparkles, Hand, Eye, Brush } from "lucide-react";
@@ -18,7 +18,18 @@ const Page = () => {
   const { toggleFavorite, isFavorite } = useFavorites();
   const [show2FAModal, setShow2FAModal] = useState(false);
   const [userPhone, setUserPhone] = useState("");
-  const [salons, setSalons] = useState([]);
+  type CustomerSalon = ApiSalon & {
+    id?: string;
+    city?: string;
+    description?: string;
+    rating?: number;
+    totalReviews?: number;
+    priceFrom?: number;
+    category?: string;
+    imageUrl?: string;
+  };
+
+  const [salons, setSalons] = useState<CustomerSalon[]>([]);
   const [loading, setLoading] = useState(true);
 
   const services = [
@@ -35,10 +46,10 @@ const Page = () => {
       try {
         // Fetch real salons from backend
         const result = await getAllSalons();
-        const realSalons = result.salons || [];
+        const realSalons: CustomerSalon[] = result.salons || [];
         
         // Get mock salons from data.json
-        const mockSalons = data.salons || [];
+        const mockSalons: CustomerSalon[] = (data.salons as CustomerSalon[]) || [];
         
         // Combine both: real salons first, then mock salons
         const combinedSalons = [...realSalons, ...mockSalons];

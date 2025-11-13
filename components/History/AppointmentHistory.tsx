@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Calendar, Clock, MapPin } from "lucide-react";
+import { Calendar, Clock } from "lucide-react";
 import { getAppointmentHistory, AppointmentHistory as AppointmentHistoryType } from "@/libs/api/history";
 
 interface AppointmentHistoryProps {
@@ -168,4 +168,3 @@ const AppointmentHistory: React.FC<AppointmentHistoryProps> = ({ filter = "past"
 };
 
 export default AppointmentHistory;
-

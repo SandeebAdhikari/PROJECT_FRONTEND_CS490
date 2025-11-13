@@ -44,7 +44,8 @@ const Settings = () => {
 
       alert("Account deleted successfully. You will be redirected to the home page.");
       router.push("/");
-    } catch (error) {
+    } catch (err) {
+      console.error("Failed to delete account:", err);
       alert("Failed to delete account. Please try again.");
       setDeleteLoading(false);
     }

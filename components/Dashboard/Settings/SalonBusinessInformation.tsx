@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import { MapPin, Upload, Camera, Save } from "lucide-react";
-import { checkOwnerSalon, createSalon, updateSalon, getSalonById } from "@/libs/api/salons";
+import Image from "next/image";
+import { checkOwnerSalon, createSalon, updateSalon } from "@/libs/api/salons";
 
 const SalonBusinessInformation = () => {
   const [salonId, setSalonId] = useState<number | null>(null);
@@ -147,7 +148,7 @@ const SalonBusinessInformation = () => {
       {isNewSalon && (
         <div className="p-4 bg-primary/10 border border-primary/20 rounded-lg">
           <p className="text-foreground text-sm">
-            <strong>Welcome!</strong> Let's set up your salon profile. Fill in the information below to get started.
+            <strong>Welcome!</strong> Let&apos;s set up your salon profile. Fill in the information below to get started.
           </p>
         </div>
       )}
@@ -159,10 +160,13 @@ const SalonBusinessInformation = () => {
           <div className="flex items-center gap-4">
             <div className="relative w-24 h-24 rounded-full overflow-hidden bg-muted flex items-center justify-center">
               {profilePreview ? (
-                <img
+                <Image
                   src={profilePreview}
                   alt="Salon profile"
-                  className="w-full h-full object-cover"
+                  fill
+                  sizes="96px"
+                  className="object-cover"
+                  unoptimized
                 />
               ) : (
                 <Camera className="w-10 h-10 text-muted-foreground" />

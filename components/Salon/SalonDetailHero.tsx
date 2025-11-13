@@ -40,7 +40,6 @@ interface GalleryPhoto {
 const SalonDetailHero: React.FC<SalonDetailHeroProps> = ({ salon }) => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [galleryPhotos, setGalleryPhotos] = useState<GalleryPhoto[]>([]);
-  const [loading, setLoading] = useState(true);
   
   // Build carousel images
   const carouselImages: string[] = [];
@@ -67,7 +66,6 @@ const SalonDetailHero: React.FC<SalonDetailHeroProps> = ({ salon }) => {
     const fetchGallery = async () => {
       const salonId = salon.salon_id || salon.id;
       if (!salonId) {
-        setLoading(false);
         return;
       }
       
@@ -80,7 +78,7 @@ const SalonDetailHero: React.FC<SalonDetailHeroProps> = ({ salon }) => {
       } catch (error) {
         console.error("Error fetching gallery:", error);
       } finally {
-        setLoading(false);
+        // no-op
       }
     };
     
