@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Calendar } from "lucide-react";
+//import { Calendar } from "lucide-react";
 import {
   enable2FA,
   disable2FA,
@@ -49,8 +49,8 @@ const ProfileTabs = () => {
         {activeTab === "upcoming" && <UpcomingContent />}
         {activeTab === "past" && <PastBookingsContent />}
         {activeTab === "favorites" && (
-          <FavoritesContent 
-            favorites={favorites} 
+          <FavoritesContent
+            favorites={favorites}
             toggleFavorite={toggleFavorite}
             isFavorite={isFavorite}
           />
@@ -85,35 +85,35 @@ const FavoritesContent: React.FC<FavoritesContentProps> = ({
   );
 
   if (favoriteSalons.length === 0) {
-  return (
-    <div className="flex flex-col items-center justify-center py-12 sm:py-20">
-      <div className="w-16 h-16 sm:w-20 sm:h-20 bg-muted rounded-full flex items-center justify-center mb-4">
-        <svg
-          className="w-8 h-8 text-muted-foreground"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
+    return (
+      <div className="flex flex-col items-center justify-center py-12 sm:py-20">
+        <div className="w-16 h-16 sm:w-20 sm:h-20 bg-muted rounded-full flex items-center justify-center mb-4">
+          <svg
+            className="w-8 h-8 text-muted-foreground"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+            />
+          </svg>
+        </div>
+        <h3 className="text-xl sm:text-2xl font-bold text-foreground mb-2">
+          No Favorites Yet
+        </h3>
+        <p className="text-muted-foreground font-inter mb-6 text-center">
+          Start saving your favorite salons!
+        </p>
+        <button
+          onClick={() => (window.location.href = "/customer")}
+          className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-dark font-inter font-semibold transition-colors"
         >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-          />
-        </svg>
-      </div>
-      <h3 className="text-xl sm:text-2xl font-bold text-foreground mb-2">
-        No Favorites Yet
-      </h3>
-      <p className="text-muted-foreground font-inter mb-6 text-center">
-        Start saving your favorite salons!
-      </p>
-      <button
-        onClick={() => (window.location.href = "/customer")}
-        className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-dark font-inter font-semibold transition-colors"
-      >
-        Discover Salons
-      </button>
+          Discover Salons
+        </button>
       </div>
     );
   }
@@ -148,7 +148,7 @@ const SettingsContent = () => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
-  
+
   const [profileData, setProfileData] = useState({
     fullName: "",
     email: "",
@@ -231,9 +231,11 @@ const SettingsContent = () => {
       const userData = await getProfile();
       if (userData.user) {
         setProfileData({
-          fullName: userData.user.full_name || userData.user.fullName || "",
-          email: userData.user.email || "",
-          phone: userData.user.phone || "",
+          fullName: (userData.user.full_name ||
+            userData.user.fullName ||
+            "") as string,
+          email: (userData.user.email || "") as string,
+          phone: (userData.user.phone || "") as string,
         });
       } else {
         const storedUser = localStorage.getItem("user");
@@ -274,7 +276,7 @@ const SettingsContent = () => {
           setError("Error: " + (result.error || "Failed to enable 2FA"));
         }
       }
-    } catch (err) {
+    } catch {
       setError("Unexpected error occurred");
     }
 
@@ -287,7 +289,7 @@ const SettingsContent = () => {
 
   const handleUpdateProfile = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // update localStorage with new profile data
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
@@ -300,14 +302,14 @@ const SettingsContent = () => {
       };
       localStorage.setItem("user", JSON.stringify(updatedUser));
     }
-    
+
     setMessage("Profile updated successfully!");
     setTimeout(() => setMessage(""), 3000);
   };
 
   const handleChangePassword = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       setError("Passwords do not match");
       setTimeout(() => setError(""), 3000);
@@ -321,18 +323,28 @@ const SettingsContent = () => {
     }
 
     setMessage("Password changed successfully!");
-    setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
+    setPasswordData({
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    });
     setTimeout(() => setMessage(""), 3000);
   };
 
   const handleDeleteAccount = async () => {
-    const password = prompt("Please enter your password to confirm account deletion:");
-    
+    const password = prompt(
+      "Please enter your password to confirm account deletion:"
+    );
+
     if (!password) {
       return;
     }
 
-    if (!window.confirm("Are you absolutely sure? This will permanently delete your account and all data. This action cannot be undone.")) {
+    if (
+      !window.confirm(
+        "Are you absolutely sure? This will permanently delete your account and all data. This action cannot be undone."
+      )
+    ) {
       return;
     }
 
@@ -341,15 +353,17 @@ const SettingsContent = () => {
 
     try {
       const result = await deleteAccount(password);
-      
+
       if (result.error) {
         setError(result.error);
         setTimeout(() => setError(""), 5000);
       } else {
-        alert("Account deleted successfully. You will be redirected to the home page.");
+        alert(
+          "Account deleted successfully. You will be redirected to the home page."
+        );
         window.location.href = "/";
       }
-    } catch (err) {
+    } catch {
       setError("Failed to delete account. Please try again.");
       setTimeout(() => setError(""), 5000);
     } finally {
@@ -359,10 +373,18 @@ const SettingsContent = () => {
 
   const handleUpgrade = (planId: string) => {
     if (planId === currentPlan) return;
-    
-    if (window.confirm(`Upgrade to ${plans.find(p => p.id === planId)?.name} plan?`)) {
+
+    if (
+      window.confirm(
+        `Upgrade to ${plans.find((p) => p.id === planId)?.name} plan?`
+      )
+    ) {
       setCurrentPlan(planId);
-      setMessage(`Successfully upgraded to ${plans.find(p => p.id === planId)?.name} plan!`);
+      setMessage(
+        `Successfully upgraded to ${
+          plans.find((p) => p.id === planId)?.name
+        } plan!`
+      );
       setTimeout(() => setMessage(""), 5000);
     }
   };
@@ -371,45 +393,64 @@ const SettingsContent = () => {
     <div className="max-w-4xl space-y-6">
       <h2 className="text-2xl font-bold mb-6">Settings</h2>
 
-        {message && (
+      {message && (
         <div className="p-4 bg-green-50 border border-green-200 text-green-700 rounded-lg">
-            {message}
-          </div>
-        )}
-        {error && (
+          {message}
+        </div>
+      )}
+      {error && (
         <div className="p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg">
-            {error}
-          </div>
-        )}
+          {error}
+        </div>
+      )}
 
       {/* Profile Information */}
       <div className="border border-border rounded-lg p-6">
         <h3 className="text-xl font-semibold mb-4">Profile Information</h3>
         <form onSubmit={handleUpdateProfile} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-2">Full Name</label>
+            <label
+              className="block text-sm font-medium mb-2"
+              htmlFor="fullName"
+            >
+              Full Name
+            </label>
             <input
+              id="fullName"
               type="text"
               value={profileData.fullName}
-              onChange={(e) => setProfileData({...profileData, fullName: e.target.value})}
+              onChange={(e) =>
+                setProfileData({ ...profileData, fullName: e.target.value })
+              }
+              placeholder="Enter your full name"
               className="w-full px-4 py-2.5 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary/20"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-2">Email</label>
+            <label className="block text-sm font-medium mb-2" htmlFor="email">
+              Email
+            </label>
             <input
+              id="email"
               type="email"
               value={profileData.email}
-              onChange={(e) => setProfileData({...profileData, email: e.target.value})}
+              onChange={(e) =>
+                setProfileData({ ...profileData, email: e.target.value })
+              }
+              placeholder="Enter your email address"
               className="w-full px-4 py-2.5 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary/20"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-2">Phone Number</label>
+            <label className="block text-sm font-medium mb-2">
+              Phone Number
+            </label>
             <input
               type="tel"
               value={profileData.phone}
-              onChange={(e) => setProfileData({...profileData, phone: e.target.value})}
+              onChange={(e) =>
+                setProfileData({ ...profileData, phone: e.target.value })
+              }
               placeholder="+1234567890"
               className="w-full px-4 py-2.5 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary/20"
             />
@@ -428,29 +469,53 @@ const SettingsContent = () => {
         <h3 className="text-xl font-semibold mb-4">Change Password</h3>
         <form onSubmit={handleChangePassword} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-2">Current Password</label>
+            <label className="block text-sm font-medium mb-2">
+              Current Password
+            </label>
             <input
               type="password"
               value={passwordData.currentPassword}
-              onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
+              onChange={(e) =>
+                setPasswordData({
+                  ...passwordData,
+                  currentPassword: e.target.value,
+                })
+              }
+              placeholder="Enter your current password"
               className="w-full px-4 py-2.5 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary/20"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-2">New Password</label>
+            <label className="block text-sm font-medium mb-2">
+              New Password
+            </label>
             <input
               type="password"
               value={passwordData.newPassword}
-              onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
+              onChange={(e) =>
+                setPasswordData({
+                  ...passwordData,
+                  newPassword: e.target.value,
+                })
+              }
+              placeholder="Enter your new password"
               className="w-full px-4 py-2.5 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary/20"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-2">Confirm New Password</label>
+            <label className="block text-sm font-medium mb-2">
+              Confirm New Password
+            </label>
             <input
               type="password"
               value={passwordData.confirmPassword}
-              onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
+              onChange={(e) =>
+                setPasswordData({
+                  ...passwordData,
+                  confirmPassword: e.target.value,
+                })
+              }
+              placeholder="Confirm your new password"
               className="w-full px-4 py-2.5 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary/20"
             />
           </div>
@@ -497,9 +562,7 @@ const SettingsContent = () => {
               <div className="text-center mb-6">
                 <h4 className="text-2xl font-bold mb-2">{plan.name}</h4>
                 <div className="flex items-end justify-center gap-1">
-                  <span className="text-4xl font-extrabold">
-                    ${plan.price}
-                  </span>
+                  <span className="text-4xl font-extrabold">${plan.price}</span>
                   <span className="text-muted-foreground text-sm mb-2">
                     /{plan.interval}
                   </span>
@@ -565,7 +628,10 @@ const SettingsContent = () => {
                   Billing Information
                 </p>
                 <p className="text-blue-700 mt-1">
-                  Next billing date: {new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString()}
+                  Next billing date:{" "}
+                  {new Date(
+                    Date.now() + 30 * 24 * 60 * 60 * 1000
+                  ).toLocaleDateString()}
                 </p>
                 <button
                   onClick={() => setMessage("Payment method updated")}
@@ -577,34 +643,40 @@ const SettingsContent = () => {
             </div>
           </div>
         )}
-          </div>
+      </div>
 
       {/* Security - 2FA */}
       <div className="border border-border rounded-lg p-6">
-        <h3 className="text-xl font-semibold mb-2">Two-Factor Authentication</h3>
+        <h3 className="text-xl font-semibold mb-2">
+          Two-Factor Authentication
+        </h3>
         <p className="text-muted-foreground text-sm mb-4">
           Add an extra layer of security to your account
         </p>
-          <div className="flex items-center justify-between py-4 border-t border-border">
-            <div>
-              <p className="font-medium">SMS 2FA</p>
-              <p className="text-sm text-muted-foreground">
-                {is2FAEnabled
-                  ? "Enabled - You will receive verification codes via SMS"
-                  : "Disabled - Enable to protect your account"}
-              </p>
-            </div>
-            <button
-              onClick={handleToggle2FA}
+        <div className="flex items-center justify-between py-4 border-t border-border">
+          <div>
+            <p className="font-medium">SMS 2FA</p>
+            <p className="text-sm text-muted-foreground">
+              {is2FAEnabled
+                ? "Enabled - You will receive verification codes via SMS"
+                : "Disabled - Enable to protect your account"}
+            </p>
+          </div>
+          <button
+            onClick={handleToggle2FA}
             disabled={loading || (!is2FAEnabled && !profileData.phone)}
-              className={`px-4 py-2 rounded-md font-medium transition-colors ${
-                is2FAEnabled
-                  ? "bg-red-600 hover:bg-red-700 text-white"
+            className={`px-4 py-2 rounded-md font-medium transition-colors ${
+              is2FAEnabled
+                ? "bg-red-600 hover:bg-red-700 text-white"
                 : "bg-primary hover:bg-primary/90 text-white"
-              } disabled:opacity-50`}
-            >
-            {loading ? "Loading..." : is2FAEnabled ? "Disable 2FA" : "Enable 2FA"}
-            </button>
+            } disabled:opacity-50`}
+          >
+            {loading
+              ? "Loading..."
+              : is2FAEnabled
+              ? "Disable 2FA"
+              : "Enable 2FA"}
+          </button>
         </div>
       </div>
 
@@ -623,8 +695,14 @@ const SettingsContent = () => {
               <input
                 type="checkbox"
                 checked={notifications.emailBooking}
-                onChange={(e) => setNotifications({...notifications, emailBooking: e.target.checked})}
+                onChange={(e) =>
+                  setNotifications({
+                    ...notifications,
+                    emailBooking: e.target.checked,
+                  })
+                }
                 className="sr-only peer"
+                title="Toggle booking confirmation emails"
               />
               <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
             </label>
@@ -641,8 +719,14 @@ const SettingsContent = () => {
               <input
                 type="checkbox"
                 checked={notifications.emailReminder}
-                onChange={(e) => setNotifications({...notifications, emailReminder: e.target.checked})}
+                onChange={(e) =>
+                  setNotifications({
+                    ...notifications,
+                    emailReminder: e.target.checked,
+                  })
+                }
                 className="sr-only peer"
+                title="Toggle appointment reminder emails"
               />
               <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
             </label>
@@ -659,8 +743,14 @@ const SettingsContent = () => {
               <input
                 type="checkbox"
                 checked={notifications.smsReminder}
-                onChange={(e) => setNotifications({...notifications, smsReminder: e.target.checked})}
+                onChange={(e) =>
+                  setNotifications({
+                    ...notifications,
+                    smsReminder: e.target.checked,
+                  })
+                }
                 className="sr-only peer"
+                title="Toggle SMS reminder notifications"
               />
               <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
             </label>
@@ -677,8 +767,14 @@ const SettingsContent = () => {
               <input
                 type="checkbox"
                 checked={notifications.emailPromotions}
-                onChange={(e) => setNotifications({...notifications, emailPromotions: e.target.checked})}
+                onChange={(e) =>
+                  setNotifications({
+                    ...notifications,
+                    emailPromotions: e.target.checked,
+                  })
+                }
                 className="sr-only peer"
+                title="Toggle promotional email notifications"
               />
               <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
             </label>
@@ -688,9 +784,12 @@ const SettingsContent = () => {
 
       {/* Delete Account */}
       <div className="border border-red-200 bg-red-50 rounded-lg p-6">
-        <h3 className="text-xl font-semibold mb-2 text-red-800">Delete Account</h3>
+        <h3 className="text-xl font-semibold mb-2 text-red-800">
+          Delete Account
+        </h3>
         <p className="text-sm text-red-600 mb-4">
-          Once you delete your account, there is no going back. Please be certain.
+          Once you delete your account, there is no going back. Please be
+          certain.
         </p>
         <button
           onClick={handleDeleteAccount}

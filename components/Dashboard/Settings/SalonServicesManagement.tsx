@@ -72,7 +72,7 @@ const SalonServicesManagement = () => {
   // Add or update service
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       const token = localStorage.getItem("token");
       const url = editingService
@@ -190,7 +190,9 @@ const SalonServicesManagement = () => {
             >
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <h3 className="font-semibold text-sm">{service.custom_name}</h3>
+                  <h3 className="font-semibold text-sm">
+                    {service.custom_name}
+                  </h3>
                   <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
                     {service.category_name}
                   </span>
@@ -249,10 +251,14 @@ const SalonServicesManagement = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">
+                <label
+                  htmlFor="category-select"
+                  className="block text-sm font-medium mb-1"
+                >
                   Category *
                 </label>
                 <select
+                  id="category-select"
                   value={formData.category}
                   onChange={(e) =>
                     setFormData({ ...formData, category: e.target.value })
@@ -276,11 +282,15 @@ const SalonServicesManagement = () => {
                   type="number"
                   value={formData.duration}
                   onChange={(e) =>
-                    setFormData({ ...formData, duration: parseInt(e.target.value) })
+                    setFormData({
+                      ...formData,
+                      duration: parseInt(e.target.value),
+                    })
                   }
                   required
                   min="5"
                   step="5"
+                  placeholder="30"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg"
                 />
               </div>
@@ -293,11 +303,15 @@ const SalonServicesManagement = () => {
                   type="number"
                   value={formData.price}
                   onChange={(e) =>
-                    setFormData({ ...formData, price: parseFloat(e.target.value) })
+                    setFormData({
+                      ...formData,
+                      price: parseFloat(e.target.value),
+                    })
                   }
                   required
                   min="0"
                   step="0.01"
+                  placeholder="0.00"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg"
                 />
               </div>

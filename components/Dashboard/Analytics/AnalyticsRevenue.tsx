@@ -27,6 +27,7 @@ const AnalyticsRevenue: React.FC<RevenueAnalyticsProps> = ({ data }) => {
       : [{ day: "—", revenue: 0 }];
 
   const { totalRevenue, avgTicket, dailyRevenue, goalProgress } = data.summary;
+  const safeGoalProgress = Math.max(0, Math.min(goalProgress, 100));
 
   return (
     <div className="bg-primary-foreground border border-muted rounded-2xl p-6 hover:shadow-soft-br transition-smooth font-inter">
@@ -39,7 +40,10 @@ const AnalyticsRevenue: React.FC<RevenueAnalyticsProps> = ({ data }) => {
           <div>
             <p className="text-gray-500 text-sm">Total Revenue</p>
             <h3 className="text-2xl font-bold text-gray-900">
-              ${totalRevenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+              $
+              {totalRevenue.toLocaleString(undefined, {
+                maximumFractionDigits: 0,
+              })}
             </h3>
             <p className="text-green-600 text-xs">Last 7 days</p>
           </div>
@@ -53,7 +57,10 @@ const AnalyticsRevenue: React.FC<RevenueAnalyticsProps> = ({ data }) => {
           <div>
             <p className="text-gray-500 text-sm">Daily Revenue</p>
             <h3 className="text-2xl font-bold text-gray-900">
-              ${dailyRevenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+              $
+              {dailyRevenue.toLocaleString(undefined, {
+                maximumFractionDigits: 0,
+              })}
             </h3>
             <p className="text-green-600 text-xs">Most recent day</p>
           </div>
@@ -62,9 +69,11 @@ const AnalyticsRevenue: React.FC<RevenueAnalyticsProps> = ({ data }) => {
             <h3 className="text-2xl font-bold text-gray-900">
               {goalProgress.toFixed(0)}%
             </h3>
-            <div
-              className="w-24 h-1.5 bg-green-600 rounded-full mt-1"
-              style={{ width: `${goalProgress}%` }}
+            <progress
+              value={safeGoalProgress}
+              max={100}
+              className="progress-bar mt-1"
+              aria-label="Revenue goal progress"
             />
           </div>
         </div>

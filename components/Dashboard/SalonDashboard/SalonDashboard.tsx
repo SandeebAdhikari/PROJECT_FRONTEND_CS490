@@ -1,6 +1,5 @@
 import { Download, Plus } from "lucide-react";
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import SalonDashboardCard from "./SalonDashboardCard";
 import { icons } from "@/libs/dashboard/dashboard.icons";
 import useSalonId from "@/hooks/useSalonId";
@@ -20,24 +19,23 @@ interface DashboardStats {
 }
 
 const SalonDashboard = () => {
-  const router = useRouter();
   const { salonId, loadingSalon } = useSalonId();
   const [userName, setUserName] = useState("");
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const userData = localStorage.getItem('user');
+    const userData = localStorage.getItem("user");
     if (userData) {
       const user = JSON.parse(userData);
-      setUserName(user.full_name || user.email?.split('@')[0] || "");
+      setUserName(user.full_name || user.email?.split("@")[0] || "");
     }
   }, []);
 
   useEffect(() => {
     const fetchStats = async () => {
       if (!salonId) return;
-      
+
       try {
         setLoading(true);
         const res = await fetchWithRefresh(
@@ -45,7 +43,7 @@ const SalonDashboard = () => {
           { credentials: "include" }
         );
         const data = await res.json();
-        
+
         if (res.ok && data.data) {
           setStats(data.data);
         }
@@ -66,7 +64,7 @@ const SalonDashboard = () => {
       <div className="sm:flex sm:justify-between w-full">
         <div>
           <h1 className="text-xl sm:text-3xl lg:text-4xl font-extrabold">
-            Welcome{userName ? `, ${userName.split(' ')[0]}` : ''}!
+            Welcome{userName ? `, ${userName.split(" ")[0]}` : ""}!
           </h1>
           <p className="text-muted-foreground font-inter text-base mt-2 sm:text-lg">
             Your salon is performing excellently today. Here&apos;s your
@@ -104,33 +102,105 @@ const SalonDashboard = () => {
               title="Total Revenue"
               value={`$${stats.totalRevenue.toLocaleString()}`}
               subtext={`vs $${stats.totalRevenuePrev.toLocaleString()} last period`}
-              change={`${stats.totalRevenuePrev > 0 ? (((stats.totalRevenue - stats.totalRevenuePrev) / stats.totalRevenuePrev * 100) >= 0 ? '+' : '') + ((stats.totalRevenue - stats.totalRevenuePrev) / stats.totalRevenuePrev * 100).toFixed(1) : '+0.0'}%`}
+              change={`${
+                stats.totalRevenuePrev > 0
+                  ? (((stats.totalRevenue - stats.totalRevenuePrev) /
+                      stats.totalRevenuePrev) *
+                      100 >=
+                    0
+                      ? "+"
+                      : "") +
+                    (
+                      ((stats.totalRevenue - stats.totalRevenuePrev) /
+                        stats.totalRevenuePrev) *
+                      100
+                    ).toFixed(1)
+                  : "+0.0"
+              }%`}
               icon={icons.DollarSign}
-              trendIcon={stats.totalRevenue >= stats.totalRevenuePrev ? icons.TrendingUp : icons.TrendingDown}
+              trendIcon={
+                stats.totalRevenue >= stats.totalRevenuePrev
+                  ? icons.TrendingUp
+                  : icons.TrendingDown
+              }
             />
             <SalonDashboardCard
               title="Appointments"
               value={stats.appointments.toString()}
               subtext={`vs ${stats.appointmentsPrev} last period`}
-              change={`${stats.appointmentsPrev > 0 ? (((stats.appointments - stats.appointmentsPrev) / stats.appointmentsPrev * 100) >= 0 ? '+' : '') + ((stats.appointments - stats.appointmentsPrev) / stats.appointmentsPrev * 100).toFixed(1) : '+0.0'}%`}
+              change={`${
+                stats.appointmentsPrev > 0
+                  ? (((stats.appointments - stats.appointmentsPrev) /
+                      stats.appointmentsPrev) *
+                      100 >=
+                    0
+                      ? "+"
+                      : "") +
+                    (
+                      ((stats.appointments - stats.appointmentsPrev) /
+                        stats.appointmentsPrev) *
+                      100
+                    ).toFixed(1)
+                  : "+0.0"
+              }%`}
               icon={icons.CalendarDays}
-              trendIcon={stats.appointments >= stats.appointmentsPrev ? icons.TrendingUp : icons.TrendingDown}
+              trendIcon={
+                stats.appointments >= stats.appointmentsPrev
+                  ? icons.TrendingUp
+                  : icons.TrendingDown
+              }
             />
             <SalonDashboardCard
               title="New Customers"
               value={stats.newCustomers.toString()}
               subtext={`vs ${stats.newCustomersPrev} last period`}
-              change={`${stats.newCustomersPrev > 0 ? (((stats.newCustomers - stats.newCustomersPrev) / stats.newCustomersPrev * 100) >= 0 ? '+' : '') + ((stats.newCustomers - stats.newCustomersPrev) / stats.newCustomersPrev * 100).toFixed(1) : '+0.0'}%`}
+              change={`${
+                stats.newCustomersPrev > 0
+                  ? (((stats.newCustomers - stats.newCustomersPrev) /
+                      stats.newCustomersPrev) *
+                      100 >=
+                    0
+                      ? "+"
+                      : "") +
+                    (
+                      ((stats.newCustomers - stats.newCustomersPrev) /
+                        stats.newCustomersPrev) *
+                      100
+                    ).toFixed(1)
+                  : "+0.0"
+              }%`}
               icon={icons.Users}
-              trendIcon={stats.newCustomers >= stats.newCustomersPrev ? icons.TrendingUp : icons.TrendingDown}
+              trendIcon={
+                stats.newCustomers >= stats.newCustomersPrev
+                  ? icons.TrendingUp
+                  : icons.TrendingDown
+              }
             />
             <SalonDashboardCard
               title="Avg Rating"
               value={stats.avgRating.toFixed(1)}
               subtext={`vs ${stats.avgRatingPrev.toFixed(1)} last period`}
-              change={`${stats.avgRatingPrev > 0 ? (((stats.avgRating - stats.avgRatingPrev) / stats.avgRatingPrev * 100) >= 0 ? '+' : '') + ((stats.avgRating - stats.avgRatingPrev) / stats.avgRatingPrev * 100).toFixed(1) : '+0.0'}%`}
+              change={`${
+                stats.avgRatingPrev > 0
+                  ? (((stats.avgRating - stats.avgRatingPrev) /
+                      stats.avgRatingPrev) *
+                      100 >=
+                    0
+                      ? "+"
+                      : "") +
+                    (
+                      ((stats.avgRating - stats.avgRatingPrev) /
+                        stats.avgRatingPrev) *
+                      100
+                    ).toFixed(1)
+                  : "+0.0"
+              }%`}
               icon={icons.Star}
-              trendIcon={stats.avgRating >= stats.avgRatingPrev ? icons.TrendingUp : icons.TrendingDown}
+              trendIcon={
+                stats.avgRating >= stats.avgRatingPrev
+                  ? icons.TrendingUp
+                  : icons.TrendingDown
+              }
             />
             <SalonDashboardCard
               title="Staff Utilization"

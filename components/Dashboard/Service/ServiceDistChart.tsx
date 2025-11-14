@@ -29,32 +29,75 @@ const COLORS = [
   "hsl(30, 75%, 60%)",
 ];
 
-const mapServicePayload = (payload: unknown): ServiceSlice[] => {
-  let collection =
-    (payload &&
-      typeof payload === "object" &&
-      (Array.isArray((payload as any).data)
-        ? (payload as any).data
-        : Array.isArray((payload as any).services)
-        ? (payload as any).services
-        : Array.isArray((payload as any).distribution)
-        ? (payload as any).distribution
-        : null)) ||
-    (Array.isArray(payload) ? payload : null);
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null;
 
-  if (!collection && payload && typeof payload === "object") {
-    const labels = Array.isArray((payload as any).labels)
-      ? (payload as any).labels
-      : Array.isArray((payload as any).services)
-      ? (payload as any).services
-      : null;
-    const values = Array.isArray((payload as any).values)
-      ? (payload as any).values
-      : Array.isArray((payload as any).percentages)
-      ? (payload as any).percentages
-      : Array.isArray((payload as any).counts)
-      ? (payload as any).counts
-      : null;
+const pickArray = <T = unknown>(
+  source: Record<string, unknown>,
+  keys: string[]
+): T[] | null => {
+  for (const key of keys) {
+    const candidate = source[key];
+    if (Array.isArray(candidate)) {
+      return candidate as T[];
+    }
+  }
+  return null;
+};
+
+const pickString = (
+  source: Record<string, unknown>,
+  keys: string[]
+): string | undefined => {
+  for (const key of keys) {
+    const candidate = source[key];
+    if (typeof candidate === "string" && candidate.trim().length > 0) {
+      return candidate;
+    }
+  }
+  return undefined;
+};
+
+const pickNumber = (
+  source: Record<string, unknown>,
+  keys: string[],
+  fallback = 0
+): number => {
+  for (const key of keys) {
+    const candidate = source[key];
+    if (typeof candidate === "number") {
+      return candidate;
+    }
+    if (typeof candidate === "string" && candidate.trim() !== "") {
+      const asNumber = Number(candidate);
+      if (!Number.isNaN(asNumber)) {
+        return asNumber;
+      }
+    }
+  }
+  return fallback;
+};
+
+const mapServicePayload = (payload: unknown): ServiceSlice[] => {
+  const payloadRecord = isRecord(payload) ? payload : undefined;
+
+  let collection: unknown[] | null = null;
+  if (payloadRecord) {
+    collection =
+      pickArray(payloadRecord, ["data", "services", "distribution"]) ?? null;
+  }
+
+  if (!collection && Array.isArray(payload)) {
+    collection = payload;
+  }
+
+  if (!collection && payloadRecord) {
+    const labels = pickArray<string>(payloadRecord, ["labels", "services"]);
+    const values = pickArray<number>(payloadRecord, [
+      "values",
+      "percentages",
+      "counts",
+    ]);
 
     if (labels && values && labels.length === values.length) {
       collection = labels.map((label, index) => ({
@@ -64,26 +107,32 @@ const mapServicePayload = (payload: unknown): ServiceSlice[] => {
     }
   }
 
-  const resolved = collection || [];
+  const resolved = (collection ?? [])
+    .map((item) => {
+      if (isRecord(item)) {
+        return item;
+      }
+      if (typeof item === "string") {
+        return { name: item };
+      }
+      if (typeof item === "number") {
+        return { value: item };
+      }
+      return null;
+    })
+    .filter((entry): entry is Record<string, unknown> => Boolean(entry));
 
   return resolved
-    .map((item: any) => ({
+    .map((item) => ({
       name:
-        String(
-          item?.name ??
-            item?.service ??
-            item?.service_name ??
-            item?.label ??
-            ""
-        ).trim() || "",
-      value: Number(
-        item?.value ??
-          item?.percentage ??
-          item?.total ??
-          item?.count ??
-          item?.appointments ??
-          0
-      ),
+        pickString(item, ["name", "service", "service_name", "label"]) || "",
+      value: pickNumber(item, [
+        "value",
+        "percentage",
+        "total",
+        "count",
+        "appointments",
+      ]),
     }))
     .filter((item) => item.name && !Number.isNaN(item.value) && item.value >= 0);
 };

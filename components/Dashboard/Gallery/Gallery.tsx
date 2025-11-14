@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Image, Plus, Trash2, Upload } from "lucide-react";
+import { Image as ImageIcon, Plus, Trash2, Upload } from "lucide-react";
+import Image from "next/image";
 import Header from "../Header";
 
 interface Photo {
@@ -149,13 +150,11 @@ const Gallery = () => {
         primaryIcon={Plus}
         showActions
       />
-
       {photos.length === 0 ? (
         <div className="bg-white border border-gray-200 rounded-2xl p-12 text-center">
-          <Image className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-          <h3 className="text-xl font-semibold mb-2">No Photos Yet</h3>
-          <p className="text-gray-500 mb-4">
-            Start building your gallery to showcase your work
+          <ImageIcon className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+          <p className="text-gray-500 mb-6">
+            Your gallery is empty. Add your first photo to get started.
           </p>
           <button
             onClick={() => setShowAddModal(true)}
@@ -172,14 +171,16 @@ const Gallery = () => {
               className="bg-white border-2 border-gray-200 rounded-xl overflow-hidden group relative hover:shadow-lg hover:border-primary/30 transition-all duration-200"
             >
               <div className="relative aspect-square">
-                <img
+                <Image
                   src={`http://localhost:4000${photo.photo_url}`}
                   alt={photo.caption || "Gallery photo"}
-                  className="w-full h-full object-cover"
+                  fill
+                  className="object-cover"
                 />
                 <button
                   onClick={() => handleDeletePhoto(photo.photo_id)}
                   className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity shadow-lg hover:bg-red-600"
+                  aria-label="Delete photo"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>
@@ -213,10 +214,13 @@ const Gallery = () => {
                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-primary transition-colors">
                   {previewUrl ? (
                     <div className="relative">
-                      <img
+                      <Image
                         src={previewUrl}
                         alt="Preview"
-                        className="max-h-64 mx-auto rounded-lg"
+                        width={256}
+                        height={256}
+                        className="max-h-64 mx-auto rounded-lg object-contain"
+                        unoptimized
                       />
                       <button
                         onClick={() => {

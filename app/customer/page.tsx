@@ -12,22 +12,29 @@ import data from "@/data/data.json"; // Import mock data
 import { Scissors, Palette, Sparkles, Hand, Eye, Brush } from "lucide-react";
 import CustomerTopSalon from "@/components/Customer/CustomerTopSalon";
 
+type CustomerSalon = Omit<ApiSalon, "address" | "phone"> & {
+  id?: string;
+  city?: string;
+  description?: string;
+  rating?: number;
+  totalReviews?: number;
+  priceFrom?: number;
+  category?: string;
+  imageUrl?: string;
+  address?: string;
+  phone?: string;
+};
+
+const MOCK_SALONS: CustomerSalon[] = Array.isArray(data.salons)
+  ? (data.salons as CustomerSalon[])
+  : [];
+
 const Page = () => {
   const [selectedService, setSelectedService] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const { toggleFavorite, isFavorite } = useFavorites();
   const [show2FAModal, setShow2FAModal] = useState(false);
   const [userPhone, setUserPhone] = useState("");
-  type CustomerSalon = ApiSalon & {
-    id?: string;
-    city?: string;
-    description?: string;
-    rating?: number;
-    totalReviews?: number;
-    priceFrom?: number;
-    category?: string;
-    imageUrl?: string;
-  };
 
   const [salons, setSalons] = useState<CustomerSalon[]>([]);
   const [loading, setLoading] = useState(true);
@@ -46,10 +53,10 @@ const Page = () => {
       try {
         // Fetch real salons from backend
         const result = await getAllSalons();
-        const realSalons: CustomerSalon[] = result.salons || [];
+        const realSalons = (result.salons ?? []) as CustomerSalon[];
         
         // Get mock salons from data.json
-        const mockSalons: CustomerSalon[] = (data.salons as CustomerSalon[]) || [];
+        const mockSalons = MOCK_SALONS;
         
         // Combine both: real salons first, then mock salons
         const combinedSalons = [...realSalons, ...mockSalons];
@@ -58,7 +65,7 @@ const Page = () => {
       } catch (error) {
         console.error("Error loading salons:", error);
         // If backend fails, at least show mock data
-        setSalons(data.salons || []);
+        setSalons(MOCK_SALONS);
       } finally {
         setLoading(false);
       }

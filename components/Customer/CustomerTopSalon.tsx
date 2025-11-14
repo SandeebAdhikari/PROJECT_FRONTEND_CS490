@@ -28,27 +28,30 @@ interface CustomerTopSalonProps {
 
 const CustomerTopSalon: React.FC<CustomerTopSalonProps> = ({
   salons = [],
-  selectedService = "all",
   searchQuery = "",
   onToggleFavorite,
   isFavorite,
 }) => {
   const filteredSalons = useMemo(() => {
-    let filtered = salons.filter((s) => s.status === "active" || s.status === "pending" || !s.status);
+    let filtered = salons.filter(
+      (s) => s.status === "active" || s.status === "pending" || !s.status
+    );
 
     // Filter by search query
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter((salon) =>
-        salon.name.toLowerCase().includes(query) ||
-        (salon.city && salon.city.toLowerCase().includes(query)) ||
-        (salon.description && salon.description.toLowerCase().includes(query)) ||
-        (salon.address && salon.address.toLowerCase().includes(query))
+      filtered = filtered.filter(
+        (salon) =>
+          salon.name.toLowerCase().includes(query) ||
+          (salon.city && salon.city.toLowerCase().includes(query)) ||
+          (salon.description &&
+            salon.description.toLowerCase().includes(query)) ||
+          (salon.address && salon.address.toLowerCase().includes(query))
       );
     }
 
     return filtered;
-  }, [salons, selectedService, searchQuery]);
+  }, [salons, searchQuery]);
 
   if (filteredSalons.length === 0) {
     return (
@@ -69,17 +72,19 @@ const CustomerTopSalon: React.FC<CustomerTopSalonProps> = ({
     <div className="p-4 sm:p-6 lg:p-8 bg-primary-foreground">
       <div className="max-w-[1600px] mx-auto mb-4">
         <p className="text-sm text-muted-foreground">
-          Showing {filteredSalons.length} {filteredSalons.length === 1 ? 'salon' : 'salons'}
+          Showing {filteredSalons.length}{" "}
+          {filteredSalons.length === 1 ? "salon" : "salons"}
         </p>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 lg:gap-6 max-w-[1600px] mx-auto">
         {filteredSalons.map((salon) => {
           const salonId = salon.salon_id?.toString() || salon.id || "";
-          
-          const imageUrl = salon.profile_picture 
-            ? `http://localhost:4000${salon.profile_picture}` 
-            : salon.imageUrl || "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=400&h=300&fit=crop";
-          
+
+          const imageUrl = salon.profile_picture
+            ? `http://localhost:4000${salon.profile_picture}`
+            : salon.imageUrl ||
+              "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=400&h=300&fit=crop";
+
           return (
             <SalonCard
               key={salonId}

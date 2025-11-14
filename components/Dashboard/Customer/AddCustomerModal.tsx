@@ -73,9 +73,7 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
       onAdded?.();
       onClose();
     } catch (err) {
-      setMessage(
-        err instanceof Error ? err.message : "Failed to add customer"
-      );
+      setMessage(err instanceof Error ? err.message : "Failed to add customer");
     } finally {
       setLoading(false);
     }
@@ -158,6 +156,7 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
                 value={form.city}
                 onChange={handleChange}
                 className="w-full border border-border rounded-lg px-3 py-2"
+                placeholder="Enter city"
               />
             </div>
             <div>
@@ -167,6 +166,7 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
                 value={form.state}
                 onChange={handleChange}
                 className="w-full border border-border rounded-lg px-3 py-2"
+                placeholder="Enter state"
               />
             </div>
             <div>
@@ -176,6 +176,7 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
                 value={form.zip}
                 onChange={handleChange}
                 className="w-full border border-border rounded-lg px-3 py-2"
+                placeholder="Enter ZIP code"
               />
             </div>
           </div>

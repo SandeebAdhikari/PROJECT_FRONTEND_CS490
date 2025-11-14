@@ -24,77 +24,125 @@ type RevenuePoint = {
   rawLabel: string;
 };
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null;
+
+const pickArray = <T = unknown>(
+  source: Record<string, unknown>,
+  keys: string[]
+): T[] | null => {
+  for (const key of keys) {
+    const candidate = source[key];
+    if (Array.isArray(candidate)) {
+      return candidate as T[];
+    }
+  }
+  return null;
+};
+
+const pickString = (
+  source: Record<string, unknown>,
+  keys: string[]
+): string | undefined => {
+  for (const key of keys) {
+    const candidate = source[key];
+    if (typeof candidate === "string" && candidate.trim().length > 0) {
+      return candidate;
+    }
+  }
+  return undefined;
+};
+
+const pickNumber = (
+  source: Record<string, unknown>,
+  keys: string[],
+  fallback = 0
+): number => {
+  for (const key of keys) {
+    const candidate = source[key];
+    if (typeof candidate === "number") {
+      return candidate;
+    }
+    if (typeof candidate === "string" && candidate.trim() !== "") {
+      const asNumber = Number(candidate);
+      if (!Number.isNaN(asNumber)) {
+        return asNumber;
+      }
+    }
+  }
+  return fallback;
+};
+
 const transformRevenuePayload = (payload: unknown) => {
-  let raw =
-    (payload &&
-      typeof payload === "object" &&
-      (Array.isArray((payload as any).data)
-        ? (payload as any).data
-        : Array.isArray((payload as any).revenue)
-        ? (payload as any).revenue
-        : Array.isArray((payload as any).points)
-        ? (payload as any).points
-        : Array.isArray((payload as any).results)
-        ? (payload as any).results
-        : null)) ||
-    (Array.isArray(payload) ? payload : null);
+  const payloadRecord = isRecord(payload) ? payload : undefined;
 
-  if (!raw && payload && typeof payload === "object") {
-    const labels = Array.isArray((payload as any).labels)
-      ? (payload as any).labels
-      : Array.isArray((payload as any).days)
-      ? (payload as any).days
-      : null;
-    const values = Array.isArray((payload as any).values)
-      ? (payload as any).values
-      : Array.isArray((payload as any).amounts)
-      ? (payload as any).amounts
-      : Array.isArray((payload as any).revenues)
-      ? (payload as any).revenues
-      : null;
+  let rawSeries: unknown[] | null = null;
+  if (payloadRecord) {
+    rawSeries =
+      pickArray(payloadRecord, ["data", "revenue", "points", "results"]) ?? null;
+  }
 
+  if (!rawSeries && Array.isArray(payload)) {
+    rawSeries = payload;
+  }
+
+  if (!rawSeries && payloadRecord) {
+    const labels = pickArray<string>(payloadRecord, ["labels", "days"]);
+    const values = pickArray<number>(payloadRecord, [
+      "values",
+      "amounts",
+      "revenues",
+    ]);
     if (labels && values && labels.length === values.length) {
-      raw = labels.map((label, index) => ({
+      rawSeries = labels.map((label, index) => ({
         day: label,
         value: values[index],
       }));
     }
   }
 
-  const resolvedRaw = raw || [];
+  const normalizedEntries = (rawSeries ?? [])
+    .map((entry) => {
+      if (isRecord(entry)) {
+        return entry;
+      }
+      if (typeof entry === "number") {
+        return { value: entry };
+      }
+      if (typeof entry === "string") {
+        return { day: entry };
+      }
+      return null;
+    })
+    .filter((entry): entry is Record<string, unknown> => Boolean(entry));
 
   const periodLabel =
-    (payload && typeof payload === "object" &&
-      ((payload as any).period ||
-        (payload as any).label ||
-        (payload as any).period_label ||
-        (payload as any).range ||
-        (payload as any).timeframe)) ||
+    (payloadRecord &&
+      (pickString(payloadRecord, [
+        "period",
+        "label",
+        "period_label",
+        "range",
+        "timeframe",
+      ]) ||
+        undefined)) ||
     "Last 7 days";
 
-  const parsed: RevenuePoint[] = resolvedRaw
-    .map((entry: any) => {
+  const parsed: RevenuePoint[] = normalizedEntries
+    .map((entry) => {
       const rawLabel =
-        String(
-          entry?.day ??
-            entry?.date ??
-            entry?.label ??
-            entry?.name ??
-            entry?.dt ??
-            ""
-        ).trim() || "";
+        pickString(entry, ["day", "date", "label", "name", "dt"]) || "";
       const readableLabel = rawLabel ? toShortDateLabel(rawLabel) : "";
       return {
         day: readableLabel || rawLabel,
         rawLabel: rawLabel || readableLabel,
-        value: Number(
-          entry?.value ??
-            entry?.amount ??
-            entry?.total ??
-            entry?.revenue ??
-            entry?.count ??
-            0
-        ),
+        value: pickNumber(entry, [
+          "value",
+          "amount",
+          "total",
+          "revenue",
+          "count",
+        ]),
       };
     })
     .filter((entry) => entry.day);

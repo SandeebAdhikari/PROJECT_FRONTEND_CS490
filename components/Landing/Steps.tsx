@@ -66,10 +66,10 @@ const Steps: React.FC = () => {
               {steps.map((step, index) => (
                 <div
                   key={step.title}
-                  className="timeline-card relative rounded-[32px] p-8 border border-white/70 bg-white shadow-[0_25px_70px_rgba(15,23,42,0.12)]"
-                  style={{ animationDelay: `${index * 0.6}s` }}
+                  className={`timeline-card relative rounded-[32px] p-8 border border-white/70 bg-white shadow-[0_25px_70px_rgba(15,23,42,0.12)]`}
+                  data-delay={index}
                 >
-                  <div className="absolute -left-[38px] top-8 w-10 h-10 rounded-full bg-white border border-border/60 flex items-center justify-center hidden sm:flex">
+                  <div className="absolute -left-[38px] top-8 w-10 h-10 rounded-full bg-white border border-border/60  items-center justify-center  sm:flex">
                     <div className="w-2 h-2 rounded-full bg-primary" />
                   </div>
 
@@ -151,6 +151,15 @@ const Steps: React.FC = () => {
         }
         .timeline-card {
           animation: floatSlow 12s ease-in-out infinite;
+        }
+        .timeline-card[data-delay="0"] {
+          animation-delay: 0s;
+        }
+        .timeline-card[data-delay="1"] {
+          animation-delay: 0.6s;
+        }
+        .timeline-card[data-delay="2"] {
+          animation-delay: 1.2s;
         }
       `}</style>
     </section>
