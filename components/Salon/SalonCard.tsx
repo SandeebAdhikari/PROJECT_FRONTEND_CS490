@@ -57,13 +57,13 @@ const SalonCard: React.FC<SalonCardProps> = ({
               ? `Remove ${name} from favorites`
               : `Add ${name} to favorites`
           }
-          aria-pressed={isFavorite}
+          aria-pressed={isFavorite ? "true" : "false"}
           title={
             isFavorite
               ? `Remove ${name} from favorites`
               : `Add ${name} to favorites`
           }
-          className="absolute top-3 right-3 sm:top-4 sm:right-4 bg-white/90 hover:bg-white rounded-full p-1.5 sm:p-2 shadow-md transition active:scale-95"
+          className="absolute top-3 right-3 sm:top-4 sm:right-4 bg-white/90 hover:bg-white rounded-full p-1.5 sm:p-2 shadow-md transition active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >
           <Heart
             aria-hidden="true"
@@ -76,7 +76,9 @@ const SalonCard: React.FC<SalonCardProps> = ({
 
       <div className="p-4 sm:p-5 space-y-2.5 sm:space-y-3 flex-1 flex flex-col">
         <div className="flex items-start justify-between gap-2">
-          <h3 className="text-base sm:text-lg font-bold line-clamp-1">{name}</h3>
+          <h3 className="text-base sm:text-lg font-bold line-clamp-1">
+            {name}
+          </h3>
           <div className="flex items-center text-xs sm:text-sm gap-1 flex-shrink-0">
             <Star className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-yellow-400 text-yellow-400" />
             <span className="font-semibold">
@@ -95,7 +97,9 @@ const SalonCard: React.FC<SalonCardProps> = ({
           {description}
         </p>
 
-        <p className="text-xs sm:text-sm text-muted-foreground font-medium">From ${priceFrom}</p>
+        <p className="text-xs sm:text-sm text-muted-foreground font-medium">
+          From ${priceFrom}
+        </p>
 
         <Link
           href={`/customer/salon-details/${id}`}

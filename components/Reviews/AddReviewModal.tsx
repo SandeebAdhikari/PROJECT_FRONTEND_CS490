@@ -78,6 +78,7 @@ const AddReviewModal: React.FC<AddReviewModalProps> = ({
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 transition"
+            title="Close modal"
           >
             <X className="w-6 h-6" />
           </button>
@@ -98,6 +99,7 @@ const AddReviewModal: React.FC<AddReviewModalProps> = ({
                   onMouseLeave={() => setHoveredRating(0)}
                   onClick={() => setRating(star)}
                   className="focus:outline-none"
+                  title={`Rate ${star} star${star > 1 ? "s" : ""}`}
                 >
                   <Star
                     className={`w-8 h-8 transition ${
@@ -160,4 +162,3 @@ const AddReviewModal: React.FC<AddReviewModalProps> = ({
 };
 
 export default AddReviewModal;
-

@@ -25,10 +25,26 @@ interface Service {
   price: number;
 }
 
+interface BackendStaff {
+  staff_id: number;
+  full_name?: string;
+  role?: string;
+  specialization?: string;
+}
+
+interface BackendService {
+  service_id: number;
+  custom_name?: string;
+  category_name: string;
+  description?: string;
+  duration?: number;
+  price?: string;
+}
+
 const BookingPage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  
+
   const salonId = searchParams.get("salonId") || "1";
   const preSelectedService = searchParams.get("service") || "";
   const preSelectedPrice = searchParams.get("price") || "";
@@ -36,7 +52,7 @@ const BookingPage = () => {
   const [availableStaff, setAvailableStaff] = useState<Staff[]>([]);
   const [availableServices, setAvailableServices] = useState<Service[]>([]);
   const [availableSlots, setAvailableSlots] = useState<string[]>([]);
-  
+
   const [formData, setFormData] = useState({
     serviceId: "",
     staffId: "",
@@ -47,21 +63,25 @@ const BookingPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const selectedService = availableServices.find(s => s.id.toString() === formData.serviceId);
-  const selectedStaff = availableStaff.find(s => s.id.toString() === formData.staffId);
+  const selectedService = availableServices.find(
+    (s) => s.id.toString() === formData.serviceId
+  );
+  const selectedStaff = availableStaff.find(
+    (s) => s.id.toString() === formData.staffId
+  );
 
   useEffect(() => {
     const fetchSalonData = async () => {
       try {
         // Try to fetch from backend first (for real salons)
-        const token = localStorage.getItem('token');
-        
+        const token = localStorage.getItem("token");
+
         const [staffResponse, servicesResponse] = await Promise.all([
           fetch(`http://localhost:4000/api/salons/${salonId}/staff`, {
-            headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
           }),
           fetch(`http://localhost:4000/api/salons/${salonId}/services`, {
-            headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
           }),
         ]);
 
@@ -69,58 +89,74 @@ const BookingPage = () => {
           // Backend data available (real salon)
           const backendStaff = await staffResponse.json();
           const backendServices = await servicesResponse.json();
-          
+
           // Transform backend staff to match mock data structure
-          const transformedStaff = backendStaff.map((s: any) => ({
+          const transformedStaff = backendStaff.map((s: BackendStaff) => ({
             id: s.staff_id,
-            name: s.full_name || 'Staff Member',
-            role: s.role || 'Stylist',
+            name: s.full_name || "Stylist",
+            role: s.role || "Stylist",
             rating: 4.5,
             reviews: 0,
             specialties: s.specialization ? [s.specialization] : [],
-            color: 'bg-blue-400'
+            color: "bg-blue-400",
           }));
-          
+
           // Transform backend services to match mock data structure
-          const transformedServices = backendServices.map((s: any) => ({
-            id: s.service_id,
-            name: s.custom_name || s.category_name,
-            category: s.category_name,
-            description: s.description || 'Professional service',
-            duration: `${s.duration || 30} min`,
-            price: parseFloat(s.price || 0)
-          }));
-          
+          const transformedServices = backendServices.map(
+            (s: BackendService) => ({
+              id: s.service_id,
+              name: s.custom_name || s.category_name,
+              category: s.category_name,
+              description: s.description || "",
+              duration: `${s.duration || 30} min`,
+              price: parseFloat(s.price || "0"),
+            })
+          );
+
           setAvailableStaff(transformedStaff);
           setAvailableServices(transformedServices);
-          
+
           if (preSelectedService && transformedServices.length > 0) {
-            const matchingService = transformedServices.find((s: any) => s.name === preSelectedService);
+            const matchingService = transformedServices.find(
+              (s: Service) => s.name === preSelectedService
+            );
             if (matchingService) {
-              setFormData(prev => ({ ...prev, serviceId: matchingService.id.toString() }));
+              setFormData((prev) => ({
+                ...prev,
+                serviceId: matchingService.id.toString(),
+              }));
             }
           }
         } else {
           // Fallback to mock data (for mock salons)
-          const staffData = (data.staff as Record<string, Staff[]>)[salonId] || [];
-          const servicesData = (data.services as Record<string, Service[]>)[salonId] || [];
-          
+          const staffData =
+            (data.staff as Record<string, Staff[]>)[salonId] || [];
+          const servicesData =
+            (data.services as Record<string, Service[]>)[salonId] || [];
+
           setAvailableStaff(staffData);
           setAvailableServices(servicesData);
 
           if (preSelectedService && servicesData.length > 0) {
-            const matchingService = servicesData.find(s => s.name === preSelectedService);
+            const matchingService = servicesData.find(
+              (s) => s.name === preSelectedService
+            );
             if (matchingService) {
-              setFormData(prev => ({ ...prev, serviceId: matchingService.id.toString() }));
+              setFormData((prev) => ({
+                ...prev,
+                serviceId: matchingService.id.toString(),
+              }));
             }
           }
         }
       } catch (error) {
-        console.error('Error fetching salon data:', error);
+        console.error("Error fetching salon data:", error);
         // Fallback to mock data on error
-        const staffData = (data.staff as Record<string, Staff[]>)[salonId] || [];
-        const servicesData = (data.services as Record<string, Service[]>)[salonId] || [];
-        
+        const staffData =
+          (data.staff as Record<string, Staff[]>)[salonId] || [];
+        const servicesData =
+          (data.services as Record<string, Service[]>)[salonId] || [];
+
         setAvailableStaff(staffData);
         setAvailableServices(servicesData);
       }
@@ -132,9 +168,23 @@ const BookingPage = () => {
   useEffect(() => {
     if (formData.date && formData.staffId) {
       const slots = [
-        "09:00", "09:30", "10:00", "10:30", "11:00", "11:30",
-        "12:00", "12:30", "13:00", "13:30", "14:00", "14:30",
-        "15:00", "15:30", "16:00", "16:30", "17:00"
+        "09:00",
+        "09:30",
+        "10:00",
+        "10:30",
+        "11:00",
+        "11:30",
+        "12:00",
+        "12:30",
+        "13:00",
+        "13:30",
+        "14:00",
+        "14:30",
+        "15:00",
+        "15:30",
+        "16:00",
+        "16:30",
+        "17:00",
       ];
       setAvailableSlots(slots);
     } else {
@@ -176,9 +226,10 @@ const BookingPage = () => {
       alert("Appointment booked successfully!");
       router.push("/customer/my-profile");
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to book appointment";
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to book appointment";
       setError(errorMessage);
-      
+
       if (errorMessage.includes("login")) {
         setTimeout(() => {
           router.push("/login");
@@ -194,7 +245,9 @@ const BookingPage = () => {
   return (
     <div className="min-h-screen bg-muted p-4 sm:p-8">
       <div className="max-w-4xl mx-auto bg-card border border-border rounded-2xl p-6 sm:p-8 shadow-soft-br">
-        <h1 className="text-2xl sm:text-3xl font-bold mb-6">Book Appointment</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold mb-6">
+          Book Appointment
+        </h1>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
@@ -207,7 +260,12 @@ const BookingPage = () => {
                 <button
                   key={service.id}
                   type="button"
-                  onClick={() => setFormData({ ...formData, serviceId: service.id.toString() })}
+                  onClick={() =>
+                    setFormData({
+                      ...formData,
+                      serviceId: service.id.toString(),
+                    })
+                  }
                   className={`text-left p-4 border rounded-lg transition ${
                     formData.serviceId === service.id.toString()
                       ? "border-primary bg-primary/5"
@@ -217,15 +275,16 @@ const BookingPage = () => {
                   <div className="flex justify-between items-start">
                     <div>
                       <h3 className="font-semibold">{service.name}</h3>
-                      <p className="text-xs text-muted-foreground mt-1">{service.description}</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {service.description}
+                      </p>
                       <div className="flex gap-4 mt-2 text-xs text-muted-foreground">
                         <span className="flex items-center gap-1">
                           <Clock className="w-3 h-3" />
                           {service.duration}
                         </span>
                         <span className="flex items-center gap-1">
-                          <DollarSign className="w-3 h-3" />
-                          ${service.price}
+                          <DollarSign className="w-3 h-3" />${service.price}
                         </span>
                       </div>
                     </div>
@@ -245,7 +304,9 @@ const BookingPage = () => {
                 <button
                   key={staff.id}
                   type="button"
-                  onClick={() => setFormData({ ...formData, staffId: staff.id.toString() })}
+                  onClick={() =>
+                    setFormData({ ...formData, staffId: staff.id.toString() })
+                  }
                   className={`text-left p-4 border rounded-lg transition ${
                     formData.staffId === staff.id.toString()
                       ? "border-primary bg-primary/5"
@@ -253,13 +314,19 @@ const BookingPage = () => {
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <div className={`w-12 h-12 rounded-full ${staff.color} flex items-center justify-center text-white font-bold`}>
+                    <div
+                      className={`w-12 h-12 rounded-full ${staff.color} flex items-center justify-center text-white font-bold`}
+                    >
                       {staff.name.charAt(0)}
                     </div>
                     <div>
                       <h3 className="font-semibold text-sm">{staff.name}</h3>
-                      <p className="text-xs text-muted-foreground">{staff.role}</p>
-                      <p className="text-xs text-yellow-600">★ {staff.rating} ({staff.reviews} reviews)</p>
+                      <p className="text-xs text-muted-foreground">
+                        {staff.role}
+                      </p>
+                      <p className="text-xs text-yellow-600">
+                        ★ {staff.rating} ({staff.reviews} reviews)
+                      </p>
                     </div>
                   </div>
                 </button>
@@ -276,8 +343,11 @@ const BookingPage = () => {
               type="date"
               min={minDate}
               value={formData.date}
-              onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, date: e.target.value })
+              }
               className="w-full px-4 py-2.5 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 bg-background"
+              placeholder="Select a date"
               required
             />
           </div>
@@ -317,28 +387,49 @@ const BookingPage = () => {
             </label>
             <textarea
               value={formData.notes}
-              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, notes: e.target.value })
+              }
               className="w-full px-4 py-2.5 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 bg-background"
               rows={3}
               placeholder="Any special requests or notes..."
             />
           </div>
 
-          {selectedService && selectedStaff && formData.date && formData.time && (
-            <div className="bg-primary/5 border border-primary/20 rounded-xl p-4">
-              <h3 className="font-semibold mb-2">Booking Summary</h3>
-              <div className="space-y-1 text-sm">
-                <p><span className="text-muted-foreground">Service:</span> {selectedService.name}</p>
-                <p><span className="text-muted-foreground">Stylist:</span> {selectedStaff.name}</p>
-                <p><span className="text-muted-foreground">Date:</span> {new Date(formData.date).toLocaleDateString()}</p>
-                <p><span className="text-muted-foreground">Time:</span> {formData.time}</p>
-                <p><span className="text-muted-foreground">Duration:</span> {selectedService.duration}</p>
-                <p className="font-semibold text-base mt-2">
-                  <span className="text-muted-foreground">Total:</span> ${selectedService.price}
-                </p>
+          {selectedService &&
+            selectedStaff &&
+            formData.date &&
+            formData.time && (
+              <div className="bg-primary/5 border border-primary/20 rounded-xl p-4">
+                <h3 className="font-semibold mb-2">Booking Summary</h3>
+                <div className="space-y-1 text-sm">
+                  <p>
+                    <span className="text-muted-foreground">Service:</span>{" "}
+                    {selectedService.name}
+                  </p>
+                  <p>
+                    <span className="text-muted-foreground">Stylist:</span>{" "}
+                    {selectedStaff.name}
+                  </p>
+                  <p>
+                    <span className="text-muted-foreground">Date:</span>{" "}
+                    {new Date(formData.date).toLocaleDateString()}
+                  </p>
+                  <p>
+                    <span className="text-muted-foreground">Time:</span>{" "}
+                    {formData.time}
+                  </p>
+                  <p>
+                    <span className="text-muted-foreground">Duration:</span>{" "}
+                    {selectedService.duration}
+                  </p>
+                  <p className="font-semibold text-base mt-2">
+                    <span className="text-muted-foreground">Total:</span> $
+                    {selectedService.price}
+                  </p>
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">

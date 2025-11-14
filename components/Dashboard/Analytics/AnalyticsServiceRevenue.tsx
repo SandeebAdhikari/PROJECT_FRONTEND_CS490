@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import { Target } from "lucide-react";
 import { ServiceRevenueItem } from "@/libs/types/analytics";
 
@@ -9,12 +9,14 @@ interface ServiceRevenueProps {
 }
 
 const AnalyticsServiceRevenue: React.FC<ServiceRevenueProps> = ({ data }) => {
-  const serviceData =
-    data.length > 0
-      ? data
-      : [{ service: "No data", revenue: 0, bookings: 0, average: 0 }];
-  const maxRevenue =
-    Math.max(...serviceData.map((d) => d.revenue || 0)) || 1;
+  const serviceData = useMemo(
+    () =>
+      data.length > 0
+        ? data
+        : [{ service: "No data", revenue: 0, bookings: 0, average: 0 }],
+    [data]
+  );
+  const maxRevenue = Math.max(...serviceData.map((d) => d.revenue || 0)) || 1;
 
   useEffect(() => {
     const bars = document.querySelectorAll<HTMLDivElement>(".progress-bar");

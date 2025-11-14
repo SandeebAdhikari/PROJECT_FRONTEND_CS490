@@ -6,10 +6,7 @@ import { Eye, Pencil, Trash2 } from "lucide-react";
 import AppointmentEditModal from "@/components/Dashboard/Appointments/AppointmentEditModal";
 import AppointmentDetailsModal from "@/components/Dashboard/Appointments/AppointmentDetailsModal";
 import { fetchWithRefresh } from "@/libs/api/fetchWithRefresh";
-import {
-  APPOINTMENT_STATUS_META,
-  AppointmentStatus,
-} from "@/libs/constants/appointments";
+import { APPOINTMENT_STATUS_META } from "@/libs/constants/appointments";
 export type Appointment = {
   appointment_id: number;
   customer?: string;
@@ -23,6 +20,7 @@ export type Appointment = {
   price: number;
   avatarUrl?: string;
   salon_id?: number;
+  status?: "pending" | "confirmed" | "completed" | "cancelled";
 };
 
 interface AppointmentCardProps {
@@ -43,7 +41,8 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
   const serviceLabel = a.service_names || "Multiple Services";
 
   const statusMeta =
-    APPOINTMENT_STATUS_META[a.status] || APPOINTMENT_STATUS_META.pending;
+    APPOINTMENT_STATUS_META[a.status || "pending"] ||
+    APPOINTMENT_STATUS_META.pending;
 
   const handleDelete = async () => {
     if (!confirm(`Delete appointment for ${displayName}?`)) return;

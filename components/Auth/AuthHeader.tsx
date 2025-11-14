@@ -1,6 +1,5 @@
 "use client";
 
-
 import React, { useState } from "react";
 import { ArrowLeft, Chrome, Facebook } from "lucide-react";
 //import { signInWithPopup, type AuthProvider } from "firebase/auth";
@@ -38,18 +37,15 @@ const AuthHeader: React.FC<AuthHeaderProps> = ({ title, subtitle }) => {
     router.push("/");
   };
 
-
-
   const handleFirebaseLogin = async (provider: GoogleAuthProvider) => {
     if (loading) return;
     setLoading(true);
-  
+
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
       const idToken = await user.getIdToken();
-      
-      
+
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/auth/verify-firebase`,
         {
@@ -60,10 +56,10 @@ const AuthHeader: React.FC<AuthHeaderProps> = ({ title, subtitle }) => {
           },
         }
       );
-  
+
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Firebase login failed");
-  
+
       if (data.existingUser && data.token && data.role) {
         document.cookie = `token=${data.token}; path=/; max-age=3600;`;
         window.location.href =
@@ -83,22 +79,24 @@ const AuthHeader: React.FC<AuthHeaderProps> = ({ title, subtitle }) => {
       } else {
         throw new Error("Unexpected backend response");
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       // ignore harmless cancellations
-      if (err.code === "auth/cancelled-popup-request") {
-        return;
+      if (err && typeof err === "object" && "code" in err) {
+        if (err.code === "auth/cancelled-popup-request") {
+          return;
+        }
+        if (err.code === "auth/popup-closed-by-user") {
+          return;
+        }
       }
-      if (err.code === "auth/popup-closed-by-user") {
-        return;
-      }
-  
+
       console.error("Login failed:", err);
-      alert("Social login failed: " + err.message);
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      alert("Social login failed: " + errorMessage);
     } finally {
       setLoading(false);
     }
   };
-  
 
   const handleRoleSelect = async (role: string, businessName?: string) => {
     if (!pendingUser) return;

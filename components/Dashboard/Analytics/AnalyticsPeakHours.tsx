@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import { Clock } from "lucide-react";
 import { PeakHour } from "@/libs/types/analytics";
 
@@ -9,7 +9,10 @@ interface PeakProps {
 }
 
 const AnalyticsPeakHours: React.FC<PeakProps> = ({ data }) => {
-  const peakData = data.length > 0 ? data : [{ label: "—", bookings: 0 }];
+  const peakData = useMemo(
+    () => (data.length > 0 ? data : [{ label: "—", bookings: 0 }]),
+    [data]
+  );
   const maxBookings = Math.max(...peakData.map((d) => d.bookings || 0)) || 1;
 
   useEffect(() => {

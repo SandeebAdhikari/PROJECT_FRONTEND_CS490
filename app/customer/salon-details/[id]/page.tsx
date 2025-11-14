@@ -37,7 +37,7 @@ const SalonDetailsPage: React.FC<{ params: Promise<{ id: string }> }> = ({
 }) => {
   const unwrappedParams = React.use(params);
   const salonId = String(unwrappedParams.id);
-  
+
   const [salon, setSalon] = useState<Salon | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -51,13 +51,13 @@ const SalonDetailsPage: React.FC<{ params: Promise<{ id: string }> }> = ({
           setSalon(backendSalon);
         } else {
           // Fallback to mock data if backend doesn't have it
-          const mockSalon = data.salons.find((s: any) => s.id === salonId);
+          const mockSalon = data.salons.find((s: Salon) => s.id === salonId);
           setSalon(mockSalon || null);
         }
       } catch (error) {
         console.error("Error fetching salon:", error);
         // Fallback to mock data
-        const mockSalon = data.salons.find((s: any) => s.id === salonId);
+        const mockSalon = data.salons.find((s: Salon) => s.id === salonId);
         setSalon(mockSalon || null);
       } finally {
         setLoading(false);

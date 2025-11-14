@@ -58,15 +58,18 @@ const AnalyticsServiceChart: React.FC<ServiceChartProps> = ({ data }) => {
                 outerRadius={radius}
                 dataKey="value"
                 label={({ name, payload }) =>
-                  `${name}: ${payload?.percent?.toFixed?.(1) ?? 0}%`
+                  `${name}: ${
+                    (payload as ServiceDistributionItem)?.percent?.toFixed?.(
+                      1
+                    ) ?? 0
+                  }%`
                 }
                 labelLine
                 stroke="hsl(var(--color-background))"
               >
-                {(
-                  data.length > 0
-                    ? data
-                    : [{ name: "No Data", value: 1, percent: 100 }]
+                {(data.length > 0
+                  ? data
+                  : [{ name: "No Data", value: 1, percent: 100 }]
                 ).map((entry, index) => (
                   <Cell
                     key={`cell-${index}`}
