@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema, LoginFormData } from "@/libs/auth/auth";
+import { setAuthCookie } from "@/libs/auth/cookies";
 import { Eye, EyeOff, Lock, Mail } from "lucide-react";
 import { login, verify2FA, User } from "@/libs/api/auth";
 import { useRouter } from "next/navigation";
@@ -65,7 +66,7 @@ const SignInForm = () => {
 
       if (response.token) {
         localStorage.setItem("token", response.token);
-        document.cookie = `token=${response.token}; Path=/; Max-Age=3600; SameSite=None; Secure; Domain=.webershub.com`;
+        setAuthCookie(response.token);
 
         const user = response.user as ExtendedUser | undefined;
         if (user) {
@@ -123,7 +124,7 @@ const SignInForm = () => {
 
       if (response.token) {
         localStorage.setItem("token", response.token);
-        document.cookie = `token=${response.token}; Path=/; Max-Age=3600; SameSite=None; Secure; Domain=.webershub.com`;
+        setAuthCookie(response.token);
         localStorage.removeItem("tempToken");
 
         const user = response.user as ExtendedUser | undefined;

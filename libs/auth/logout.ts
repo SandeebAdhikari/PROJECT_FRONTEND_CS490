@@ -1,9 +1,15 @@
+"use client";
+
+import { clearAuthCookie } from "@/libs/auth/cookies";
+
 export function logout() {
-  // Clear the cookie by setting it expired
-  document.cookie = "token=; path=/; max-age=0;";
+  clearAuthCookie();
 
   // if there is localStorage then it will clear that as well
   localStorage.removeItem("token");
+  localStorage.removeItem("authToken");
+  localStorage.removeItem("user");
+  localStorage.removeItem("tempToken");
 
   // Redirect to sign-in page
   window.location.href = "/auth/sign-in";

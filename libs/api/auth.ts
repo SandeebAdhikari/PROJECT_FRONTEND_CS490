@@ -1,5 +1,8 @@
+"use client";
+
 // Authentication API functions
-import { API_ENDPOINTS, fetchConfig } from './config';
+import { API_ENDPOINTS, fetchConfig } from "./config";
+import { clearAuthCookie, setAuthCookie } from "@/libs/auth/cookies";
 
 export interface SignupData {
   full_name: string;
@@ -88,14 +91,15 @@ export async function login(data: LoginData): Promise<AuthResponse> {
     }
 
     if (result.token) {
-      localStorage.setItem('authToken', result.token);
-      localStorage.setItem('token', result.token);
-      
+      localStorage.setItem("authToken", result.token);
+      localStorage.setItem("token", result.token);
+      setAuthCookie(result.token);
+
       if (result.user) {
-        localStorage.setItem('user', JSON.stringify(result.user));
+        localStorage.setItem("user", JSON.stringify(result.user));
       }
     } else if (result.tempToken) {
-      localStorage.setItem('tempToken', result.tempToken);
+      localStorage.setItem("tempToken", result.tempToken);
     }
 
     const storedUser = localStorage.getItem("user");
@@ -231,9 +235,11 @@ export async function logout(token?: string): Promise<void> {
     });
 
     localStorage.removeItem("authToken");
+    clearAuthCookie();
   } catch (error) {
     console.error("Logout error:", error);
     localStorage.removeItem("authToken");
+    clearAuthCookie();
   }
 }
 
@@ -258,6 +264,7 @@ export async function verify2FA(data: Verify2FAData): Promise<AuthResponse> {
     if (result.token) {
       localStorage.setItem("authToken", result.token);
       localStorage.setItem("token", result.token);
+      setAuthCookie(result.token);
     }
 
     return result;

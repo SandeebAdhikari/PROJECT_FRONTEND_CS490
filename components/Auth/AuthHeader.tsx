@@ -6,6 +6,7 @@ import { ArrowLeft, Chrome, Facebook } from "lucide-react";
 import { useRouter } from "next/navigation";
 import RoleModal from "@/components/Auth/AuthRoleModal";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { setAuthCookie } from "@/libs/auth/cookies";
 import {
   auth,
   googleProvider,
@@ -61,7 +62,7 @@ const AuthHeader: React.FC<AuthHeaderProps> = ({ title, subtitle }) => {
       if (!res.ok) throw new Error(data.error || "Firebase login failed");
 
       if (data.existingUser && data.token && data.role) {
-        document.cookie = `token=${data.token}; Path=/; Max-Age=3600; SameSite=None; Secure; Domain=.webershub.com`;
+        setAuthCookie(data.token);
         window.location.href =
           data.role === "owner"
             ? "/admin/salon-dashboard/overview"
@@ -123,7 +124,7 @@ const AuthHeader: React.FC<AuthHeaderProps> = ({ title, subtitle }) => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to set role");
 
-      document.cookie = `token=${data.token}; Path=/; Max-Age=3600; SameSite=None; Secure; Domain=.webershub.com`;
+      setAuthCookie(data.token);
       window.location.href =
         data.role === "owner" ? "/admin/salon-dashboard/overview" : "/customer";
     } catch (err) {

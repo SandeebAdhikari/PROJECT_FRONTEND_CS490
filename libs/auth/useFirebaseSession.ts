@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { auth } from "@/libs/firebase/client";
+import { setAuthCookie } from "@/libs/auth/cookies";
 
 export function useFirebaseSession() {
   useEffect(() => {
@@ -23,7 +24,7 @@ export function useFirebaseSession() {
         if (res.ok) {
           const data = await res.json();
           // Refresh the backend JWT cookie for middleware
-          document.cookie = `token=${data.token}; Path=/; Max-Age=3600; SameSite=None; Secure; Domain=.webershub.com`;
+          setAuthCookie(data.token);
         }
       });
     }
@@ -47,7 +48,7 @@ export function useFirebaseSession() {
       if (res.ok) {
         const data = await res.json();
         // Update cookie again whenever Firebase refreshes token
-        document.cookie = `token=${data.token}; Path=/; Max-Age=3600; SameSite=None; Secure; Domain=.webershub.com`;
+        setAuthCookie(data.token);
       }
     });
 
