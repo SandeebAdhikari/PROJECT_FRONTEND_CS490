@@ -460,3 +460,4 @@ const BookingPage = () => {
 };
 
 export default BookingPage;
+export const dynamic = "force-dynamic";
