@@ -32,7 +32,7 @@ const COLORS = [
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null;
 
-const pickArray = <T = unknown>(
+const pickArray = <T = unknown,>(
   source: Record<string, unknown>,
   keys: string[]
 ): T[] | null => {
@@ -134,12 +134,16 @@ const mapServicePayload = (payload: unknown): ServiceSlice[] => {
         "appointments",
       ]),
     }))
-    .filter((item) => item.name && !Number.isNaN(item.value) && item.value >= 0);
+    .filter(
+      (item) => item.name && !Number.isNaN(item.value) && item.value >= 0
+    );
 };
 
 const MAX_LABEL_LENGTH = 16;
 const truncateLabel = (label: string) =>
-  label.length > MAX_LABEL_LENGTH ? `${label.slice(0, MAX_LABEL_LENGTH - 1)}…` : label;
+  label.length > MAX_LABEL_LENGTH
+    ? `${label.slice(0, MAX_LABEL_LENGTH - 1)}…`
+    : label;
 
 const ServiceDistribution = () => {
   const { salonId, loadingSalon } = useSalonId();
@@ -244,14 +248,6 @@ const ServiceDistribution = () => {
                 cy="50%"
                 outerRadius={80}
                 dataKey="value"
-                label={({ name, value, payload }) =>
-                  `${name}: ${value}%${
-                    payload?.rawValue || payload?.rawValue === 0
-                      ? ` (${payload.rawValue})`
-                      : ""
-                  }`
-                }
-                labelLine={true}
                 stroke="hsl(var(--color-background))"
               >
                 {chartData.map((entry, index) => (

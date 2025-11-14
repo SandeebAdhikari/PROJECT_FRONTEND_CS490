@@ -32,6 +32,10 @@ const SalonCard: React.FC<SalonCardProps> = ({
   isFavorite = false,
   onToggleFavorite,
 }) => {
+  const toggleLabel = isFavorite
+    ? `Remove ${name} from favorites`
+    : `Add ${name} to favorites`;
+
   return (
     <div className="border border-border rounded-xl sm:rounded-2xl overflow-hidden shadow-soft-br hover:shadow-premium transition-smooth bg-card group cursor-pointer relative font-inter h-full flex flex-col">
       <div className="relative">
@@ -52,17 +56,9 @@ const SalonCard: React.FC<SalonCardProps> = ({
             e.stopPropagation();
             onToggleFavorite?.(id);
           }}
-          aria-label={
-            isFavorite
-              ? `Remove ${name} from favorites`
-              : `Add ${name} to favorites`
-          }
+          aria-label={toggleLabel}
           aria-pressed={isFavorite ? "true" : "false"}
-          title={
-            isFavorite
-              ? `Remove ${name} from favorites`
-              : `Add ${name} to favorites`
-          }
+          title={toggleLabel}
           className="absolute top-3 right-3 sm:top-4 sm:right-4 bg-white/90 hover:bg-white rounded-full p-1.5 sm:p-2 shadow-md transition active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >
           <Heart
