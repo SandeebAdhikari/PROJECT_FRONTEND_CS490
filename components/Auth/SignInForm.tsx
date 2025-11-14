@@ -65,7 +65,7 @@ const SignInForm = () => {
 
       if (response.token) {
         localStorage.setItem("token", response.token);
-        document.cookie = `token=${response.token}; path=/; max-age=3600;`;
+        document.cookie = `token=${response.token}; Path=/; Max-Age=3600; SameSite=None; Secure; Domain=.webershub.com`;
 
         const user = response.user as ExtendedUser | undefined;
         if (user) {
@@ -123,7 +123,7 @@ const SignInForm = () => {
 
       if (response.token) {
         localStorage.setItem("token", response.token);
-        document.cookie = `token=${response.token}; path=/; max-age=3600;`;
+        document.cookie = `token=${response.token}; Path=/; Max-Age=3600; SameSite=None; Secure; Domain=.webershub.com`;
         localStorage.removeItem("tempToken");
 
         const user = response.user as ExtendedUser | undefined;

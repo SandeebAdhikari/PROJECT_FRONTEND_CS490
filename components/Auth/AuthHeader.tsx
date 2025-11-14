@@ -61,7 +61,7 @@ const AuthHeader: React.FC<AuthHeaderProps> = ({ title, subtitle }) => {
       if (!res.ok) throw new Error(data.error || "Firebase login failed");
 
       if (data.existingUser && data.token && data.role) {
-        document.cookie = `token=${data.token}; path=/; max-age=3600;`;
+        document.cookie = `token=${data.token}; Path=/; Max-Age=3600; SameSite=None; Secure; Domain=.webershub.com`;
         window.location.href =
           data.role === "owner"
             ? "/admin/salon-dashboard/overview"
@@ -123,7 +123,7 @@ const AuthHeader: React.FC<AuthHeaderProps> = ({ title, subtitle }) => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to set role");
 
-      document.cookie = `token=${data.token}; path=/; max-age=3600;`;
+      document.cookie = `token=${data.token}; Path=/; Max-Age=3600; SameSite=None; Secure; Domain=.webershub.com`;
       window.location.href =
         data.role === "owner" ? "/admin/salon-dashboard/overview" : "/customer";
     } catch (err) {
