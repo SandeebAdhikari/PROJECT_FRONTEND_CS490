@@ -1,4 +1,6 @@
 "use client";
+export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
 
 import React, { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -60,6 +62,7 @@ const BookingPage = () => {
     time: "",
     notes: "",
   });
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -73,7 +76,6 @@ const BookingPage = () => {
   useEffect(() => {
     const fetchSalonData = async () => {
       try {
-        // Try to fetch from backend first (for real salons)
         const token = localStorage.getItem("token");
 
         const [staffResponse, servicesResponse] = await Promise.all([
@@ -86,11 +88,9 @@ const BookingPage = () => {
         ]);
 
         if (staffResponse.ok && servicesResponse.ok) {
-          // Backend data available (real salon)
           const backendStaff = await staffResponse.json();
           const backendServices = await servicesResponse.json();
 
-          // Transform backend staff to match mock data structure
           const transformedStaff = backendStaff.map((s: BackendStaff) => ({
             id: s.staff_id,
             name: s.full_name || "Stylist",
@@ -101,7 +101,6 @@ const BookingPage = () => {
             color: "bg-blue-400",
           }));
 
-          // Transform backend services to match mock data structure
           const transformedServices = backendServices.map(
             (s: BackendService) => ({
               id: s.service_id,
@@ -128,7 +127,6 @@ const BookingPage = () => {
             }
           }
         } else {
-          // Fallback to mock data (for mock salons)
           const staffData =
             (data.staff as Record<string, Staff[]>)[salonId] || [];
           const servicesData =
@@ -151,7 +149,7 @@ const BookingPage = () => {
         }
       } catch (error) {
         console.error("Error fetching salon data:", error);
-        // Fallback to mock data on error
+
         const staffData =
           (data.staff as Record<string, Staff[]>)[salonId] || [];
         const servicesData =
@@ -460,4 +458,3 @@ const BookingPage = () => {
 };
 
 export default BookingPage;
-export const dynamic = "force-dynamic";
