@@ -13,10 +13,6 @@ type StatusMeta = {
 };
 
 export const APPOINTMENT_STATUS_META: Record<AppointmentStatus, StatusMeta> = {
-  booked: {
-    label: "Booked",
-    badgeClass: "bg-blue-100 text-blue-700",
-  },
   pending: {
     label: "Pending",
     badgeClass: "bg-amber-100 text-amber-700",
@@ -49,11 +45,7 @@ export const normalizeAppointmentStatus = (
   const normalized = status.trim().toLowerCase();
   if (normalized === "canceled") return "cancelled";
   if (normalized === "booked") return "confirmed";
-  if (
-    (APPOINTMENT_STATUSES as readonly string[]).includes(
-      normalized
-    )
-  ) {
+  if ((APPOINTMENT_STATUSES as readonly string[]).includes(normalized)) {
     return normalized as AppointmentStatus;
   }
   return DEFAULT_APPOINTMENT_STATUS;
