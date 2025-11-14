@@ -13,6 +13,7 @@ export const fetchWithRefresh = async (
 
   const res = await fetch(url, {
     ...options,
+    cache: "no-store",
     credentials: "include",
     headers,
   });
@@ -33,6 +34,7 @@ export const fetchWithRefresh = async (
 
           const retryRes = await fetch(url, {
             ...options,
+            cache: "no-store",
             credentials: "include",
             headers: {
               ...headers,

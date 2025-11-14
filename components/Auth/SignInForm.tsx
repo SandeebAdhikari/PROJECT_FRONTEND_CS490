@@ -65,6 +65,7 @@ const SignInForm = () => {
 
       if (response.token) {
         localStorage.setItem("token", response.token);
+        document.cookie = `token=${response.token}; path=/; max-age=3600;`;
 
         const user = response.user as ExtendedUser | undefined;
         if (user) {
@@ -122,6 +123,7 @@ const SignInForm = () => {
 
       if (response.token) {
         localStorage.setItem("token", response.token);
+        document.cookie = `token=${response.token}; path=/; max-age=3600;`;
         localStorage.removeItem("tempToken");
 
         const user = response.user as ExtendedUser | undefined;
