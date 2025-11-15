@@ -1,4 +1,4 @@
-import { API_ENDPOINTS, fetchConfig } from './config';
+import { API_ENDPOINTS, fetchConfig } from "./config";
 
 export interface AddReviewData {
   appointment_id: number;
@@ -22,19 +22,21 @@ export interface Review {
   created_at: string;
 }
 
-export async function addReview(data: AddReviewData): Promise<{ review_id?: number; message?: string; error?: string }> {
+export async function addReview(
+  data: AddReviewData
+): Promise<{ review_id?: number; message?: string; error?: string }> {
   try {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (!token) {
-      return { error: 'Not authenticated' };
+      return { error: "Not authenticated" };
     }
 
     const response = await fetch(API_ENDPOINTS.REVIEWS.ADD, {
       ...fetchConfig,
-      method: 'POST',
+      method: "POST",
       headers: {
         ...fetchConfig.headers,
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(data),
     });
@@ -42,28 +44,31 @@ export async function addReview(data: AddReviewData): Promise<{ review_id?: numb
     const result = await response.json();
 
     if (!response.ok) {
-      return { error: result.error || 'Failed to add review' };
+      return { error: result.error || "Failed to add review" };
     }
 
     return result;
-  } catch (error) {
-    return { error: 'Network error. Please try again.' };
+  } catch {
+    return { error: "Network error. Please try again." };
   }
 }
 
-export async function respondToReview(reviewId: number, response: string): Promise<{ message?: string; error?: string }> {
+export async function respondToReview(
+  reviewId: number,
+  response: string
+): Promise<{ message?: string; error?: string }> {
   try {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (!token) {
-      return { error: 'Not authenticated' };
+      return { error: "Not authenticated" };
     }
 
     const res = await fetch(API_ENDPOINTS.REVIEWS.RESPOND(reviewId), {
       ...fetchConfig,
-      method: 'PUT',
+      method: "PUT",
       headers: {
         ...fetchConfig.headers,
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({ response }),
     });
@@ -71,12 +76,11 @@ export async function respondToReview(reviewId: number, response: string): Promi
     const result = await res.json();
 
     if (!res.ok) {
-      return { error: result.error || 'Failed to respond to review' };
+      return { error: result.error || "Failed to respond to review" };
     }
 
     return result;
-  } catch (error) {
-    return { error: 'Network error. Please try again.' };
+  } catch {
+    return { error: "Network error. Please try again." };
   }
 }
-

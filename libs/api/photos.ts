@@ -1,4 +1,4 @@
-import { API_ENDPOINTS, fetchConfig } from './config';
+import { API_ENDPOINTS, fetchConfig } from "./config";
 
 export interface Photo {
   photo_id: number;
@@ -7,19 +7,22 @@ export interface Photo {
   uploaded_at: string;
 }
 
-export async function uploadPhotos(salonId: number, photoUrls: string[]): Promise<{ message?: string; error?: string }> {
+export async function uploadPhotos(
+  salonId: number,
+  photoUrls: string[]
+): Promise<{ message?: string; error?: string }> {
   try {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (!token) {
-      return { error: 'Not authenticated' };
+      return { error: "Not authenticated" };
     }
 
     const response = await fetch(API_ENDPOINTS.PHOTOS.UPLOAD, {
       ...fetchConfig,
-      method: 'POST',
+      method: "POST",
       headers: {
         ...fetchConfig.headers,
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({ salon_id: salonId, photo_urls: photoUrls }),
     });
@@ -27,16 +30,18 @@ export async function uploadPhotos(salonId: number, photoUrls: string[]): Promis
     const result = await response.json();
 
     if (!response.ok) {
-      return { error: result.error || 'Failed to upload photos' };
+      return { error: result.error || "Failed to upload photos" };
     }
 
     return result;
-  } catch (error) {
-    return { error: 'Network error. Please try again.' };
+  } catch {
+    return { error: "Network error. Please try again." };
   }
 }
 
-export async function getSalonPhotos(salonId: number): Promise<{ photos?: Photo[]; error?: string }> {
+export async function getSalonPhotos(
+  salonId: number
+): Promise<{ photos?: Photo[]; error?: string }> {
   try {
     const response = await fetch(API_ENDPOINTS.PHOTOS.LIST(salonId), {
       ...fetchConfig,
@@ -45,40 +50,41 @@ export async function getSalonPhotos(salonId: number): Promise<{ photos?: Photo[
     const result = await response.json();
 
     if (!response.ok) {
-      return { error: result.error || 'Failed to get photos' };
+      return { error: result.error || "Failed to get photos" };
     }
 
     return { photos: result };
-  } catch (error) {
-    return { error: 'Network error. Please try again.' };
+  } catch {
+    return { error: "Network error. Please try again." };
   }
 }
 
-export async function deletePhoto(photoId: number): Promise<{ message?: string; error?: string }> {
+export async function deletePhoto(
+  photoId: number
+): Promise<{ message?: string; error?: string }> {
   try {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (!token) {
-      return { error: 'Not authenticated' };
+      return { error: "Not authenticated" };
     }
 
     const response = await fetch(API_ENDPOINTS.PHOTOS.DELETE(photoId), {
       ...fetchConfig,
-      method: 'DELETE',
+      method: "DELETE",
       headers: {
         ...fetchConfig.headers,
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     });
 
     const result = await response.json();
 
     if (!response.ok) {
-      return { error: result.error || 'Failed to delete photo' };
+      return { error: result.error || "Failed to delete photo" };
     }
 
     return result;
-  } catch (error) {
-    return { error: 'Network error. Please try again.' };
+  } catch {
+    return { error: "Network error. Please try again." };
   }
 }
-

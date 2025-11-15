@@ -1,4 +1,5 @@
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+export const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
 export const API_ENDPOINTS = {
   AUTH: {
@@ -51,9 +52,8 @@ export const API_ENDPOINTS = {
 };
 
 export const fetchConfig = {
-  credentials: 'include' as const,
+  credentials: "include" as const,
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 };
-
