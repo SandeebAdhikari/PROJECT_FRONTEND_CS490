@@ -289,6 +289,7 @@ const SalonServicesManagement = () => {
                     setFormData({ ...formData, category: e.target.value })
                   }
                   className="w-full px-3 py-2 border rounded-lg"
+                  title="Service Category"
                 >
                   {categories.map((cat) => (
                     <option key={cat}>{cat}</option>
@@ -315,6 +316,7 @@ const SalonServicesManagement = () => {
                     })
                   }
                   className="w-full px-3 py-2 border rounded-lg"
+                  placeholder="30"
                 />
               </div>
 
@@ -337,6 +339,7 @@ const SalonServicesManagement = () => {
                     })
                   }
                   className="w-full px-3 py-2 border rounded-lg"
+                  placeholder="0.00"
                 />
               </div>
 

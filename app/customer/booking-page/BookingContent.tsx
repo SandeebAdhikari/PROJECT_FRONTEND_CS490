@@ -102,17 +102,19 @@ const BookingContent = () => {
           const backendStaff = await staffResponse.json();
           const backendServices = await servicesResponse.json();
 
-          const transformedStaff = backendStaff.map((s: BackendStaff) => ({
-            id: s.staff_id,
-            name: s.full_name || "Stylist",
-            role: s.role || "Stylist",
-            rating: 4.5,
-            reviews: 0,
-            specialties: s.specialization ? [s.specialization] : [],
-            color: "bg-blue-400",
-          }));
+          const transformedStaff: Staff[] = backendStaff.map(
+            (s: BackendStaff) => ({
+              id: s.staff_id,
+              name: s.full_name || "Stylist",
+              role: s.role || "Stylist",
+              rating: 4.5,
+              reviews: 0,
+              specialties: s.specialization ? [s.specialization] : [],
+              color: "bg-blue-400",
+            })
+          );
 
-          const transformedServices = backendServices.map(
+          const transformedServices: Service[] = backendServices.map(
             (s: BackendService) => ({
               id: s.service_id,
               name: s.custom_name || s.category_name,

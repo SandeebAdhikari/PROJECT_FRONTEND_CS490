@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -93,15 +93,15 @@ const SalonDetailHero: React.FC<SalonDetailHeroProps> = ({ salon }) => {
   }, [salon.salon_id, salon.id]);
 
   // Slide navigation
-  const nextSlide = () => {
+  const nextSlide = useCallback(() => {
     setCurrentSlide((prev) => (prev + 1) % carouselImages.length);
-  };
+  }, [carouselImages.length]);
 
-  const prevSlide = () => {
+  const prevSlide = useCallback(() => {
     setCurrentSlide(
       (prev) => (prev - 1 + carouselImages.length) % carouselImages.length
     );
-  };
+  }, [carouselImages.length]);
 
   const goToSlide = (index: number) => {
     setCurrentSlide(index);
@@ -115,7 +115,7 @@ const SalonDetailHero: React.FC<SalonDetailHeroProps> = ({ salon }) => {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [carouselImages.length]);
+  }, [nextSlide, prevSlide]);
 
   // Touch swipe
   const [touchStart, setTouchStart] = useState(0);
@@ -167,6 +167,7 @@ const SalonDetailHero: React.FC<SalonDetailHeroProps> = ({ salon }) => {
             <>
               <button
                 onClick={prevSlide}
+                aria-label="Previous photo"
                 className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white p-2 rounded-full shadow-lg transition-all opacity-0 group-hover:opacity-100"
               >
                 <ChevronLeft className="w-6 h-6 text-gray-800" />
@@ -174,6 +175,8 @@ const SalonDetailHero: React.FC<SalonDetailHeroProps> = ({ salon }) => {
 
               <button
                 onClick={nextSlide}
+                aria-label="Next photo"
+                title="Next photo"
                 className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white p-2 rounded-full shadow-lg transition-all opacity-0 group-hover:opacity-100"
               >
                 <ChevronRight className="w-6 h-6 text-gray-800" />
@@ -185,6 +188,7 @@ const SalonDetailHero: React.FC<SalonDetailHeroProps> = ({ salon }) => {
                   <button
                     key={index}
                     onClick={() => goToSlide(index)}
+                    aria-label={`Go to slide ${index + 1}`}
                     className={`w-2 h-2 rounded-full transition-all ${
                       index === currentSlide
                         ? "bg-white w-8"
@@ -214,7 +218,10 @@ const SalonDetailHero: React.FC<SalonDetailHeroProps> = ({ salon }) => {
             </div>
           </div>
 
-          <button className="border border-border p-3 rounded-lg shadow-soft-br hover:bg-muted transition">
+          <button
+            className="border border-border p-3 rounded-lg shadow-soft-br hover:bg-muted transition"
+            aria-label="Add to favorites"
+          >
             <Heart className="w-4 h-4" />
           </button>
         </div>
@@ -228,12 +235,21 @@ const SalonDetailHero: React.FC<SalonDetailHeroProps> = ({ salon }) => {
               {salon.city ? `, ${salon.city}` : ", Los Angeles"}
             </p>
             <Clock className="w-4 h-4 text-primary-light ml-5" />
-            <span className="text-primary-light">Open Now</span>
           </div>
-
-          <button className="border border-border p-3 rounded-lg shadow-soft-br hover:bg-muted transition">
-            <Share2 className="w-4 h-4" />
-          </button>
+          <div className="flex gap-2">
+            <button
+              className="border border-border p-3 rounded-lg shadow-soft-br hover:bg-muted transition"
+              aria-label="Add to favorites"
+            >
+              <Heart className="w-4 h-4" />
+            </button>
+            <button
+              className="border border-border p-3 rounded-lg shadow-soft-br hover:bg-muted transition"
+              aria-label="Share salon"
+            >
+              <Share2 className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
         <SalonRatingStar />

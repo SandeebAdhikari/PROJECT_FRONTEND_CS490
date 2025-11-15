@@ -47,6 +47,15 @@ export const API_ENDPOINTS = {
     CREATE: `${API_BASE_URL}/api/salons`,
     LIST: `${API_BASE_URL}/api/salons`,
     CHECK_OWNER: `${API_BASE_URL}/api/salons/check-owner`,
+    STAFF: (salonId: number | string) =>
+      `${API_BASE_URL}/api/staff/salon/${salonId}/staff`,
+    SERVICES: (salonId: number | string) =>
+      `${API_BASE_URL}/api/salons/${salonId}/services`,
+    CREATE_SERVICE: `${API_BASE_URL}/api/services`,
+    UPDATE_SERVICE: (serviceId: number | string) =>
+      `${API_BASE_URL}/api/services/${serviceId}`,
+    DELETE_SERVICE: (serviceId: number | string) =>
+      `${API_BASE_URL}/api/services/${serviceId}`,
   },
   HEALTH: `${API_BASE_URL}/health`,
 };
