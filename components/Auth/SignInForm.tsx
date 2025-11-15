@@ -93,7 +93,8 @@ const SignInForm = () => {
           router.push("/customer");
         }
       }
-    } catch {
+    } catch (err) {
+      console.error("❌ Error during login:", err);
       setError("Login failed. Please try again.");
       setLoading(false);
     }
@@ -156,7 +157,8 @@ const SignInForm = () => {
           router.push("/customer");
         }
       }
-    } catch {
+    } catch (err) {
+      console.error("❌ Error during 2FA verification:", err);
       setError("Verification failed. Please try again.");
       setLoading(false);
     }

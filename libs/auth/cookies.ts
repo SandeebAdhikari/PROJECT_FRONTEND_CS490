@@ -7,7 +7,27 @@ const getExplicitDomain = () =>
   process.env.NEXT_PUBLIC_AUTH_COOKIE_DOMAIN ||
   process.env.NEXT_PUBLIC_COOKIE_DOMAIN ||
   process.env.NEXT_PUBLIC_AUTH_DOMAIN ||
-  (process.env.NODE_ENV === "production" ? DEFAULT_PRODUCTION_DOMAIN : undefined);
+  (process.env.NODE_ENV === "production"
+    ? DEFAULT_PRODUCTION_DOMAIN
+    : undefined);
+
+const normalizeDomain = (domain: string) => domain.replace(/^\.+/, "");
+
+const canApplyDomain = (domain: string | undefined) => {
+  if (!domain) return false;
+
+  if (typeof window === "undefined") {
+    return true;
+  }
+
+  const hostname = window.location.hostname;
+  if (!hostname) {
+    return false;
+  }
+
+  const normalized = normalizeDomain(domain);
+  return hostname === normalized || hostname.endsWith(`.${normalized}`);
+};
 
 const inferDomainFromWindow = () => {
   if (typeof window === "undefined") {
@@ -27,7 +47,19 @@ const inferDomainFromWindow = () => {
   return undefined;
 };
 
-const resolveCookieDomain = () => getExplicitDomain() || inferDomainFromWindow();
+const resolveCookieDomain = () => {
+  const explicit = getExplicitDomain();
+  if (canApplyDomain(explicit)) {
+    return explicit;
+  }
+
+  const inferred = inferDomainFromWindow();
+  if (canApplyDomain(inferred)) {
+    return inferred;
+  }
+
+  return undefined;
+};
 
 const isHttpsEnvironment = () => {
   if (typeof window === "undefined") {
@@ -41,7 +73,10 @@ interface SetCookieOptions {
   maxAgeSeconds?: number;
 }
 
-export const setAuthCookie = (token: string, options: SetCookieOptions = {}) => {
+export const setAuthCookie = (
+  token: string,
+  options: SetCookieOptions = {}
+) => {
   const maxAge = options.maxAgeSeconds ?? DEFAULT_MAX_AGE_SECONDS;
   const domain = resolveCookieDomain();
   const isCrossSite = Boolean(domain);
