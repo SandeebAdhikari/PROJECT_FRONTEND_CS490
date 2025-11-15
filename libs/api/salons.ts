@@ -1,4 +1,4 @@
-import { API_ENDPOINTS, fetchConfig } from './config';
+import { API_ENDPOINTS, fetchConfig } from "./config";
 
 export interface Salon {
   salon_id?: number;
@@ -32,32 +32,35 @@ export interface CreateSalonData {
 }
 
 // Create a new salon
-export async function createSalon(data: CreateSalonData, profilePicture?: File | null): Promise<{ salon?: Salon; message?: string; error?: string }> {
+export async function createSalon(
+  data: CreateSalonData,
+  profilePicture?: File | null
+): Promise<{ salon?: Salon; message?: string; error?: string }> {
   try {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (!token) {
-      return { error: 'Not authenticated' };
+      return { error: "Not authenticated" };
     }
 
     const formData = new FormData();
-    formData.append('name', data.name);
-    formData.append('address', data.address);
-    formData.append('phone', data.phone);
-    if (data.city) formData.append('city', data.city);
-    if (data.description) formData.append('description', data.description);
-    if (data.email) formData.append('email', data.email);
-    if (data.website) formData.append('website', data.website);
-    if (data.state) formData.append('state', data.state);
-    if (data.zip) formData.append('zip', data.zip);
-    if (data.country) formData.append('country', data.country);
+    formData.append("name", data.name);
+    formData.append("address", data.address);
+    formData.append("phone", data.phone);
+    if (data.city) formData.append("city", data.city);
+    if (data.description) formData.append("description", data.description);
+    if (data.email) formData.append("email", data.email);
+    if (data.website) formData.append("website", data.website);
+    if (data.state) formData.append("state", data.state);
+    if (data.zip) formData.append("zip", data.zip);
+    if (data.country) formData.append("country", data.country);
     if (profilePicture) {
-      formData.append('profile_picture', profilePicture);
+      formData.append("profile_picture", profilePicture);
     }
 
     const response = await fetch(API_ENDPOINTS.SALONS.CREATE, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
       body: formData,
     });
@@ -65,57 +68,64 @@ export async function createSalon(data: CreateSalonData, profilePicture?: File |
     const result = await response.json();
 
     if (!response.ok) {
-      return { error: result.error || 'Failed to create salon' };
+      return { error: result.error || "Failed to create salon" };
     }
 
     return result;
   } catch (error) {
-    console.error('Network error:', error);
-    return { error: 'Network error. Please try again.' };
+    console.error("Network error:", error);
+    return { error: "Network error. Please try again." };
   }
 }
 
 // Get all salons for browsing
-export async function getAllSalons(): Promise<{ salons?: Salon[]; error?: string }> {
+export async function getAllSalons(): Promise<{
+  salons?: Salon[];
+  error?: string;
+}> {
   try {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (!token) {
-      return { error: 'Not authenticated' };
+      return { error: "Not authenticated" };
     }
 
     const response = await fetch(API_ENDPOINTS.SALONS.LIST, {
       ...fetchConfig,
       headers: {
         ...fetchConfig.headers,
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     });
 
     const result = await response.json();
 
     if (!response.ok) {
-      return { error: result.error || 'Failed to fetch salons' };
+      return { error: result.error || "Failed to fetch salons" };
     }
 
     return { salons: result };
-  } catch (error) {
-    return { error: 'Network error. Please try again.' };
+  } catch {
+    return { error: "Network error. Please try again." };
   }
 }
 
 // Check if owner has a salon
-export async function checkOwnerSalon(): Promise<{ hasSalon: boolean; salon?: Salon; error?: string }> {
+export async function checkOwnerSalon(): Promise<{
+  hasSalon: boolean;
+  salon?: Salon;
+  error?: string;
+}> {
   try {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (!token) {
-      return { hasSalon: false, error: 'Not authenticated' };
+      return { hasSalon: false, error: "Not authenticated" };
     }
 
     const response = await fetch(API_ENDPOINTS.SALONS.CHECK_OWNER, {
       ...fetchConfig,
       headers: {
         ...fetchConfig.headers,
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     });
 
@@ -126,66 +136,72 @@ export async function checkOwnerSalon(): Promise<{ hasSalon: boolean; salon?: Sa
     }
 
     return result;
-  } catch (error) {
-    return { hasSalon: false, error: 'Network error' };
+  } catch {
+    return { hasSalon: false, error: "Network error" };
   }
 }
 
 // Get salon by ID (for settings view)
-export async function getSalonById(salonId: number): Promise<{ salon?: Salon; error?: string }> {
+export async function getSalonById(
+  salonId: number
+): Promise<{ salon?: Salon; error?: string }> {
   try {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (!token) {
-      return { error: 'Not authenticated' };
+      return { error: "Not authenticated" };
     }
 
     const response = await fetch(`${API_ENDPOINTS.SALONS.LIST}/${salonId}`, {
       headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
       },
     });
 
     const result = await response.json();
 
     if (!response.ok) {
-      return { error: result.error || 'Failed to fetch salon' };
+      return { error: result.error || "Failed to fetch salon" };
     }
 
     return { salon: result };
   } catch (error) {
-    console.error('Network error:', error);
-    return { error: 'Network error. Please try again.' };
+    console.error("Network error:", error);
+    return { error: "Network error. Please try again." };
   }
 }
 
 // Update salon settings
-export async function updateSalon(salonId: number, data: CreateSalonData, profilePicture?: File | null): Promise<{ salon?: Salon; message?: string; error?: string }> {
+export async function updateSalon(
+  salonId: number,
+  data: CreateSalonData,
+  profilePicture?: File | null
+): Promise<{ salon?: Salon; message?: string; error?: string }> {
   try {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (!token) {
-      return { error: 'Not authenticated' };
+      return { error: "Not authenticated" };
     }
 
     const formData = new FormData();
-    if (data.name) formData.append('name', data.name);
-    if (data.address) formData.append('address', data.address);
-    if (data.phone) formData.append('phone', data.phone);
-    if (data.city) formData.append('city', data.city);
-    if (data.state) formData.append('state', data.state);
-    if (data.zip) formData.append('zip', data.zip);
-    if (data.country) formData.append('country', data.country);
-    if (data.description) formData.append('description', data.description);
-    if (data.email) formData.append('email', data.email);
-    if (data.website) formData.append('website', data.website);
+    if (data.name) formData.append("name", data.name);
+    if (data.address) formData.append("address", data.address);
+    if (data.phone) formData.append("phone", data.phone);
+    if (data.city) formData.append("city", data.city);
+    if (data.state) formData.append("state", data.state);
+    if (data.zip) formData.append("zip", data.zip);
+    if (data.country) formData.append("country", data.country);
+    if (data.description) formData.append("description", data.description);
+    if (data.email) formData.append("email", data.email);
+    if (data.website) formData.append("website", data.website);
     if (profilePicture) {
-      formData.append('profile_picture', profilePicture);
+      formData.append("profile_picture", profilePicture);
     }
 
     const response = await fetch(`${API_ENDPOINTS.SALONS.LIST}/${salonId}`, {
-      method: 'PUT',
+      method: "PUT",
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
       body: formData,
     });
@@ -193,12 +209,57 @@ export async function updateSalon(salonId: number, data: CreateSalonData, profil
     const result = await response.json();
 
     if (!response.ok) {
-      return { error: result.error || 'Failed to update salon' };
+      return { error: result.error || "Failed to update salon" };
     }
 
     return result;
   } catch (error) {
-    console.error('Network error:', error);
-    return { error: 'Network error. Please try again.' };
+    console.error("Network error:", error);
+    return { error: "Network error. Please try again." };
+  }
+}
+
+// Get staff for a salon
+export async function getSalonStaff(salonId: number | string) {
+  try {
+    const token = localStorage.getItem("token");
+
+    const response = await fetch(API_ENDPOINTS.SALONS.STAFF(salonId), {
+      ...fetchConfig,
+      headers: {
+        ...fetchConfig.headers,
+        Authorization: token ? `Bearer ${token}` : "",
+      },
+    });
+
+    const result = await response.json();
+    if (!response.ok) return { error: result.error || "Failed to fetch staff" };
+
+    return { staff: result };
+  } catch {
+    return { error: "Network error" };
+  }
+}
+
+// Get services for a salon
+export async function getSalonServices(salonId: number | string) {
+  try {
+    const token = localStorage.getItem("token");
+
+    const response = await fetch(API_ENDPOINTS.SALONS.SERVICES(salonId), {
+      ...fetchConfig,
+      headers: {
+        ...fetchConfig.headers,
+        Authorization: token ? `Bearer ${token}` : "",
+      },
+    });
+
+    const result = await response.json();
+    if (!response.ok)
+      return { error: result.error || "Failed to fetch services" };
+
+    return { services: result };
+  } catch {
+    return { error: "Network error" };
   }
 }

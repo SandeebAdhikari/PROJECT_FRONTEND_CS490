@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Calendar, Clock, DollarSign, User, Scissors } from "lucide-react";
 import { bookAppointment } from "@/libs/api";
+import { API_ENDPOINTS, fetchConfig } from "@/libs/api/config";
 import data from "@/data/data.json";
 
 interface Staff {
@@ -71,17 +72,29 @@ const BookingContent = () => {
     (s) => s.id.toString() === formData.staffId
   );
 
+  // -------------------------
+  // FETCH STAFF + SERVICES
+  // -------------------------
   useEffect(() => {
     const fetchSalonData = async () => {
       try {
-        const token = localStorage.getItem("token");
+        const token =
+          typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
         const [staffResponse, servicesResponse] = await Promise.all([
-          fetch(`http://localhost:4000/api/salons/${salonId}/staff`, {
-            headers: token ? { Authorization: `Bearer ${token}` } : {},
+          fetch(API_ENDPOINTS.SALONS.STAFF(salonId), {
+            ...fetchConfig,
+            headers: {
+              ...fetchConfig.headers,
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
           }),
-          fetch(`http://localhost:4000/api/salons/${salonId}/services`, {
-            headers: token ? { Authorization: `Bearer ${token}` } : {},
+          fetch(API_ENDPOINTS.SALONS.SERVICES(salonId), {
+            ...fetchConfig,
+            headers: {
+              ...fetchConfig.headers,
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
           }),
         ]);
 
@@ -113,29 +126,9 @@ const BookingContent = () => {
           setAvailableStaff(transformedStaff);
           setAvailableServices(transformedServices);
 
-          if (preSelectedService && transformedServices.length > 0) {
-            const matchingService: Service | undefined =
-              transformedServices.find(
-                (s: Service) => s.name === preSelectedService
-              );
-            if (matchingService) {
-              setFormData((prev) => ({
-                ...prev,
-                serviceId: matchingService.id.toString(),
-              }));
-            }
-          }
-        } else {
-          const staffData =
-            (data.staff as Record<string, Staff[]>)[salonId] || [];
-          const servicesData =
-            (data.services as Record<string, Service[]>)[salonId] || [];
-
-          setAvailableStaff(staffData);
-          setAvailableServices(servicesData);
-
-          if (preSelectedService && servicesData.length > 0) {
-            const matchingService = servicesData.find(
+          // Auto-select service if provided
+          if (preSelectedService) {
+            const matchingService = transformedServices.find(
               (s) => s.name === preSelectedService
             );
             if (matchingService) {
@@ -145,6 +138,14 @@ const BookingContent = () => {
               }));
             }
           }
+        } else {
+          // LOCAL FALLBACK (data.json)
+          const staffData =
+            (data.staff as Record<string, Staff[]>)[salonId] || [];
+          const servicesData =
+            (data.services as Record<string, Service[]>)[salonId] || [];
+          setAvailableStaff(staffData);
+          setAvailableServices(servicesData);
         }
       } catch (error) {
         console.error("Error fetching salon data:", error);
@@ -162,9 +163,12 @@ const BookingContent = () => {
     fetchSalonData();
   }, [salonId, preSelectedService]);
 
+  // -------------------------
+  // GENERATE TIME SLOTS
+  // -------------------------
   useEffect(() => {
     if (formData.date && formData.staffId) {
-      const slots = [
+      setAvailableSlots([
         "09:00",
         "09:30",
         "10:00",
@@ -182,29 +186,23 @@ const BookingContent = () => {
         "16:00",
         "16:30",
         "17:00",
-      ];
-      setAvailableSlots(slots);
+      ]);
     } else {
       setAvailableSlots([]);
     }
   }, [formData.date, formData.staffId]);
 
+  // -------------------------
+  // SUBMIT BOOKING
+  // -------------------------
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
-    if (!formData.serviceId) {
-      setError("Please select a service");
-      return;
-    }
-    if (!formData.staffId) {
-      setError("Please select a stylist");
-      return;
-    }
-    if (!formData.date || !formData.time) {
-      setError("Please select date and time");
-      return;
-    }
+    if (!formData.serviceId) return setError("Please select a service");
+    if (!formData.staffId) return setError("Please select a stylist");
+    if (!formData.date || !formData.time)
+      return setError("Please select date and time");
 
     setLoading(true);
 
@@ -228,9 +226,7 @@ const BookingContent = () => {
       setError(errorMessage);
 
       if (errorMessage.includes("login")) {
-        setTimeout(() => {
-          router.push("/login");
-        }, 2000);
+        setTimeout(() => router.push("/login"), 1500);
       }
     } finally {
       setLoading(false);
@@ -239,6 +235,9 @@ const BookingContent = () => {
 
   const minDate = new Date().toISOString().split("T")[0];
 
+  // -------------------------
+  // RETURN UI
+  // -------------------------
   return (
     <div className="min-h-screen bg-muted p-4 sm:p-8">
       <div className="max-w-4xl mx-auto bg-card border border-border rounded-2xl p-6 sm:p-8 shadow-soft-br">
@@ -247,11 +246,13 @@ const BookingContent = () => {
         </h1>
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* SERVICES */}
           <div>
             <label className="block text-sm font-semibold mb-3">
               <Scissors className="w-4 h-4 inline mr-2" />
               Select Service
             </label>
+
             <div className="grid grid-cols-1 gap-3">
               {availableServices.map((service) => (
                 <button
@@ -269,33 +270,32 @@ const BookingContent = () => {
                       : "border-border hover:border-primary/50"
                   }`}
                 >
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h3 className="font-semibold">{service.name}</h3>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {service.description}
-                      </p>
-                      <div className="flex gap-4 mt-2 text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
-                          {service.duration}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <DollarSign className="w-3 h-3" />${service.price}
-                        </span>
-                      </div>
-                    </div>
+                  <h3 className="font-semibold">{service.name}</h3>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {service.description}
+                  </p>
+
+                  <div className="flex gap-4 mt-2 text-xs text-muted-foreground">
+                    <span className="flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      {service.duration}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <DollarSign className="w-3 h-3" />${service.price}
+                    </span>
                   </div>
                 </button>
               ))}
             </div>
           </div>
 
+          {/* STAFF */}
           <div>
             <label className="block text-sm font-semibold mb-3">
               <User className="w-4 h-4 inline mr-2" />
               Select Stylist
             </label>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {availableStaff.map((staff) => (
                 <button
@@ -316,6 +316,7 @@ const BookingContent = () => {
                     >
                       {staff.name.charAt(0)}
                     </div>
+
                     <div>
                       <h3 className="font-semibold text-sm">{staff.name}</h3>
                       <p className="text-xs text-muted-foreground">
@@ -331,6 +332,7 @@ const BookingContent = () => {
             </div>
           </div>
 
+          {/* DATE */}
           <div>
             <label className="block text-sm font-semibold mb-2">
               <Calendar className="w-4 h-4 inline mr-2" />
@@ -343,12 +345,12 @@ const BookingContent = () => {
               onChange={(e) =>
                 setFormData({ ...formData, date: e.target.value })
               }
-              className="w-full px-4 py-2.5 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 bg-background"
-              placeholder="Select a date"
+              className="w-full px-4 py-2.5 border border-border rounded-lg"
               required
             />
           </div>
 
+          {/* TIME */}
           <div>
             <label className="block text-sm font-semibold mb-2">
               <Clock className="w-4 h-4 inline mr-2" />
@@ -379,6 +381,7 @@ const BookingContent = () => {
             )}
           </div>
 
+          {/* NOTES */}
           <div>
             <label className="block text-sm font-semibold mb-2">
               Notes (Optional)
@@ -388,18 +391,20 @@ const BookingContent = () => {
               onChange={(e) =>
                 setFormData({ ...formData, notes: e.target.value })
               }
-              className="w-full px-4 py-2.5 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 bg-background"
               rows={3}
-              placeholder="Any special requests or notes..."
+              className="w-full px-4 py-2.5 border border-border rounded-lg"
+              placeholder="Any special requests?"
             />
           </div>
 
+          {/* SUMMARY CARD */}
           {selectedService &&
             selectedStaff &&
             formData.date &&
             formData.time && (
               <div className="bg-primary/5 border border-primary/20 rounded-xl p-4">
                 <h3 className="font-semibold mb-2">Booking Summary</h3>
+
                 <div className="space-y-1 text-sm">
                   <p>
                     <span className="text-muted-foreground">Service:</span>{" "}
@@ -435,18 +440,20 @@ const BookingContent = () => {
             </div>
           )}
 
+          {/* BUTTONS */}
           <div className="flex gap-3">
             <button
               type="button"
               onClick={() => router.back()}
-              className="flex-1 px-6 py-3 border border-border rounded-lg font-semibold hover:bg-muted transition"
+              className="flex-1 px-6 py-3 border border-border rounded-lg font-semibold hover:bg-muted"
             >
               Cancel
             </button>
+
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 px-6 py-3 bg-primary text-white rounded-lg font-semibold hover:bg-primary-light transition disabled:opacity-50"
+              className="flex-1 px-6 py-3 bg-primary text-white rounded-lg font-semibold disabled:opacity-50"
             >
               {loading ? "Booking..." : "Confirm Booking"}
             </button>
