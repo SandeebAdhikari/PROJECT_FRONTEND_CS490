@@ -1,7 +1,7 @@
 export default function ChartCard({ title, children }: any) {
     return (
-      <div className="bg-[#1d2333] p-6 rounded-xl shadow-lg">
-        <h3 className="text-xl mb-4 text-indigo-400">{title}</h3>
+      <div className="bg-card p-6 rounded-xl shadow-soft border border-border">
+        <h3 className="text-primary text-xl mb-4">{title}</h3>
         {children}
       </div>
     );

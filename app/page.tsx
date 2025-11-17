@@ -6,6 +6,7 @@ import Steps from "@/components/Landing/Steps";
 import Business from "@/components/Landing/Business";
 import Footer from "@/components/Landing/Footer";
 
+
 const LandingPage = () => {
   return (
     <main className="min-h-screen">
