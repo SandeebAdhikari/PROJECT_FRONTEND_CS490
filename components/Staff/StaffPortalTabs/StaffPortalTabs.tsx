@@ -1,18 +1,113 @@
-import React from 'react'
-import StaffPortalTabsOverview from './StaffPortalTabsOverview'
-import StaffPortalTabsCustomer from './StaffPortalTabsCustomer'
-import StaffPortalTabsProduct from './StaffPortalTabsProduct'
-import StaffPortalTabsAppointment from './StaffPortalTabsAppointment'
+"use client";
 
-const StaffPortalTabs = () => {
-  return (
-    <div>
-      <StaffPortalTabsOverview/>
-      <StaffPortalTabsCustomer/>
-      <StaffPortalTabsAppointment/>
-      <StaffPortalTabsProduct/> 
-    </div>
-  )
+import React from "react";
+import { StaffMember } from "@/components/Dashboard/Staff/Staffcard";
+import {
+  StaffPortalAppointment,
+  StaffPortalCustomer,
+  StaffPortalProduct,
+} from "@/components/Staff/staffPortalTypes";
+import StaffPortalTabsOverview from "./StaffPortalTabsOverview";
+import StaffPortalTabsCustomer from "./StaffPortalTabsCustomer";
+import StaffPortalTabsProduct from "./StaffPortalTabsProduct";
+import StaffPortalTabsAppointment from "./StaffPortalTabsAppointment";
+
+type TabKey = "overview" | "appointments" | "customers" | "products";
+
+const tabConfig: { id: TabKey; label: string; description: string }[] = [
+  { id: "overview", label: "Overview", description: "Shift briefing" },
+  {
+    id: "appointments",
+    label: "Appointments",
+    description: "Guests & prep notes",
+  },
+  { id: "customers", label: "Customers", description: "Relationships" },
+  { id: "products", label: "Retail", description: "Attach & inventory" },
+];
+
+interface StaffPortalTabsProps {
+  activeTab: TabKey;
+  onTabChange: (tab: TabKey) => void;
+  appointments: StaffPortalAppointment[];
+  customers: StaffPortalCustomer[];
+  products: StaffPortalProduct[];
+  featuredStaff: StaffMember[];
+  nextAppointment?: StaffPortalAppointment;
+  onCreateAppointment: () => void;
+  onEditAppointment: (appointmentId: number) => void;
+  onAddStaff: () => void;
+  onEditStaff: (staff: StaffMember) => void;
 }
 
-export default StaffPortalTabs
+const StaffPortalTabs: React.FC<StaffPortalTabsProps> = ({
+  activeTab,
+  onTabChange,
+  appointments,
+  customers,
+  products,
+  featuredStaff,
+  nextAppointment,
+  onCreateAppointment,
+  onEditAppointment,
+  onAddStaff,
+  onEditStaff,
+}) => {
+  return (
+    <section className="rounded-3xl border border-border bg-card p-4 sm:p-6 shadow-soft-br">
+      <div className="flex flex-wrap gap-3">
+        {tabConfig.map((tab) => {
+          const isActive = tab.id === activeTab;
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              className={`flex flex-col rounded-2xl border px-4 py-3 text-left transition-smooth ${
+                isActive
+                  ? "border-primary bg-primary/10 text-primary"
+                  : "border-border hover:border-primary/40"
+              }`}
+              onClick={() => onTabChange(tab.id)}
+            >
+              <span className="text-sm font-semibold">{tab.label}</span>
+              <span className="text-xs text-muted-foreground">
+                {tab.description}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="mt-8">
+        {activeTab === "overview" && (
+          <StaffPortalTabsOverview
+            appointments={appointments}
+            nextAppointment={nextAppointment}
+            customers={customers}
+            teamMembers={featuredStaff}
+            onCreateAppointment={onCreateAppointment}
+            onAddStaff={onAddStaff}
+            onEditStaff={onEditStaff}
+          />
+        )}
+
+        {activeTab === "appointments" && (
+          <StaffPortalTabsAppointment
+            appointments={appointments}
+            onCreateAppointment={onCreateAppointment}
+            onEditAppointment={onEditAppointment}
+          />
+        )}
+
+        {activeTab === "customers" && (
+          <StaffPortalTabsCustomer customers={customers} />
+        )}
+
+        {activeTab === "products" && (
+          <StaffPortalTabsProduct products={products} />
+        )}
+      </div>
+    </section>
+  );
+};
+
+export default StaffPortalTabs;
