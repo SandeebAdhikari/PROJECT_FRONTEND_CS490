@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 type Props = {
   salonSlug: string;
@@ -14,14 +15,18 @@ const StaffLoginCard: React.FC<Props> = ({ salonSlug }) => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
+  const router = useRouter();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setSuccess("");
+
     if (!staffCode.trim() || !pin.trim()) {
       setError("Enter your staff code and PIN.");
       return;
     }
+
     setLoading(true);
     try {
       const res = await fetch(
@@ -35,13 +40,21 @@ const StaffLoginCard: React.FC<Props> = ({ salonSlug }) => {
           }),
         }
       );
+
       const data = await res.json();
+
       if (!res.ok) {
         throw new Error(data?.error || "Invalid staff code or PIN");
       }
-      setSuccess("Login successful! Staff portal access coming soon.");
+
+      // If you get a token or something here, store it first (localStorage/cookie)
+
+      setSuccess("Login successful! Redirecting to staff portal…");
       setStaffCode("");
       setPin("");
+
+      // 🔥 Auto-redirect to staff portal
+      router.push(`/salon/${salonSlug}/staff/staff-portal`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");
     } finally {
@@ -99,8 +112,9 @@ const StaffLoginCard: React.FC<Props> = ({ salonSlug }) => {
             {error}
           </p>
         )}
+
         {success && (
-          <p className="text-sm text-emerald-600 bg-emerald-100 rounded-lg px-3 py-2">
+          <p className="text-sm text-green-700 bg-green-100 rounded-lg px-3 py-2">
             {success}
           </p>
         )}
