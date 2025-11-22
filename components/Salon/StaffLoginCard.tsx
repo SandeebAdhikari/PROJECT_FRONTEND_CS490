@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { API_ENDPOINTS } from "@/libs/api/config";
 
 type Props = {
   salonSlug: string;
@@ -25,7 +26,7 @@ const StaffLoginCard: React.FC<Props> = ({ salonSlug }) => {
     setLoading(true);
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/staff/login`,
+        API_ENDPOINTS.STAFF.LOGIN,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

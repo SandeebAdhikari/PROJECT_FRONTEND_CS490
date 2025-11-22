@@ -1,27 +1,65 @@
 "use client";
 
-import React from "react";
-import data from "@/data/data.json";
+import React, { useState, useEffect } from "react";
+import { API_BASE_URL } from "@/libs/api/config";
 import StaffProfileCard from "@/components/Dashboard/Staff/StaffProfileCard";
 
 interface Staff {
-  id: number;
-  name: string;
-  role: string;
-  rating: number;
-  reviews: number;
-  specialties: string[];
-  color?: string;
+  staff_id: number;
+  full_name: string;
+  staff_role: string;
+  specialization?: string;
+  avg_rating: number;
+  review_count: number;
+  avatar_url?: string;
 }
-
-interface DataType {
-  staff?: Record<string, Staff[]>;
-}
-
-const typedData = data as DataType;
 
 const SalonStaffSection: React.FC<{ salonId: string }> = ({ salonId }) => {
-  const staffMembers = typedData.staff?.[salonId] ?? [];
+  const [staffMembers, setStaffMembers] = useState<Staff[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStaff = async () => {
+      try {
+        const response = await fetch(
+          API_ENDPOINTS.STAFF.GET_SALON_STAFF(salonId)
+        );
+        if (response.ok) {
+          const data = await response.json();
+          // Filter only active staff
+          const activeStaff = (data.staff || []).filter(
+            (s: Staff) => s.staff_id
+          );
+          setStaffMembers(activeStaff);
+        }
+      } catch (error) {
+        console.error("Error fetching staff:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (salonId) {
+      fetchStaff();
+    }
+  }, [salonId]);
+
+  if (loading) {
+    return (
+      <div className="mt-10 w-full">
+        <p className="text-muted-foreground">Loading staff...</p>
+      </div>
+    );
+  }
+
+  if (staffMembers.length === 0) {
+    return (
+      <div className="mt-10 w-full">
+        <h2 className="text-2xl font-extrabold mb-6">Our Expert Team</h2>
+        <p className="text-muted-foreground">No staff members available at this time.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="mt-10 w-full">
@@ -35,7 +73,15 @@ const SalonStaffSection: React.FC<{ salonId: string }> = ({ salonId }) => {
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {staffMembers.map((member) => (
-          <StaffProfileCard key={member.id} {...member} />
+          <StaffProfileCard 
+            key={member.staff_id} 
+            id={member.staff_id}
+            name={member.full_name}
+            role={member.staff_role || "Staff"}
+            rating={member.avg_rating || 0}
+            reviews={member.review_count || 0}
+            specialties={member.specialization ? [member.specialization] : []}
+          />
         ))}
       </div>
     </div>
