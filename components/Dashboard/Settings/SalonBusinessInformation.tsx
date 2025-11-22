@@ -1,11 +1,19 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { MapPin, Upload, Camera, Save } from "lucide-react";
+import React, { useState, useEffect, forwardRef, useImperativeHandle } from "react";
+import { MapPin, Upload, Camera } from "lucide-react";
 import Image from "next/image";
 import { checkOwnerSalon, createSalon, updateSalon } from "@/libs/api/salons";
+import { API_BASE_URL } from "@/libs/api/config";
 
-const SalonBusinessInformation = () => {
+interface SalonBusinessInformationProps {
+  suppressMessages?: boolean;
+}
+
+const SalonBusinessInformation = forwardRef<
+  { save: () => Promise<void> },
+  SalonBusinessInformationProps
+>(({ suppressMessages = false }, ref) => {
   const [salonId, setSalonId] = useState<number | null>(null);
   const [isNewSalon, setIsNewSalon] = useState(false);
   const [formData, setFormData] = useState({
@@ -40,7 +48,7 @@ const SalonBusinessInformation = () => {
             description: result.salon.description || "",
           });
           if (result.salon.profile_picture) {
-            setProfilePreview(`http://localhost:4000${result.salon.profile_picture}`);
+            setProfilePreview(`${API_BASE_URL}${result.salon.profile_picture}`);
           }
         } else {
           setIsNewSalon(true);
@@ -77,7 +85,7 @@ const SalonBusinessInformation = () => {
     // Validate required fields
     if (!formData.name || !formData.address || !formData.phone) {
       setMessage({ type: 'error', text: 'Name, address, and phone are required' });
-      return;
+      throw new Error('Name, address, and phone are required');
     }
 
     setSaving(true);
@@ -88,29 +96,63 @@ const SalonBusinessInformation = () => {
       if (isNewSalon) {
         // Create new salon
         result = await createSalon(formData, profilePicture);
+        if (result.error) {
+          setMessage({ type: 'error', text: result.error });
+          throw new Error(result.error);
+        }
         if (result.salon) {
           setSalonId(result.salon.salon_id || null);
           setIsNewSalon(false);
         }
+        setMessage({ type: 'success', text: 'Salon created successfully!' });
+        setProfilePicture(null);
       } else if (salonId) {
         // Update existing salon
         result = await updateSalon(salonId, formData, profilePicture);
-      }
-
-      if (result?.error) {
-        setMessage({ type: 'error', text: result.error });
-      } else {
-        setMessage({ type: 'success', text: isNewSalon ? 'Salon created successfully!' : 'Salon updated successfully!' });
+        
+        if (!result) {
+          const errorMsg = 'No response from server';
+          setMessage({ type: 'error', text: errorMsg });
+          throw new Error(errorMsg);
+        }
+        
+        if (result.error) {
+          // If backend says "No fields to update", treat as success (nothing changed)
+          if (result.error.includes("No fields to update")) {
+            setMessage({ type: 'success', text: 'Salon information is up to date' });
+            setProfilePicture(null);
+            return;
+          }
+          const errorMsg = result.error || 'Failed to update salon';
+          setMessage({ type: 'error', text: errorMsg });
+          throw new Error(errorMsg);
+        }
+        
+        // Success case
+        setMessage({ type: 'success', text: result.message || 'Salon updated successfully!' });
         // Clear profile picture file after successful save
         setProfilePicture(null);
+      } else {
+        const errorMsg = 'No salon ID available for update';
+        setMessage({ type: 'error', text: errorMsg });
+        throw new Error(errorMsg);
       }
     } catch (error) {
       console.error("Error saving salon:", error);
-      setMessage({ type: 'error', text: 'Failed to save salon information' });
+      const errorMessage = error instanceof Error ? error.message : 'Failed to save salon information';
+      // Set error message if not already set
+      if (!message || message.type !== 'error') {
+        setMessage({ type: 'error', text: errorMessage });
+      }
+      throw error;
     } finally {
       setSaving(false);
     }
   };
+
+  useImperativeHandle(ref, () => ({
+    save: handleSave,
+  }));
 
   if (loading) {
     return (
@@ -122,24 +164,14 @@ const SalonBusinessInformation = () => {
 
   return (
     <div className="bg-card border border-border rounded-2xl p-6 space-y-5">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <MapPin className="w-5 h-5" />
-          <h2 className="text-lg font-bold">
-            {isNewSalon ? 'Setup Your Salon' : 'Business Information'}
-          </h2>
-        </div>
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary-dark transition-smooth disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <Save className="w-4 h-4" />
-          {saving ? 'Saving...' : 'Save Changes'}
-        </button>
+      <div className="flex items-center gap-2 mb-4">
+        <MapPin className="w-5 h-5" />
+        <h2 className="text-lg font-bold">
+          {isNewSalon ? 'Setup Your Salon' : 'Business Information'}
+        </h2>
       </div>
 
-      {message && (
+      {!suppressMessages && message && (
         <div className={`p-3 rounded-lg ${message.type === 'success' ? 'bg-secondary text-foreground' : 'bg-destructive/10 text-destructive'}`}>
           {message.text}
         </div>
@@ -278,6 +310,8 @@ const SalonBusinessInformation = () => {
       </div>
     </div>
   );
-};
+});
+
+SalonBusinessInformation.displayName = "SalonBusinessInformation";
 
 export default SalonBusinessInformation;
