@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { auth } from "@/libs/firebase/client";
 import { setAuthCookie } from "@/libs/auth/cookies";
+import { API_ENDPOINTS } from "@/libs/api/config";
 
 export function useFirebaseSession() {
   useEffect(() => {
@@ -11,7 +12,7 @@ export function useFirebaseSession() {
     if (user) {
       user.getIdToken(true).then(async (idToken) => {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/auth/verify-firebase`,
+          API_ENDPOINTS.AUTH.VERIFY_FIREBASE,
           {
             method: "POST",
             headers: {
@@ -35,7 +36,7 @@ export function useFirebaseSession() {
 
       const idToken = await user.getIdToken(true);
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/auth/verify-firebase`,
+        API_ENDPOINTS.AUTH.VERIFY_FIREBASE,
         {
           method: "POST",
           headers: {
