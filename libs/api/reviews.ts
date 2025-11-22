@@ -1,9 +1,9 @@
 import { API_ENDPOINTS, fetchConfig } from "./config";
 
 export interface AddReviewData {
-  appointment_id: number;
+  appointment_id?: number | null;
   salon_id: number;
-  staff_id: number;
+  staff_id?: number | null;
   rating: number;
   comment: string;
 }
