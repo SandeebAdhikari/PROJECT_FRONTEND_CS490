@@ -48,6 +48,11 @@ export interface TwoFAMethod {
   phoneNumber?: string;
 }
 
+export interface SetCustomerPasswordInput {
+  token: string;
+  password: string;
+}
+
 // Signup function
 export async function signup(data: SignupData): Promise<AuthResponse> {
   try {
@@ -110,6 +115,38 @@ export async function login(data: LoginData): Promise<AuthResponse> {
     return result;
   } catch (error) {
     console.error("Login error:", error);
+    return { error: "Network error. Please try again." };
+  }
+}
+
+export async function setCustomerPassword(
+  data: SetCustomerPasswordInput
+): Promise<AuthResponse> {
+  try {
+    const response = await fetch(API_ENDPOINTS.AUTH.SET_CUSTOMER_PASSWORD, {
+      ...fetchConfig,
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      return { error: result.error || "Failed to set password" };
+    }
+
+    if (result.token) {
+      localStorage.setItem("token", result.token);
+      localStorage.setItem("authToken", result.token);
+      setAuthCookie(result.token);
+
+      if (result.user) {
+        localStorage.setItem("user", JSON.stringify(result.user));
+      }
+    }
+
+    return result;
+  } catch {
     return { error: "Network error. Please try again." };
   }
 }

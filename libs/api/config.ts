@@ -15,6 +15,7 @@ export const API_ENDPOINTS = {
     DISABLE_2FA: `${API_BASE_URL}/api/auth/2fa/disable`,
     STATUS_2FA: `${API_BASE_URL}/api/auth/2fa/status`,
     DELETE_ACCOUNT: `${API_BASE_URL}/api/auth/delete-account`,
+    SET_CUSTOMER_PASSWORD: `${API_BASE_URL}/api/auth/customer/set-password`,
   },
   REVIEWS: {
     ADD: `${API_BASE_URL}/api/reviews/add`,
@@ -42,6 +43,7 @@ export const API_ENDPOINTS = {
   },
   APPOINTMENTS: {
     BOOK: `${API_BASE_URL}/api/appointments`,
+    DETAIL: (id: number | string) => `${API_BASE_URL}/api/appointments/${id}`,
   },
   SALONS: {
     CREATE: `${API_BASE_URL}/api/salons`,
