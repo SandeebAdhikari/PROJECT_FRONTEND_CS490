@@ -19,41 +19,76 @@ const NotificationBell: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // Reload when dropdown opens
+  useEffect(() => {
+    if (isOpen) {
+      loadNotifications();
+    }
+  }, [isOpen]);
+
   const loadNotifications = async () => {
-    const result = await getNotifications();
-    if (result.notifications && Array.isArray(result.notifications)) {
-      setNotifications(result.notifications);
-    } else {
+    try {
+      const result = await getNotifications();
+      if (result.error) {
+        console.error("Error loading notifications:", result.error);
+        setNotifications([]);
+        return;
+      }
+      if (result.notifications && Array.isArray(result.notifications)) {
+        setNotifications(result.notifications);
+      } else {
+        setNotifications([]);
+      }
+    } catch (error) {
+      console.error("Error in loadNotifications:", error);
       setNotifications([]);
     }
   };
 
   const handleMarkAsRead = async (id: number) => {
-    await markNotificationRead(id);
-    setNotifications((prev) =>
-      prev.map((n) => (n.notification_id === id ? { ...n, read_status: true } : n))
-    );
+    try {
+      const result = await markNotificationRead(id);
+      if (!result.error) {
+        setNotifications((prev) =>
+          prev.map((n) => (n.notification_id === id ? { ...n, read_status: true } : n))
+        );
+      } else {
+        console.error("Error marking notification as read:", result.error);
+      }
+    } catch (error) {
+      console.error("Error in handleMarkAsRead:", error);
+    }
   };
 
   const handleMarkAllAsRead = async () => {
     setLoading(true);
-    await markAllNotificationsRead();
-    setNotifications((prev) =>
-      prev.map((n) => ({ ...n, read_status: true }))
-    );
-    setLoading(false);
+    try {
+      const result = await markAllNotificationsRead();
+      if (!result.error) {
+        setNotifications((prev) =>
+          prev.map((n) => ({ ...n, read_status: true }))
+        );
+      } else {
+        console.error("Error marking all as read:", result.error);
+      }
+    } catch (error) {
+      console.error("Error in handleMarkAllAsRead:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 hover:bg-gray-100 rounded-full transition"
+        className="relative p-2 hover:bg-muted rounded-full transition-smooth"
+        aria-label="Notifications"
       >
-        <Bell className="w-6 h-6 text-gray-600" />
+        <Bell className="w-6 h-6 text-foreground" />
         {unreadCount > 0 && (
-          <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-            {unreadCount}
+          <span className="absolute top-0 right-0 bg-destructive text-primary-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center font-semibold">
+            {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
       </button>
@@ -64,46 +99,52 @@ const NotificationBell: React.FC = () => {
             className="fixed inset-0 z-40"
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
-            <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-              <h3 className="font-semibold text-gray-900">Notifications</h3>
+          <div className="absolute right-0 mt-2 w-80 bg-card border border-border rounded-lg shadow-lg z-50">
+            <div className="p-4 border-b border-border flex items-center justify-between">
+              <h3 className="font-semibold text-foreground">Notifications</h3>
               {unreadCount > 0 && (
                 <button
                   onClick={handleMarkAllAsRead}
                   disabled={loading}
-                  className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+                  className="text-xs text-primary hover:text-primary/80 font-medium transition-smooth disabled:opacity-50"
                 >
-                  Mark all read
+                  {loading ? 'Marking...' : 'Mark all read'}
                 </button>
               )}
             </div>
 
             <div className="max-h-96 overflow-y-auto">
               {!Array.isArray(notifications) || notifications.length === 0 ? (
-                <div className="p-8 text-center text-gray-500 text-sm">
+                <div className="p-8 text-center text-muted-foreground text-sm">
                   No notifications
                 </div>
               ) : (
                 notifications.map((notification) => (
                   <div
                     key={notification.notification_id}
-                    className={`p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer ${
-                      !notification.read_status ? "bg-blue-50" : ""
+                    className={`p-4 border-b border-border hover:bg-muted cursor-pointer transition-smooth ${
+                      !notification.read_status ? "bg-primary/5" : ""
                     }`}
                     onClick={() => handleMarkAsRead(notification.notification_id)}
                   >
                     <div className="flex items-start gap-3">
                       <div
-                        className={`w-2 h-2 rounded-full mt-2 ${
-                          !notification.read_status ? "bg-blue-600" : "bg-gray-300"
+                        className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${
+                          !notification.read_status ? "bg-primary" : "bg-muted-foreground"
                         }`}
                       />
-                      <div className="flex-1">
-                        <p className="text-sm text-gray-900">
+                      <div className="flex-1 min-w-0">
+                        <p className={`text-sm ${!notification.read_status ? 'font-medium text-foreground' : 'text-muted-foreground'}`}>
                           {notification.message}
                         </p>
-                        <p className="text-xs text-gray-500 mt-1">
-                          {new Date(notification.created_at).toLocaleDateString()}
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {new Date(notification.created_at).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric',
+                            hour: 'numeric',
+                            minute: '2-digit'
+                          })}
                         </p>
                       </div>
                     </div>

@@ -25,13 +25,22 @@ export async function getNotifications(): Promise<{ notifications?: Notification
       },
     });
 
-    const result = await response.json();
-
     if (!response.ok) {
-      return { error: result.error || 'Failed to get notifications' };
+      const errorResult = await response.json().catch(() => ({ error: `HTTP ${response.status}` }));
+      console.error('Failed to fetch notifications:', {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorResult
+      });
+      return { error: errorResult.error || 'Failed to get notifications' };
     }
 
-    return { notifications: result };
+    const result = await response.json();
+    console.log('Notifications fetched:', result);
+    
+    // Handle both array and object with notifications property
+    const notifications = Array.isArray(result) ? result : (result.notifications || []);
+    return { notifications };
   } catch (error) {
     return { error: 'Network error. Please try again.' };
   }
