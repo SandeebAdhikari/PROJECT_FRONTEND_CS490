@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { Shield, X } from "lucide-react";
 import { enable2FA } from "@/libs/api/auth";
+import { getAccountSettings } from "@/libs/api/account";
 
 interface Setup2FAModalProps {
   isOpen: boolean;
@@ -17,24 +18,59 @@ const Setup2FAModal: React.FC<Setup2FAModalProps> = ({
 }) => {
   const [phoneNumber, setPhoneNumber] = useState(userPhone);
   const [loading, setLoading] = useState(false);
+  const [loadingPhone, setLoadingPhone] = useState(false);
   const [error, setError] = useState("");
 
-  // Try to get phone from localStorage if not provided via props
+  // Use userPhone prop if provided
   useEffect(() => {
-    if (!phoneNumber && isOpen) {
-      try {
-        const storedUser = localStorage.getItem("user");
-        if (storedUser) {
-          const user = JSON.parse(storedUser);
-          if (user.phone) {
-            setPhoneNumber(user.phone);
-          }
-        }
-      } catch (err) {
-        console.error("Error loading phone from localStorage:", err);
-      }
+    if (userPhone) {
+      setPhoneNumber(userPhone);
     }
-  }, [isOpen, phoneNumber]);
+  }, [userPhone]);
+
+  // Fetch phone number from account settings when modal opens (if not provided via props)
+  useEffect(() => {
+    if (isOpen && !phoneNumber && !userPhone) {
+      setLoadingPhone(true);
+      getAccountSettings()
+        .then((result) => {
+          if (result.account?.phone) {
+            setPhoneNumber(result.account.phone);
+          } else {
+            // Fallback to localStorage
+            try {
+              const storedUser = localStorage.getItem("user");
+              if (storedUser) {
+                const user = JSON.parse(storedUser);
+                if (user.phone) {
+                  setPhoneNumber(user.phone);
+                }
+              }
+            } catch (err) {
+              console.error("Error loading phone from localStorage:", err);
+            }
+          }
+        })
+        .catch((err) => {
+          console.error("Error loading phone from account settings:", err);
+          // Fallback to localStorage
+          try {
+            const storedUser = localStorage.getItem("user");
+            if (storedUser) {
+              const user = JSON.parse(storedUser);
+              if (user.phone) {
+                setPhoneNumber(user.phone);
+              }
+            }
+          } catch (e) {
+            console.error("Error loading phone from localStorage:", e);
+          }
+        })
+        .finally(() => {
+          setLoadingPhone(false);
+        });
+    }
+  }, [isOpen, phoneNumber, userPhone]);
 
   if (!isOpen) return null;
 
@@ -161,13 +197,16 @@ const Setup2FAModal: React.FC<Setup2FAModalProps> = ({
           <label className="block text-sm font-medium mb-2">Phone Number</label>
           <input
             type="tel"
-            value={phoneNumber}
-            disabled
+            value={loadingPhone ? "Loading..." : phoneNumber}
+            disabled={loadingPhone}
+            readOnly
             placeholder="Enter your phone number"
             className="w-full px-4 py-3 border border-gray-200 rounded-lg bg-gray-50 text-gray-700 cursor-not-allowed"
           />
           <p className="text-xs text-gray-500 mt-1">
-            Using phone number from your profile. You can change it in Settings.
+            {phoneNumber
+              ? "Using phone number from your profile. You can change it in Settings."
+              : "No phone number found. Please add one in Account Settings."}
           </p>
         </div>
 

@@ -9,6 +9,7 @@ import AuthHeader from "./AuthHeader";
 import AuthPassword from "./AuthPassword";
 import AuthCustomer from "./AuthCustomer";
 import AuthOwner from "./AuthOwner";
+import { API_ENDPOINTS } from "@/libs/api/config";
 
 const SignUpForm = () => {
   const form = useForm<SignUpFormData>({
@@ -50,7 +51,7 @@ const SignUpForm = () => {
       }
 
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/auth/signup`,
+        API_ENDPOINTS.AUTH.SIGNUP,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

@@ -3,6 +3,7 @@ import { Download, Plus } from "lucide-react";
 import SalonDashboardCard from "./SalonDashboardCard";
 import { icons } from "@/libs/dashboard/dashboard.icons";
 import { fetchWithRefresh } from "@/libs/api/fetchWithRefresh";
+import { API_ENDPOINTS } from "@/libs/api/config";
 import useSalonId from "@/hooks/useSalonId";
 
 type IconName = keyof typeof icons;
@@ -147,10 +148,10 @@ const SalonDashboard = () => {
         salonId: String(salonId),
         range: "lifetime",
       });
-      const res = await fetchWithRefresh(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/analytics/overview?${params}`,
-        { credentials: "include" }
-      );
+        const res = await fetchWithRefresh(
+          API_ENDPOINTS.ANALYTICS.OVERVIEW(undefined, params),
+          { credentials: "include" }
+        );
       const payload = await res.json();
       if (!res.ok || !payload?.data) {
         throw new Error(payload?.message || payload?.error || "Failed to load overview metrics");

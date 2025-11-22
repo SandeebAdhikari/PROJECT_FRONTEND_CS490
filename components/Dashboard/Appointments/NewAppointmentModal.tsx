@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { X, PlusCircle } from "lucide-react";
 import DatePicker from "react-datepicker";
 import { fetchWithRefresh } from "@/libs/api/fetchWithRefresh";
+import { API_ENDPOINTS } from "@/libs/api/config";
 import {
   AppointmentStatus,
   appointmentStatusOptions,
@@ -80,7 +81,7 @@ const NewAppointmentModal = ({
 
     const fetchStaff = async () => {
       const res = await fetchWithRefresh(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/staff/salon/${currentSalonId}/staff`
+        API_ENDPOINTS.STAFF.GET_SALON_STAFF(currentSalonId)
       );
 
       const data = await res.json();
@@ -97,7 +98,7 @@ const NewAppointmentModal = ({
 
     const fetchServices = async () => {
       const res = await fetchWithRefresh(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/salons/${currentSalonId}/services`,
+        API_ENDPOINTS.SALONS.SERVICES(currentSalonId),
         { credentials: "include" }
       );
       const data = await res.json();
@@ -117,7 +118,7 @@ const NewAppointmentModal = ({
       }
 
       const res = await fetchWithRefresh(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/users/salon-customers?search=${customerQuery}&salon_id=${salonId}`,
+        API_ENDPOINTS.USERS.SALON_CUSTOMERS(salonId, customerQuery),
         { credentials: "include" }
       );
       const data = await res.json();
@@ -138,11 +139,7 @@ const NewAppointmentModal = ({
     if (createCustomerMode) {
       try {
         const checkRes = await fetchWithRefresh(
-          `${
-            process.env.NEXT_PUBLIC_API_URL
-          }/api/users/salon-customers?salon_id=${salonId}&search=${
-            newCustomer.phone || newCustomer.email
-          }`,
+          API_ENDPOINTS.USERS.SALON_CUSTOMERS(salonId, newCustomer.phone || newCustomer.email),
           { credentials: "include" }
         );
         const existingMatches = await checkRes.json();
@@ -201,7 +198,7 @@ const NewAppointmentModal = ({
     };
 
     const res = await fetchWithRefresh(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/appointments/create`,
+      API_ENDPOINTS.APPOINTMENTS.BOOK,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },

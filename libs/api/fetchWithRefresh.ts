@@ -1,3 +1,5 @@
+import { API_ENDPOINTS } from "./config";
+
 export const fetchWithRefresh = async (
   url: string,
   options: RequestInit = {}
@@ -23,7 +25,7 @@ export const fetchWithRefresh = async (
     console.warn("⚠️ Token expired — attempting refresh...");
     try {
       const refreshRes = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/auth/refresh`,
+        API_ENDPOINTS.AUTH.REFRESH,
         { method: "POST", credentials: "include" }
       );
 

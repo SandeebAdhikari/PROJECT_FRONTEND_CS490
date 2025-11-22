@@ -4,6 +4,7 @@ import SalonDashboardCard from "./SalonDashboardCard";
 import { icons } from "@/libs/dashboard/dashboard.icons";
 import useSalonId from "@/hooks/useSalonId";
 import { fetchWithRefresh } from "@/libs/api/fetchWithRefresh";
+import { API_ENDPOINTS } from "@/libs/api/config";
 
 interface DashboardStats {
   totalRevenue: number;
@@ -39,7 +40,7 @@ const SalonDashboard = () => {
       try {
         setLoading(true);
         const res = await fetchWithRefresh(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/analytics/overview?salonId=${salonId}`,
+          API_ENDPOINTS.ANALYTICS.OVERVIEW(salonId),
           { credentials: "include" }
         );
         const data = await res.json();

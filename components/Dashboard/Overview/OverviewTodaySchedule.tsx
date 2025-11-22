@@ -8,6 +8,7 @@ import NewAppointmentModal from "@/components/Dashboard/Appointments/NewAppointm
 import AppointmentDetailsModal from "@/components/Dashboard/Appointments/AppointmentDetailsModal";
 import AppointmentEditModal from "@/components/Dashboard/Appointments/AppointmentEditModal";
 import { fetchWithRefresh } from "@/libs/api/fetchWithRefresh";
+import { API_ENDPOINTS } from "@/libs/api/config";
 import useSalonId from "@/hooks/useSalonId";
 
 interface Appointment {
@@ -47,7 +48,7 @@ const OverviewTodaySchedule = () => {
       setLoading(true);
       const today = new Date().toISOString().split("T")[0];
       const res = await fetchWithRefresh(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/appointments/salon?salon_id=${salonId}&date=${today}`,
+        API_ENDPOINTS.APPOINTMENTS.GET_SALON(salonId, today),
         { credentials: "include" }
       );
 
@@ -77,7 +78,7 @@ const OverviewTodaySchedule = () => {
     try {
       setDeletingId(appointmentId);
       const res = await fetchWithRefresh(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/appointments/${appointmentId}`,
+        API_ENDPOINTS.APPOINTMENTS.DELETE(appointmentId),
         { method: "DELETE", credentials: "include" }
       );
       const data = await res.json();

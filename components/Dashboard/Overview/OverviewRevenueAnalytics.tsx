@@ -12,6 +12,7 @@ import {
   ReferenceLine,
 } from "recharts";
 import { fetchWithRefresh } from "@/libs/api/fetchWithRefresh";
+import { API_ENDPOINTS } from "@/libs/api/config";
 import useSalonId from "@/hooks/useSalonId";
 import {
   toFullDateLabel,
@@ -171,7 +172,7 @@ const OverviewRevenueAnalytics = () => {
           salon_id: String(salonId),
         }).toString();
         const res = await fetchWithRefresh(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/analytics/revenue-series?${params}`,
+          API_ENDPOINTS.ANALYTICS.REVENUE_SERIES(params),
           { credentials: "include" }
         );
         const payload = await res.json();

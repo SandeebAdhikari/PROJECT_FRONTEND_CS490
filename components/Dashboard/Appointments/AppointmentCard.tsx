@@ -2,10 +2,12 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
-import { Eye, Pencil, Trash2 } from "lucide-react";
+import { Eye, Pencil, Trash2, CheckCircle, XCircle } from "lucide-react";
 import AppointmentEditModal from "@/components/Dashboard/Appointments/AppointmentEditModal";
 import AppointmentDetailsModal from "@/components/Dashboard/Appointments/AppointmentDetailsModal";
 import { fetchWithRefresh } from "@/libs/api/fetchWithRefresh";
+import { updateAppointmentStatus } from "@/libs/api/appointments";
+import { API_ENDPOINTS } from "@/libs/api/config";
 import { APPOINTMENT_STATUS_META } from "@/libs/constants/appointments";
 export type Appointment = {
   appointment_id: number;
@@ -48,7 +50,7 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
     if (!confirm(`Delete appointment for ${displayName}?`)) return;
     try {
       const res = await fetchWithRefresh(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/appointments/${a.appointment_id}`,
+        API_ENDPOINTS.APPOINTMENTS.DELETE(a.appointment_id),
         {
           method: "DELETE",
           credentials: "include",
@@ -64,6 +66,42 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
     } catch (err) {
       console.error("Delete error:", err);
       alert("Something went wrong while deleting appointment.");
+    }
+  };
+
+  const handleApprove = async () => {
+    if (!confirm(`Approve appointment for ${displayName}?`)) return;
+    try {
+      console.log('Approving appointment:', a.appointment_id);
+      const result = await updateAppointmentStatus(a.appointment_id, 'confirmed');
+      console.log('Approve result:', result);
+      if (result.error) {
+        alert(result.error);
+      } else {
+        alert("Appointment approved successfully!");
+        onUpdated?.();
+      }
+    } catch (err) {
+      console.error("Approve error:", err);
+      alert("Something went wrong while approving appointment.");
+    }
+  };
+
+  const handleDeny = async () => {
+    if (!confirm(`Cancel appointment for ${displayName}?`)) return;
+    try {
+      console.log('Denying appointment:', a.appointment_id);
+      const result = await updateAppointmentStatus(a.appointment_id, 'cancelled');
+      console.log('Deny result:', result);
+      if (result.error) {
+        alert(result.error);
+      } else {
+        alert("Appointment cancelled successfully!");
+        onUpdated?.();
+      }
+    } catch (err) {
+      console.error("Cancel error:", err);
+      alert("Something went wrong while cancelling appointment.");
     }
   };
 
@@ -125,6 +163,26 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
             {statusMeta.label}
           </span>
           <div className="flex items-center gap-3 text-gray-500">
+            {a.status === 'pending' && (
+              <>
+                <button
+                  onClick={handleApprove}
+                  className="flex items-center gap-1 px-3 py-1.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors text-xs font-semibold"
+                  title="Approve appointment"
+                >
+                  <CheckCircle className="h-3 w-3" />
+                  Approve
+                </button>
+                <button
+                  onClick={handleDeny}
+                  className="flex items-center gap-1 px-3 py-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-xs font-semibold"
+                  title="Cancel appointment"
+                >
+                  <XCircle className="h-3 w-3" />
+                  Deny
+                </button>
+              </>
+            )}
             <Eye
               className="h-4 w-4 cursor-pointer hover:text-gray-900"
               onClick={() => setIsViewOpen(true)}

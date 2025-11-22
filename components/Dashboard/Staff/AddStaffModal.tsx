@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { X, PlusCircle } from "lucide-react";
 import { fetchWithRefresh } from "@/libs/api/fetchWithRefresh";
+import { API_ENDPOINTS } from "@/libs/api/config";
 
 interface AddStaffModalProps {
   isOpen: boolean;
@@ -62,7 +63,7 @@ const AddStaffModal: React.FC<AddStaffModalProps> = ({
       try {
         console.log("Loading roles for salon:", salonId);
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/staff/staff_roles?salon_id=${salonId}`
+          API_ENDPOINTS.STAFF.ROLES(salonId)
         );
         const data = await res.json();
         console.log("Roles loaded:", data);
@@ -98,7 +99,7 @@ const AddStaffModal: React.FC<AddStaffModalProps> = ({
     if (!newRole.trim()) return;
     try {
       const res = await fetchWithRefresh(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/staff/staff_roles`,
+        API_ENDPOINTS.STAFF.ROLES(),
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -133,7 +134,7 @@ const AddStaffModal: React.FC<AddStaffModalProps> = ({
 
     try {
       const res = await fetchWithRefresh(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/staff/staff`,
+        API_ENDPOINTS.STAFF.CREATE,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

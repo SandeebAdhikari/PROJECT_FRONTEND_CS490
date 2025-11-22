@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import RoleModal from "@/components/Auth/AuthRoleModal";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { setAuthCookie } from "@/libs/auth/cookies";
+import { API_ENDPOINTS } from "@/libs/api/config";
 import {
   auth,
   googleProvider,
@@ -48,7 +49,7 @@ const AuthHeader: React.FC<AuthHeaderProps> = ({ title, subtitle }) => {
       const idToken = await user.getIdToken();
 
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/auth/verify-firebase`,
+        API_ENDPOINTS.AUTH.VERIFY_FIREBASE,
         {
           method: "POST",
           headers: {
@@ -105,7 +106,7 @@ const AuthHeader: React.FC<AuthHeaderProps> = ({ title, subtitle }) => {
 
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/auth/set-role`,
+        API_ENDPOINTS.AUTH.SET_ROLE,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
