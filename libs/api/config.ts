@@ -41,7 +41,11 @@ export const API_ENDPOINTS = {
     DELETE: (id: number) => `${API_BASE_URL}/api/shop/products/${id}`,
   },
   APPOINTMENTS: {
-    BOOK: `${API_BASE_URL}/api/appointments`,
+    BOOK: `${API_BASE_URL}/api/appointments/create`,
+  },
+  PAYMENTS: {
+    CHECKOUT: `${API_BASE_URL}/api/payments/checkout`,
+    SALON_PAYMENTS: (salonId: number | string) => `${API_BASE_URL}/api/payments/salon/${salonId}`,
   },
   SALONS: {
     CREATE: `${API_BASE_URL}/api/salons`,
