@@ -6,6 +6,7 @@ import { Calendar, Clock, DollarSign, User, Scissors } from "lucide-react";
 import { bookAppointment } from "@/libs/api";
 import { API_ENDPOINTS, fetchConfig } from "@/libs/api/config";
 import data from "@/data/data.json";
+import { useCart } from "@/hooks/useCart";
 
 interface Staff {
   id: number;
@@ -45,6 +46,7 @@ interface BackendService {
 const BookingContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const cart = useCart();
 
   const salonId = searchParams.get("salonId") || "1";
   const preSelectedService = searchParams.get("service") || "";
@@ -81,20 +83,13 @@ const BookingContent = () => {
         const token =
           typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
+        // Fetch without auth header - these are public endpoints
         const [staffResponse, servicesResponse] = await Promise.all([
           fetch(API_ENDPOINTS.SALONS.STAFF(salonId), {
             ...fetchConfig,
-            headers: {
-              ...fetchConfig.headers,
-              ...(token ? { Authorization: `Bearer ${token}` } : {}),
-            },
           }),
           fetch(API_ENDPOINTS.SALONS.SERVICES(salonId), {
             ...fetchConfig,
-            headers: {
-              ...fetchConfig.headers,
-              ...(token ? { Authorization: `Bearer ${token}` } : {}),
-            },
           }),
         ]);
 
@@ -211,7 +206,7 @@ const BookingContent = () => {
     try {
       const scheduledTime = `${formData.date}T${formData.time}:00`;
 
-      await bookAppointment({
+      const result = await bookAppointment({
         salon_id: parseInt(salonId),
         staff_id: parseInt(formData.staffId),
         service_id: parseInt(formData.serviceId),
@@ -220,11 +215,34 @@ const BookingContent = () => {
         notes: formData.notes,
       });
 
-      alert("Appointment booked successfully!");
-      router.push("/customer/my-profile");
+      // Add appointment to cart
+      const appointmentId = result.appointmentId || result.appointment_id || result.id;
+      if (appointmentId && selectedService && selectedStaff) {
+        cart.addService({
+          appointment_id: appointmentId,
+          salon_id: parseInt(salonId),
+          salon_name: "Salon", // You might want to fetch this
+          service_id: parseInt(formData.serviceId),
+          service_name: selectedService.name,
+          staff_id: parseInt(formData.staffId),
+          staff_name: selectedStaff.name,
+          scheduled_time: scheduledTime,
+          price: selectedService.price,
+          notes: formData.notes,
+        });
+
+        // Redirect to cart
+        alert("Appointment added to cart!");
+        router.push("/customer/cart");
+      } else {
+        alert("Appointment booked successfully!");
+        router.push("/customer/my-profile");
+      }
     } catch (err) {
+      console.error('🔴 Booking error caught:', err);
       const errorMessage =
         err instanceof Error ? err.message : "Failed to book appointment";
+      console.error('🔴 Error message:', errorMessage);
       setError(errorMessage);
 
       if (errorMessage.includes("login")) {

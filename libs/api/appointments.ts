@@ -1,3 +1,5 @@
+"use client";
+
 import { API_ENDPOINTS, fetchConfig } from './config';
 
 export interface BookAppointmentData {
@@ -7,6 +9,8 @@ export interface BookAppointmentData {
   scheduled_time: string;
   price?: number;
   notes?: string;
+  email?: string;
+  phone?: string;
 }
 
 export interface Appointment {
@@ -33,10 +37,37 @@ export interface Appointment {
 
 export const bookAppointment = async (data: BookAppointmentData) => {
   const token = localStorage.getItem('token') || localStorage.getItem('authToken');
-  
+
   if (!token) {
     throw new Error('Please login to book an appointment');
   }
+
+  // Get user info for email and phone (required by backend)
+  const storedUser = localStorage.getItem('user');
+  let email = data.email;
+  let phone = data.phone;
+
+  if (storedUser) {
+    const user = JSON.parse(storedUser);
+    email = email || user.email;
+    phone = phone || user.phone;
+  }
+
+  // Transform snake_case to camelCase for backend
+  const backendData = {
+    salonId: data.salon_id,
+    staffId: data.staff_id,
+    serviceId: data.service_id,
+    scheduledTime: data.scheduled_time,
+    price: data.price,
+    notes: data.notes,
+    email: email,
+    phone: phone,
+  };
+
+  console.log('📤 Booking appointment with data:', backendData);
+  console.log('📍 API endpoint:', API_ENDPOINTS.APPOINTMENTS.BOOK);
+  console.log('🔑 Token:', token ? 'Present' : 'Missing');
 
   const response = await fetch(API_ENDPOINTS.APPOINTMENTS.BOOK, {
     ...fetchConfig,
@@ -45,15 +76,29 @@ export const bookAppointment = async (data: BookAppointmentData) => {
       ...fetchConfig.headers,
       'Authorization': `Bearer ${token}`,
     },
-    body: JSON.stringify(data),
+    body: JSON.stringify(backendData),
   });
 
+  console.log('📊 Response status:', response.status, response.statusText);
+
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || 'Failed to book appointment');
+    let error;
+    try {
+      error = await response.json();
+    } catch (e) {
+      error = { error: await response.text() };
+    }
+    console.error('❌ Booking failed:', {
+      status: response.status,
+      statusText: response.statusText,
+      error: error
+    });
+    throw new Error(error.error || error.message || `Failed to book appointment (${response.status})`);
   }
 
-  return response.json();
+  const result = await response.json();
+  console.log('✅ Booking successful:', result);
+  return result;
 };
 
 export const getAppointmentById = async (
