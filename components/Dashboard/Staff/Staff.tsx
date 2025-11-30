@@ -8,6 +8,7 @@ import Header from "@/components/Dashboard/Header";
 import AddStaffModal from "@/components/Dashboard/Staff/AddStaffModal";
 import EditStaffModal from "@/components/Dashboard/Staff/EditStaffModal";
 import { fetchWithRefresh } from "@/libs/api/fetchWithRefresh";
+import { API_ENDPOINTS } from "@/libs/api/config";
 import useSalonId from "@/hooks/useSalonId";
 
 const Staff = () => {
@@ -25,7 +26,7 @@ const Staff = () => {
     if (!salonId) return;
     try {
       const res = await fetchWithRefresh(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/salons/check-owner`,
+        API_ENDPOINTS.SALONS.CHECK_OWNER,
         { credentials: "include" }
       );
       const data = await res.json();
@@ -46,7 +47,7 @@ const Staff = () => {
     setLoading(true);
     try {
       const res = await fetchWithRefresh(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/staff/salon/${salonId}/staff`,
+        API_ENDPOINTS.STAFF.GET_SALON_STAFF(salonId),
         { credentials: "include" }
       );
       const data = await res.json();
@@ -97,7 +98,7 @@ const Staff = () => {
     if (!confirm("Are you sure you want to delete this staff member?")) return;
     try {
       const res = await fetchWithRefresh(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/staff/staff/${id}`,
+        API_ENDPOINTS.STAFF.UPDATE(id),
         { method: "DELETE", credentials: "include" }
       );
       if (res.ok) {

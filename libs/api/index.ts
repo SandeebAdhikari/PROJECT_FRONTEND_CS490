@@ -7,4 +7,6 @@ export * from './history';
 export * from './shop';
 export * from './appointments';
 export * from './salons';
+export * from './account';
+export * from './subscriptions';
 

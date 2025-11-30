@@ -227,10 +227,17 @@ const SignInForm = () => {
         <label className="block mb-1">Email or Phone</label>
         <div className="relative">
           <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
-          <input
-            {...form.register("emailOrPhone")}
-            placeholder="Enter a Email or Phone "
-            className="w-full border border-muted rounded p-2 pl-10 focus:ring-1 focus:ring-primary outline-none"
+          <Controller
+            name="emailOrPhone"
+            control={form.control}
+            defaultValue=""
+            render={({ field }) => (
+              <input
+                {...field}
+                placeholder="Enter a Email or Phone "
+                className="w-full border border-muted rounded p-2 pl-10 focus:ring-1 focus:ring-primary outline-none"
+              />
+            )}
           />
         </div>
         {form.formState.errors.emailOrPhone && (

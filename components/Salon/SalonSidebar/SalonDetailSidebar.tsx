@@ -2,15 +2,27 @@
 
 import React from "react";
 import SidebarOpeningHours from "@/components/Salon/SalonSidebar/SidebarOpeningHours";
-import SidebarLocationCard from "@/components/Salon/SalonSidebar/SidebarLocationCard";
 import SidebarContactCard from "@/components/Salon/SalonSidebar/SidebarContactCard";
 
-const SalonDetailSidebar = () => {
+interface SalonDetailSidebarProps {
+  salon?: {
+    salon_id?: number;
+    id?: string;
+    address?: string;
+    city?: string;
+    phone?: string;
+    email?: string;
+  };
+  businessHours?: any;
+}
+
+const SalonDetailSidebar: React.FC<SalonDetailSidebarProps> = ({ salon, businessHours }) => {
+  const salonId = salon?.salon_id || salon?.id;
+
   return (
     <aside className="space-y-6">
-      <SidebarLocationCard />
-      <SidebarOpeningHours />
-      <SidebarContactCard />
+      <SidebarOpeningHours salonId={salonId} businessHours={businessHours} />
+      <SidebarContactCard salon={salon} />
     </aside>
   );
 };

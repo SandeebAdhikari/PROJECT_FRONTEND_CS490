@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { X } from "lucide-react";
 import { fetchWithRefresh } from "@/libs/api/fetchWithRefresh";
+import { API_ENDPOINTS } from "@/libs/api/config";
 
 interface AddCustomerModalProps {
   isOpen: boolean;
@@ -54,7 +55,7 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
     setMessage(null);
     try {
       const res = await fetchWithRefresh(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/users/salon-customers`,
+        API_ENDPOINTS.USERS.SALON_CUSTOMERS(),
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

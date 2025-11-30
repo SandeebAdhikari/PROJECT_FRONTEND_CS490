@@ -2,8 +2,9 @@
 
 import NextImage from "next/image";
 import Icon9 from "@/public/icons/9.png";
-import { Bell, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import useSalonId from "@/hooks/useSalonId";
+import NotificationBell from "@/components/Notifications/NotificationBell";
 
 const SalonNavBar = () => {
   const { salonName, ownerInitials, ownerName } = useSalonId();
@@ -47,9 +48,7 @@ const SalonNavBar = () => {
           </div>
         </div>
 
-        <div className="flex w-10  h-10 rounded-full hover:border hover:border-border items-center justify-center">
-          <Bell className="w-5 h-5" />
-        </div>
+        <NotificationBell />
 
         <button
           onClick={() => {

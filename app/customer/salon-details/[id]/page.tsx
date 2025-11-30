@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import data from "@/data/data.json";
 import { API_ENDPOINTS } from "@/libs/api/config";
 
 import SalonDetailNavbar from "@/components/Salon/SalonDetailNavBar";
@@ -12,7 +11,7 @@ import SalonDetailBookingPolicy from "@/components/Salon/SalonDetailBookingPolic
 import SalonDetailServices from "@/components/Salon/SalonDetailServices";
 import SalonDetailStaffProfile from "@/components/Salon/SalonDetailStaffProfile";
 import SalonDetailReview from "@/components/Salon/SalonDetailReviews";
-import SalonDetailExploreOther from "@/components/Salon/SalonDetailExploreOther";
+import SalonDetailGallery from "@/components/Salon/SalonDetailGallery";
 
 interface Salon {
   id?: string;
@@ -30,6 +29,7 @@ interface Salon {
   phone?: string;
   email?: string;
   website?: string;
+  amenities?: string[];
 }
 
 const SalonDetailsPage: React.FC<{ params: Promise<{ id: string }> }> = ({
@@ -39,53 +39,78 @@ const SalonDetailsPage: React.FC<{ params: Promise<{ id: string }> }> = ({
   const salonId = String(unwrappedParams.id);
 
   const [salon, setSalon] = useState<Salon | null>(null);
+  const [businessHours, setBusinessHours] = useState<any>(null);
+  const [bookingSettings, setBookingSettings] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchSalon = async () => {
       try {
-        // Try to fetch from backend
-        const response = await fetch(`${API_ENDPOINTS.SALONS.LIST}/${salonId}`);
+        // Fetch from backend public endpoint
+        const response = await fetch(API_ENDPOINTS.SALONS.GET_PUBLIC(salonId));
         if (response.ok) {
           const backendSalon = await response.json();
           setSalon(backendSalon);
+          if (backendSalon.businessHours) {
+            setBusinessHours(backendSalon.businessHours);
+          }
+          if (backendSalon.bookingSettings) {
+            setBookingSettings(backendSalon.bookingSettings);
+          }
         } else {
-          // Fallback to mock data if backend doesn't have it
-          const mockSalon = data.salons.find((s: Salon) => s.id === salonId);
-          setSalon(mockSalon || null);
+          const errorData = await response.json().catch(() => ({ error: response.statusText }));
+          console.error("Failed to fetch salon:", errorData.error || response.statusText);
+          // Set error message if provided by backend
+          if (errorData.message) {
+            setErrorMessage(errorData.message);
+          } else if (errorData.error) {
+            setErrorMessage(errorData.error);
+          }
+          // Set salon to null so the error message shows
+          setSalon(null);
         }
       } catch (error) {
         console.error("Error fetching salon:", error);
-        // Fallback to mock data
-        const mockSalon = data.salons.find((s: Salon) => s.id === salonId);
-        setSalon(mockSalon || null);
+        setSalon(null);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchSalon();
+    if (salonId) {
+      fetchSalon();
+    } else {
+      setLoading(false);
+      setSalon(null);
+    }
   }, [salonId]);
 
-  const salonReviewData = salon
-    ? (
-        data.reviews as Record<
-          string,
-          {
-            average: number;
-            totalReviews: number;
-            breakdown: Record<number, number>;
-          }
-        >
-      )[salon.id || salon.salon_id?.toString() || ""]
-    : undefined;
-
   if (loading) {
-    return <div className="p-6 text-center">Loading salon details...</div>;
+    return (
+      <div className="p-6 text-center">
+        <p className="text-muted-foreground">Loading salon details...</p>
+      </div>
+    );
   }
 
   if (!salon) {
-    return <div className="p-6 text-center">Salon not found</div>;
+    return (
+      <div className="p-6 text-center">
+        <h1 className="text-2xl font-bold mb-2">
+          {errorMessage?.includes("not available") ? "Salon Not Available" : "Salon Not Found"}
+        </h1>
+        <p className="text-muted-foreground mb-4">
+          {errorMessage || "The salon you're looking for doesn't exist or is not available."}
+        </p>
+        <a
+          href="/customer"
+          className="text-primary hover:underline font-medium"
+        >
+          ← Back to Salons
+        </a>
+      </div>
+    );
   }
 
   const displayId = salon.id || salon.salon_id?.toString() || salonId;
@@ -96,27 +121,21 @@ const SalonDetailsPage: React.FC<{ params: Promise<{ id: string }> }> = ({
       <div className="flex">
         <div className="p-6 sm:p-8 w-full sm:w-2/3 ">
           <SalonDetailHero salon={salon} />
-          <SalonDetailInfo />
-          <SalonDetailBookingPolicy />
+          <SalonDetailInfo amenities={salon.amenities || []} description={salon.description} />
+          <SalonDetailGallery salonId={displayId} />
+          <SalonDetailBookingPolicy salonId={displayId} bookingSettings={bookingSettings} />
           <SalonDetailServices salonId={displayId} />
           <SalonDetailStaffProfile salonId={displayId} />
 
-          {salonReviewData ? (
-            <SalonDetailReview stats={salonReviewData} />
-          ) : (
-            <div className="bg-card border border-border rounded-2xl p-6 text-center text-muted-foreground mt-5">
-              No review data found for this salon.
-            </div>
-          )}
+          <SalonDetailReview salonId={displayId} />
 
-          <SalonDetailExploreOther currentSalonId={displayId} />
           <div className="block sm:hidden mt-8">
-            <SalonSidebar />
+            <SalonSidebar salon={salon} businessHours={businessHours} />
           </div>
         </div>
 
         <div className="sm:mt-2 hidden sm:block w-1/3 p-6 overflow-y-auto max-h-screen sticky top-0">
-          <SalonSidebar />
+          <SalonSidebar salon={salon} businessHours={businessHours} />
         </div>
       </div>
     </div>

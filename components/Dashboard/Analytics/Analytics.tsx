@@ -13,6 +13,7 @@ import AnalyticsCustomerValue from "./AnalyticsCustomerValue";
 import AnalyticsGrowthOverview from "./AnalyticsGrowthOverview";
 import useSalonId from "@/hooks/useSalonId";
 import { fetchWithRefresh } from "@/libs/api/fetchWithRefresh";
+import { API_ENDPOINTS } from "@/libs/api/config";
 import { DashboardAnalytics } from "@/libs/types/analytics";
 
 const Analytics = () => {
@@ -27,7 +28,7 @@ const Analytics = () => {
     setError(null);
     try {
       const res = await fetchWithRefresh(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/analytics/dashboard?salonId=${salonId}`,
+        API_ENDPOINTS.ANALYTICS.DASHBOARD(salonId),
         { credentials: "include" }
       );
       const payload = await res.json();

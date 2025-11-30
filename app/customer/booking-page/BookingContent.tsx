@@ -30,8 +30,11 @@ interface Service {
 interface BackendStaff {
   staff_id: number;
   full_name?: string;
+  staff_role?: string;
   role?: string;
   specialization?: string;
+  avg_rating?: number;
+  review_count?: number;
 }
 
 interface BackendService {
@@ -83,31 +86,76 @@ const BookingContent = () => {
         const token =
           typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
-        // Fetch without auth header - these are public endpoints
-        const [staffResponse, servicesResponse] = await Promise.all([
-          fetch(API_ENDPOINTS.SALONS.STAFF(salonId), {
-            ...fetchConfig,
+        const staffUrl = API_ENDPOINTS.SALONS.STAFF(salonId);
+        const servicesUrl = API_ENDPOINTS.SALONS.SERVICES(salonId);
+
+        console.log("Fetching staff from:", staffUrl);
+        console.log("Fetching services from:", servicesUrl);
+
+        // Use Promise.allSettled to handle individual failures gracefully
+        const [staffResult, servicesResult] = await Promise.allSettled([
+          fetch(staffUrl, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
           }),
-          fetch(API_ENDPOINTS.SALONS.SERVICES(salonId), {
-            ...fetchConfig,
+          fetch(servicesUrl, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
           }),
         ]);
 
+        // Handle staff response
+        let staffResponse;
+        if (staffResult.status === "fulfilled") {
+          staffResponse = staffResult.value;
+        } else {
+          console.error("Staff fetch failed:", staffResult.reason);
+          // Don't throw - fall back to local data
+          staffResponse = {
+            ok: false,
+            status: 0,
+            json: async () => ({ error: "Network error" }),
+          };
+        }
+
+        // Handle services response
+        let servicesResponse;
+        if (servicesResult.status === "fulfilled") {
+          servicesResponse = servicesResult.value;
+        } else {
+          console.error("Services fetch failed:", servicesResult.reason);
+          // Don't throw - fall back to local data
+          servicesResponse = {
+            ok: false,
+            status: 0,
+            json: async () => ({ error: "Network error" }),
+          };
+        }
+
         if (staffResponse.ok && servicesResponse.ok) {
-          const backendStaff = await staffResponse.json();
+          const staffData = await staffResponse.json();
           const backendServices = await servicesResponse.json();
 
-          const transformedStaff: Staff[] = backendStaff.map(
-            (s: BackendStaff) => ({
-              id: s.staff_id,
-              name: s.full_name || "Stylist",
-              role: s.role || "Stylist",
-              rating: 4.5,
-              reviews: 0,
-              specialties: s.specialization ? [s.specialization] : [],
-              color: "bg-blue-400",
-            })
-          );
+          // Backend returns { staff: [...] }, so extract the array
+          const backendStaff = staffData.staff || staffData || [];
+
+          const transformedStaff: Staff[] = Array.isArray(backendStaff)
+            ? backendStaff.map((s: BackendStaff) => ({
+                id: s.staff_id,
+                name: s.full_name || "Stylist",
+                role: s.staff_role || s.role || "Stylist",
+                rating: s.avg_rating || 4.5,
+                reviews: s.review_count || 0,
+                specialties: s.specialization ? [s.specialization] : [],
+                color: "bg-blue-400",
+              }))
+            : [];
 
           const transformedServices: Service[] = backendServices.map(
             (s: BackendService) => ({
@@ -136,6 +184,25 @@ const BookingContent = () => {
             }
           }
         } else {
+          // If responses are not ok, log the error
+          const staffError = staffResponse.ok
+            ? null
+            : await staffResponse
+                .json()
+                .catch(() => ({ error: `HTTP ${staffResponse.status}` }));
+          const servicesError = servicesResponse.ok
+            ? null
+            : await servicesResponse
+                .json()
+                .catch(() => ({ error: `HTTP ${servicesResponse.status}` }));
+
+          console.error("Failed to fetch salon data:", {
+            staff: staffError,
+            services: servicesError,
+            staffStatus: staffResponse.status,
+            servicesStatus: servicesResponse.status,
+          });
+
           // LOCAL FALLBACK (data.json)
           const staffData =
             (data.staff as Record<string, Staff[]>)[salonId] || [];
@@ -147,6 +214,12 @@ const BookingContent = () => {
       } catch (error) {
         console.error("Error fetching salon data:", error);
 
+        // Show user-friendly error
+        if (error instanceof Error) {
+          setError(`Failed to load salon data: ${error.message}`);
+        }
+
+        // LOCAL FALLBACK (data.json)
         const staffData =
           (data.staff as Record<string, Staff[]>)[salonId] || [];
         const servicesData =
@@ -216,7 +289,8 @@ const BookingContent = () => {
       });
 
       // Add appointment to cart
-      const appointmentId = result.appointmentId || result.appointment_id || result.id;
+      const appointmentId =
+        result.appointmentId || result.appointment_id || result.id;
       if (appointmentId && selectedService && selectedStaff) {
         cart.addService({
           appointment_id: appointmentId,
@@ -239,10 +313,10 @@ const BookingContent = () => {
         router.push("/customer/my-profile");
       }
     } catch (err) {
-      console.error('🔴 Booking error caught:', err);
+      console.error("🔴 Booking error caught:", err);
       const errorMessage =
         err instanceof Error ? err.message : "Failed to book appointment";
-      console.error('🔴 Error message:', errorMessage);
+      console.error("🔴 Error message:", errorMessage);
       setError(errorMessage);
 
       if (errorMessage.includes("login")) {
@@ -254,6 +328,15 @@ const BookingContent = () => {
   };
 
   const minDate = new Date().toISOString().split("T")[0];
+
+  // Helper function to convert 24-hour time to 12-hour format
+  const formatTime12Hour = (time24: string): string => {
+    const [hours, minutes] = time24.split(":");
+    const hour = parseInt(hours, 10);
+    const ampm = hour >= 12 ? "PM" : "AM";
+    const hour12 = hour % 12 || 12;
+    return `${hour12}:${minutes} ${ampm}`;
+  };
 
   // -------------------------
   // RETURN UI
@@ -394,7 +477,7 @@ const BookingContent = () => {
                         : "border-border hover:border-primary/50"
                     }`}
                   >
-                    {slot}
+                    {formatTime12Hour(slot)}
                   </button>
                 ))}
               </div>
@@ -440,7 +523,7 @@ const BookingContent = () => {
                   </p>
                   <p>
                     <span className="text-muted-foreground">Time:</span>{" "}
-                    {formData.time}
+                    {formatTime12Hour(formData.time)}
                   </p>
                   <p>
                     <span className="text-muted-foreground">Duration:</span>{" "}

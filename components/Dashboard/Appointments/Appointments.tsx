@@ -6,6 +6,7 @@ import KPI from "@/components/Dashboard/KPI";
 import Header from "@/components/Dashboard/Header";
 import NewAppointmentModal from "@/components/Dashboard/Appointments/NewAppointmentModal";
 import { fetchWithRefresh } from "@/libs/api/fetchWithRefresh";
+import { API_ENDPOINTS } from "@/libs/api/config";
 import useSalonId from "@/hooks/useSalonId";
 import {
   AppointmentStatus,
@@ -41,7 +42,7 @@ const Appointments = () => {
     setLoading(true);
     try {
       const res = await fetchWithRefresh(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/appointments/salon?salon_id=${salonId}`,
+        API_ENDPOINTS.APPOINTMENTS.GET_SALON(salonId),
         { credentials: "include" }
       );
       const data = await res.json();
@@ -70,7 +71,7 @@ const Appointments = () => {
     if (!salonId) return;
     try {
       const res = await fetchWithRefresh(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/appointments/salon-stats?salon_id=${salonId}`,
+        API_ENDPOINTS.APPOINTMENTS.GET_SALON_STATS(salonId),
         { credentials: "include" }
       );
       const data = await res.json();

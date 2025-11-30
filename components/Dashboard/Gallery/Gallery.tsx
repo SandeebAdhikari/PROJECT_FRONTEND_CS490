@@ -17,11 +17,11 @@ interface Photo {
 const Gallery = () => {
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState(true);
-  const [_showAddModal, setShowAddModal] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [caption, setCaption] = useState("");
-  const [_previewUrl, setPreviewUrl] = useState("");
-  const [_uploading, setUploading] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState("");
+  const [uploading, setUploading] = useState(false);
   const [salonId, setSalonId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -50,7 +50,7 @@ const Gallery = () => {
     }
   };
 
-  const _handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setSelectedFile(file);
@@ -60,7 +60,7 @@ const Gallery = () => {
     }
   };
 
-  const _handleAddPhoto = async () => {
+  const handleAddPhoto = async () => {
     if (!selectedFile || !salonId) return;
 
     setUploading(true);
@@ -108,10 +108,23 @@ const Gallery = () => {
     }
   };
 
-  if (loading) return <p className="text-center mt-6">Loading gallery...</p>;
+  if (loading) {
+    return (
+      <div className="font-inter space-y-6 p-6 sm:p-8">
+        <Header
+          title="Gallery Management"
+          subtitle="Manage your salon's photo gallery"
+          showActions={false}
+        />
+        <div className="bg-card border border-border rounded-2xl p-6">
+          <p className="text-muted-foreground text-center">Loading gallery...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <section className="space-y-6 font-inter max-w-[1600px] mx-auto px-4 pb-8">
+    <div className="font-inter space-y-6 p-6 sm:p-8">
       <Header
         title="Gallery Management"
         subtitle="Manage your salon's photo gallery"
@@ -122,14 +135,14 @@ const Gallery = () => {
       />
 
       {photos.length === 0 ? (
-        <div className="bg-white border border-gray-200 rounded-2xl p-12 text-center">
-          <ImageIcon className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-          <p className="text-gray-500 mb-6">
+        <div className="bg-card border border-border rounded-2xl p-12 text-center">
+          <ImageIcon className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+          <p className="text-muted-foreground mb-6">
             Your gallery is empty. Add your first photo to get started.
           </p>
           <button
             onClick={() => setShowAddModal(true)}
-            className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark"
+            className="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary-dark transition-smooth"
           >
             Add First Photo
           </button>
@@ -139,7 +152,7 @@ const Gallery = () => {
           {photos.map((photo) => (
             <div
               key={photo.photo_id}
-              className="bg-white border-2 border-gray-200 rounded-xl overflow-hidden group relative hover:shadow-lg hover:border-primary/30 transition-all duration-200"
+              className="bg-card border-2 border-border rounded-xl overflow-hidden group relative hover:shadow-lg hover:border-primary/30 transition-smooth"
             >
               <div className="relative aspect-square">
                 <Image
@@ -150,7 +163,7 @@ const Gallery = () => {
                 />
                 <button
                   onClick={() => handleDeletePhoto(photo.photo_id)}
-                  className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity shadow-lg hover:bg-red-600"
+                  className="absolute top-2 right-2 p-2 bg-destructive text-destructive-foreground rounded-lg opacity-0 group-hover:opacity-100 transition-smooth shadow-lg hover:bg-destructive/90"
                   aria-label="Delete photo"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
@@ -159,11 +172,11 @@ const Gallery = () => {
 
               <div className="p-3">
                 {photo.caption && (
-                  <p className="text-xs text-gray-700 font-medium truncate">
+                  <p className="text-xs text-foreground font-medium truncate">
                     {photo.caption}
                   </p>
                 )}
-                <p className="text-[10px] text-gray-400 mt-1">
+                <p className="text-[10px] text-muted-foreground mt-1">
                   {new Date(photo.uploaded_at).toLocaleDateString()}
                 </p>
               </div>
@@ -172,8 +185,73 @@ const Gallery = () => {
         </div>
       )}
 
-      {/* Modal omitted for brevity (you can keep your existing UI) */}
-    </section>
+      {/* Add Photo Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-card border border-border rounded-2xl p-6 max-w-md w-full space-y-4">
+            <h3 className="text-lg font-bold text-foreground">Add Photo to Gallery</h3>
+            
+            {previewUrl && (
+              <div className="relative w-full h-48 rounded-lg overflow-hidden border border-border">
+                <Image
+                  src={previewUrl}
+                  alt="Preview"
+                  fill
+                  className="object-cover"
+                />
+              </div>
+            )}
+
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">
+                Select Photo
+              </label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileSelect}
+                className="w-full text-sm text-foreground file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary-dark transition-smooth"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">
+                Caption (optional)
+              </label>
+              <input
+                type="text"
+                value={caption}
+                onChange={(e) => setCaption(e.target.value)}
+                placeholder="Add a caption..."
+                className="w-full rounded-lg border border-border bg-background text-foreground px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => {
+                  setShowAddModal(false);
+                  setSelectedFile(null);
+                  setCaption("");
+                  setPreviewUrl("");
+                }}
+                className="px-4 py-2 rounded-lg border border-border bg-background text-foreground hover:bg-muted transition-smooth disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={uploading}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAddPhoto}
+                disabled={!selectedFile || uploading}
+                className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary-dark transition-smooth disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {uploading ? "Uploading..." : "Upload Photo"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
 

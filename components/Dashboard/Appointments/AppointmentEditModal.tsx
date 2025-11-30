@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import DatePicker from "react-datepicker";
 import { fetchWithRefresh } from "@/libs/api/fetchWithRefresh";
+import { API_ENDPOINTS } from "@/libs/api/config";
 import {
   AppointmentStatus,
   appointmentStatusOptions,
@@ -73,15 +74,15 @@ const AppointmentEditModal = ({
       try {
         const [apptRes, staffRes, serviceRes] = await Promise.all([
           fetchWithRefresh(
-            `${process.env.NEXT_PUBLIC_API_URL}/api/appointments/${appointmentId}`,
+            API_ENDPOINTS.APPOINTMENTS.GET_BY_ID(appointmentId),
             { credentials: "include" }
           ),
           fetchWithRefresh(
-            `${process.env.NEXT_PUBLIC_API_URL}/api/salons/${salonId}/staff`,
+            API_ENDPOINTS.STAFF.GET_SALON_STAFF(salonId),
             { credentials: "include" }
           ),
           fetchWithRefresh(
-            `${process.env.NEXT_PUBLIC_API_URL}/api/salons/${salonId}/services`,
+            API_ENDPOINTS.SALONS.SERVICES(salonId),
             { credentials: "include" }
           ),
         ]);
@@ -166,7 +167,7 @@ const AppointmentEditModal = ({
 
     try {
       const res = await fetchWithRefresh(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/appointments/${appointmentId}`,
+        API_ENDPOINTS.APPOINTMENTS.UPDATE(appointmentId),
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },

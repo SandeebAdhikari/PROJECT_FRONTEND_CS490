@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import { fetchWithRefresh } from "@/libs/api/fetchWithRefresh";
+import { API_ENDPOINTS } from "@/libs/api/config";
 
 const useSalonId = () => {
   const [salonId, setSalonId] = useState<number | null>(null);
@@ -14,7 +15,7 @@ const useSalonId = () => {
     const fetchUserSalon = async () => {
       try {
         const res = await fetchWithRefresh(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/auth/me`,
+          API_ENDPOINTS.AUTH.ME,
           { credentials: "include" }
         );
         const data = await res.json();

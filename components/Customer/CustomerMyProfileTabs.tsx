@@ -12,7 +12,7 @@ import {
 import AppointmentHistory from "@/components/History/AppointmentHistory";
 import { useFavorites } from "@/hooks/useFavorites";
 import SalonCard from "@/components/Salon/SalonCard";
-import data from "@/data/data.json";
+import { API_ENDPOINTS, fetchConfig } from "@/libs/api/config";
 
 type TabType = "upcoming" | "past" | "favorites" | "settings";
 
@@ -80,9 +80,71 @@ const FavoritesContent: React.FC<FavoritesContentProps> = ({
   toggleFavorite,
   isFavorite,
 }) => {
-  const favoriteSalons = data.salons.filter((salon) =>
-    favorites.includes(salon.id)
-  );
+  const [favoriteSalons, setFavoriteSalons] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchFavoriteSalons = async () => {
+      if (favorites.length === 0) {
+        setFavoriteSalons([]);
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        setError("");
+        const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+        
+        // Fetch all salons and filter by favorites
+        const response = await fetch(API_ENDPOINTS.SALONS.LIST, {
+          ...fetchConfig,
+          headers: {
+            ...fetchConfig.headers,
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+        });
+
+        if (response.ok) {
+          const allSalons = await response.json();
+          // Filter to only show favorited salons
+          const filtered = allSalons.filter((salon: any) => 
+            favorites.includes(String(salon.salon_id || salon.id))
+          );
+          setFavoriteSalons(filtered);
+        } else {
+          const errorData = await response.json().catch(() => ({}));
+          setError(errorData.error || "Failed to load favorite salons");
+        }
+      } catch (err) {
+        console.error("Error fetching favorite salons:", err);
+        setError("Error loading favorite salons. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFavoriteSalons();
+  }, [favorites]);
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 sm:py-20">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+        <p className="text-muted-foreground">Loading favorites...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-600">
+        <p className="font-semibold mb-2">Error loading favorites:</p>
+        <p>{error}</p>
+      </div>
+    );
+  }
 
   if (favoriteSalons.length === 0) {
     return (
@@ -122,22 +184,25 @@ const FavoritesContent: React.FC<FavoritesContentProps> = ({
     <div>
       <h2 className="text-2xl font-bold mb-6">Your Favorite Salons</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
-        {favoriteSalons.map((salon) => (
-          <SalonCard
-            key={salon.id}
-            id={salon.id}
-            name={salon.name}
-            city={salon.city}
-            description={salon.description}
-            category={salon.category}
-            rating={salon.rating}
-            totalReviews={salon.totalReviews}
-            priceFrom={salon.priceFrom}
-            imageUrl={salon.imageUrl}
-            isFavorite={isFavorite(salon.id)}
-            onToggleFavorite={toggleFavorite}
-          />
-        ))}
+        {favoriteSalons.map((salon) => {
+          const salonId = String(salon.salon_id || salon.id);
+          return (
+            <SalonCard
+              key={salonId}
+              id={salonId}
+              name={salon.name || salon.salon_name}
+              city={salon.city}
+              description={salon.description}
+              category={salon.category}
+              rating={salon.rating || 0}
+              totalReviews={salon.totalReviews || 0}
+              priceFrom={salon.priceFrom || 0}
+              imageUrl={salon.profile_picture || salon.imageUrl}
+              isFavorite={isFavorite(salonId)}
+              onToggleFavorite={toggleFavorite}
+            />
+          );
+        })}
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { API_ENDPOINTS, fetchConfig } from './config';
+import { API_ENDPOINTS, fetchConfig } from "./config";
 
 export interface BookAppointmentData {
   salon_id: number;
@@ -36,50 +36,58 @@ export interface Appointment {
 }
 
 export const bookAppointment = async (data: BookAppointmentData) => {
-  const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+  const token =
+    localStorage.getItem("token") || localStorage.getItem("authToken");
 
   if (!token) {
-    throw new Error('Please login to book an appointment');
+    throw new Error("Please login to book an appointment");
   }
 
-  // Get user info for email and phone (required by backend)
-  const storedUser = localStorage.getItem('user');
-  let email = data.email;
-  let phone = data.phone;
+  // Get user info from token or localStorage
+  let userEmail = data.email;
+  let userPhone = data.phone;
 
-  if (storedUser) {
-    const user = JSON.parse(storedUser);
-    email = email || user.email;
-    phone = phone || user.phone;
+  if (!userEmail || !userPhone) {
+    try {
+      // Try to decode JWT to get user info
+      const tokenParts = token.split(".");
+      if (tokenParts.length === 3) {
+        const payload = JSON.parse(atob(tokenParts[1]));
+        userEmail = userEmail || payload.email || payload.user_email;
+        userPhone = userPhone || payload.phone || payload.user_phone;
+      }
+    } catch (e) {
+      // If JWT decode fails, try localStorage
+      userEmail = userEmail || localStorage.getItem("userEmail") || "";
+      userPhone = userPhone || localStorage.getItem("userPhone") || "";
+    }
   }
 
-  // Transform snake_case to camelCase for backend
-  const backendData = {
+  // Transform field names to match backend expectations
+  const requestBody: any = {
     salonId: data.salon_id,
     staffId: data.staff_id,
     serviceId: data.service_id,
     scheduledTime: data.scheduled_time,
     price: data.price,
     notes: data.notes,
-    email: email,
-    phone: phone,
   };
 
-  console.log('📤 Booking appointment with data:', backendData);
-  console.log('📍 API endpoint:', API_ENDPOINTS.APPOINTMENTS.BOOK);
-  console.log('🔑 Token:', token ? 'Present' : 'Missing');
+  // Add email and phone if available
+  if (userEmail) requestBody.email = userEmail;
+  if (userPhone) requestBody.phone = userPhone;
 
   const response = await fetch(API_ENDPOINTS.APPOINTMENTS.BOOK, {
     ...fetchConfig,
-    method: 'POST',
+    method: "POST",
     headers: {
       ...fetchConfig.headers,
-      'Authorization': `Bearer ${token}`,
+      Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify(backendData),
+    body: JSON.stringify(requestBody),
   });
 
-  console.log('📊 Response status:', response.status, response.statusText);
+  console.log("📊 Response status:", response.status, response.statusText);
 
   if (!response.ok) {
     let error;
@@ -88,16 +96,20 @@ export const bookAppointment = async (data: BookAppointmentData) => {
     } catch (e) {
       error = { error: await response.text() };
     }
-    console.error('❌ Booking failed:', {
+    console.error("❌ Booking failed:", {
       status: response.status,
       statusText: response.statusText,
-      error: error
+      error: error,
     });
-    throw new Error(error.error || error.message || `Failed to book appointment (${response.status})`);
+    throw new Error(
+      error.error ||
+        error.message ||
+        `Failed to book appointment (${response.status})`
+    );
   }
 
   const result = await response.json();
-  console.log('✅ Booking successful:', result);
+  console.log("✅ Booking successful:", result);
   return result;
 };
 
@@ -133,29 +145,110 @@ export const getAppointmentById = async (
 };
 
 // get appointments for salon (owner/staff only)
-export async function getSalonAppointments(): Promise<{ appointments?: Appointment[]; error?: string }> {
+export async function getSalonAppointments(
+  salonId: number | string
+): Promise<{ appointments?: Appointment[]; error?: string }> {
   try {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (!token) {
-      return { error: 'Not authenticated' };
+      return { error: "Not authenticated" };
     }
 
-    const response = await fetch(`${API_ENDPOINTS.APPOINTMENTS.BOOK}/salon`, {
-      ...fetchConfig,
-      headers: {
-        ...fetchConfig.headers,
-        'Authorization': `Bearer ${token}`,
-      },
-    });
+    const response = await fetch(
+      API_ENDPOINTS.APPOINTMENTS.GET_SALON(salonId),
+      {
+        ...fetchConfig,
+        headers: {
+          ...fetchConfig.headers,
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
     const result = await response.json();
 
     if (!response.ok) {
-      return { error: result.error || 'Failed to fetch appointments' };
+      return { error: result.error || "Failed to fetch appointments" };
     }
 
     return { appointments: Array.isArray(result) ? result : [] };
   } catch (error) {
-    return { error: 'Network error. Please try again.' };
+    return { error: "Network error. Please try again." };
+  }
+}
+
+// Update appointment status (approve/deny/confirm/cancel)
+export async function updateAppointmentStatus(
+  appointmentId: number,
+  status: "pending" | "confirmed" | "cancelled" | "completed"
+): Promise<{ message?: string; error?: string }> {
+  try {
+    const token =
+      localStorage.getItem("token") || localStorage.getItem("authToken");
+    if (!token) {
+      return { error: "Not authenticated" };
+    }
+
+    const response = await fetch(
+      `${API_ENDPOINTS.APPOINTMENTS.UPDATE(appointmentId)}`,
+      {
+        ...fetchConfig,
+        method: "PUT",
+        headers: {
+          ...fetchConfig.headers,
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ status }),
+      }
+    );
+
+    let result;
+    let responseText = "";
+    try {
+      responseText = await response.text();
+      result = responseText ? JSON.parse(responseText) : {};
+    } catch (e) {
+      console.error(
+        "Failed to parse response:",
+        e,
+        "Response text:",
+        responseText
+      );
+      result = {
+        error: `Server error (${response.status}): ${
+          responseText || "Empty response"
+        }`,
+      };
+    }
+
+    if (!response.ok) {
+      const errorDetails = {
+        status: response.status,
+        statusText: response.statusText,
+        result,
+        responseText,
+        url: `${API_ENDPOINTS.APPOINTMENTS.UPDATE(appointmentId)}`,
+      };
+      console.error("Update appointment error:", errorDetails);
+
+      // Return a more descriptive error
+      const errorMessage =
+        result.error ||
+        result.message ||
+        `Failed to update appointment (${response.status}${
+          responseText ? ": " + responseText : ""
+        })`;
+      return { error: errorMessage };
+    }
+
+    return { message: result.message || "Appointment updated successfully" };
+  } catch (error) {
+    console.error("Network error:", error);
+    return {
+      error:
+        error instanceof Error
+          ? error.message
+          : "Network error. Please try again.",
+    };
   }
 }

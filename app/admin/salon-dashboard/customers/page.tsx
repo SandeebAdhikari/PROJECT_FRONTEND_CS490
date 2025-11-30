@@ -8,6 +8,7 @@ import CustomerCard from "@/components/Dashboard/Customer/CustomerListTable";
 import Header from "@/components/Dashboard/Header";
 import { UserPlus } from "lucide-react";
 import { fetchWithRefresh } from "@/libs/api/fetchWithRefresh";
+import { API_ENDPOINTS } from "@/libs/api/config";
 import useSalonId from "@/hooks/useSalonId";
 import AddCustomerModal from "@/components/Dashboard/Customer/AddCustomerModal";
 
@@ -44,11 +45,11 @@ const CustomersPage = () => {
     setError(null);
     try {
       const statsPromise = fetchWithRefresh(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/users/salon-customers/stats?salon_id=${salonId}`,
+        API_ENDPOINTS.USERS.SALON_CUSTOMERS_STATS(salonId),
         { credentials: "include" }
       );
       const directoryPromise = fetchWithRefresh(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/users/salon-customers/directory?salon_id=${salonId}`,
+        API_ENDPOINTS.USERS.SALON_CUSTOMERS_DIRECTORY(salonId),
         { credentials: "include" }
       );
 

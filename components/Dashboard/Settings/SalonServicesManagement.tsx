@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { Plus, Edit2, Trash2, Scissors } from "lucide-react";
 import { API_ENDPOINTS, fetchConfig } from "@/libs/api/config";
+import { checkOwnerSalon } from "@/libs/api/salons";
 
 interface Service {
   service_id: number;
@@ -18,13 +19,13 @@ const SalonServicesManagement = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingService, setEditingService] = useState<Service | null>(null);
-  const [salonId, setSalonId] = useState<string | null>(null);
+  const [salonId, setSalonId] = useState<number | string | null>(null);
 
   const [formData, setFormData] = useState({
     name: "",
     category: "Haircuts",
-    duration: 30,
-    price: 0,
+    duration: "",
+    price: "",
   });
 
   const categories = [
@@ -38,9 +39,17 @@ const SalonServicesManagement = () => {
   ];
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      setSalonId(localStorage.getItem("salon_id"));
-    }
+    const fetchSalonId = async () => {
+      try {
+        const result = await checkOwnerSalon();
+        if (result.hasSalon && result.salon?.salon_id) {
+          setSalonId(result.salon.salon_id);
+        }
+      } catch (error) {
+        console.error("Error fetching salon:", error);
+      }
+    };
+    fetchSalonId();
   }, []);
 
   useEffect(() => {
@@ -50,7 +59,7 @@ const SalonServicesManagement = () => {
   // ----------------------------
   // FETCH SERVICES
   // ----------------------------
-  const fetchServices = async (currentSalonId: string) => {
+  const fetchServices = async (currentSalonId: number | string) => {
     try {
       const token = localStorage.getItem("token");
 
@@ -102,20 +111,22 @@ const SalonServicesManagement = () => {
           salon_id: salonId,
           custom_name: formData.name,
           category: formData.category,
-          duration: formData.duration,
-          price: formData.price,
+          duration: Number(formData.duration),
+          price: Number(formData.price),
         }),
       });
 
       if (!response.ok) {
         const err = await response.json();
-        alert(err.error || "Failed to save service");
+        const errorMessage = err.error || err.message || "Failed to save service";
+        console.error("Service creation error:", err);
+        alert(errorMessage);
         return;
       }
 
       setShowModal(false);
       setEditingService(null);
-      setFormData({ name: "", category: "Haircuts", duration: 30, price: 0 });
+      setFormData({ name: "", category: "Haircuts", duration: "", price: "" });
       fetchServices(salonId);
     } catch (error) {
       console.error("Error saving service:", error);
@@ -169,7 +180,7 @@ const SalonServicesManagement = () => {
   // ----------------------------
   const openAddModal = () => {
     setEditingService(null);
-    setFormData({ name: "", category: "Haircuts", duration: 30, price: 0 });
+    setFormData({ name: "", category: "Haircuts", duration: "", price: "" });
     setShowModal(true);
   };
 
@@ -181,7 +192,7 @@ const SalonServicesManagement = () => {
   // RENDER UI
   // ----------------------------
   return (
-    <div className="bg-white border border-border rounded-2xl p-6 col-span-2">
+    <div className="bg-card border border-border rounded-2xl p-6 col-span-2">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Scissors className="w-5 h-5" />
@@ -190,7 +201,7 @@ const SalonServicesManagement = () => {
 
         <button
           onClick={openAddModal}
-          className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors text-sm font-medium"
+          className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary-dark transition-smooth text-sm font-medium"
         >
           <Plus className="w-4 h-4" />
           Add Service
@@ -198,7 +209,7 @@ const SalonServicesManagement = () => {
       </div>
 
       {services.length === 0 ? (
-        <p className="text-sm text-gray-500 text-center py-8">
+        <p className="text-sm text-muted-foreground text-center py-8">
           No services yet. Add your first service to get started.
         </p>
       ) : (
@@ -206,19 +217,19 @@ const SalonServicesManagement = () => {
           {services.map((service) => (
             <div
               key={service.service_id}
-              className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition"
+              className="flex items-center justify-between p-3 border border-border rounded-lg hover:bg-muted transition-smooth"
             >
               <div className="flex-1">
                 <div className="flex items-center gap-2">
                   <h3 className="font-semibold text-sm">
                     {service.custom_name}
                   </h3>
-                  <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
+                  <span className="text-xs text-muted-foreground bg-secondary px-2 py-0.5 rounded-full">
                     {service.category_name}
                   </span>
                 </div>
 
-                <div className="flex items-center gap-4 mt-1 text-xs text-gray-600">
+                <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
                   <span>{service.duration} min</span>
                   <span className="font-semibold text-primary">
                     ${service.price}
@@ -253,7 +264,7 @@ const SalonServicesManagement = () => {
         ----------------------------- */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full">
+          <div className="bg-card border border-border rounded-2xl p-6 max-w-md w-full">
             <h2 className="text-xl font-bold mb-4">
               {editingService ? "Edit Service" : "Add New Service"}
             </h2>
@@ -272,7 +283,7 @@ const SalonServicesManagement = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, name: e.target.value })
                   }
-                  className="w-full px-3 py-2 border rounded-lg"
+                  className="w-full mt-1 rounded-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
                   placeholder="e.g., Haircut"
                 />
               </div>
@@ -288,7 +299,7 @@ const SalonServicesManagement = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, category: e.target.value })
                   }
-                  className="w-full px-3 py-2 border rounded-lg"
+                  className="w-full mt-1 rounded-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
                   title="Service Category"
                 >
                   {categories.map((cat) => (
@@ -312,10 +323,10 @@ const SalonServicesManagement = () => {
                   onChange={(e) =>
                     setFormData({
                       ...formData,
-                      duration: parseInt(e.target.value),
+                      duration: e.target.value,
                     })
                   }
-                  className="w-full px-3 py-2 border rounded-lg"
+                  className="w-full mt-1 rounded-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
                   placeholder="30"
                 />
               </div>
@@ -335,10 +346,10 @@ const SalonServicesManagement = () => {
                   onChange={(e) =>
                     setFormData({
                       ...formData,
-                      price: parseFloat(e.target.value),
+                      price: e.target.value,
                     })
                   }
-                  className="w-full px-3 py-2 border rounded-lg"
+                  className="w-full mt-1 rounded-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
                   placeholder="0.00"
                 />
               </div>
@@ -351,14 +362,14 @@ const SalonServicesManagement = () => {
                     setShowModal(false);
                     setEditingService(null);
                   }}
-                  className="flex-1 px-4 py-2 border rounded-lg hover:bg-gray-50"
+                  className="flex-1 px-4 py-2 border border-border rounded-lg hover:bg-muted transition-smooth"
                 >
                   Cancel
                 </button>
 
                 <button
                   type="submit"
-                  className="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark"
+                  className="flex-1 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary-dark transition-smooth"
                 >
                   {editingService ? "Update" : "Add"} Service
                 </button>

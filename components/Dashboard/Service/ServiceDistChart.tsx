@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 import { PieChart as PieIcon } from "lucide-react";
 import { fetchWithRefresh } from "@/libs/api/fetchWithRefresh";
+import { API_ENDPOINTS } from "@/libs/api/config";
 import useSalonId from "@/hooks/useSalonId";
 
 type ServiceSlice = {
@@ -165,7 +166,7 @@ const ServiceDistribution = () => {
           salon_id: String(salonId),
         }).toString();
         const res = await fetchWithRefresh(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/analytics/service-distribution?${params}`,
+          API_ENDPOINTS.ANALYTICS.SERVICE_DISTRIBUTION(params),
           { credentials: "include" }
         );
         const payload = await res.json();

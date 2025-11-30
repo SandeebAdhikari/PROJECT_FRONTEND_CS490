@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { StaffMember } from "@/components/Dashboard/Staff/Staffcard";
 import { fetchWithRefresh } from "@/libs/api/fetchWithRefresh";
+import { API_ENDPOINTS } from "@/libs/api/config";
 
 interface EditStaffModalProps {
   isOpen: boolean;
@@ -55,7 +56,7 @@ const EditStaffModal: React.FC<EditStaffModalProps> = ({
     const loadRoles = async () => {
       try {
         const res = await fetchWithRefresh(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/staff/staff_roles?salon_id=${salonId}`,
+          API_ENDPOINTS.STAFF.ROLES(salonId),
           { credentials: "include" }
         );
         const data = await res.json();
@@ -94,7 +95,7 @@ const EditStaffModal: React.FC<EditStaffModalProps> = ({
 
     try {
       const res = await fetchWithRefresh(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/staff/staff/${staff.staff_id}`,
+        API_ENDPOINTS.STAFF.UPDATE(staff.staff_id),
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },

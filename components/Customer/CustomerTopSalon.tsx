@@ -1,5 +1,6 @@
 import React, { useMemo } from "react";
 import SalonCard from "../Salon/SalonCard";
+import { API_BASE_URL } from "@/libs/api/config";
 
 interface Salon {
   salon_id?: number;
@@ -77,17 +78,19 @@ const CustomerTopSalon: React.FC<CustomerTopSalonProps> = ({
         </p>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 lg:gap-6 max-w-[1600px] mx-auto">
-        {filteredSalons.map((salon) => {
-          const salonId = salon.salon_id?.toString() || salon.id || "";
+        {filteredSalons.map((salon, index) => {
+          const salonId = salon.salon_id?.toString() || salon.id || `salon-${index}`;
+          // Use combination of salonId and index to ensure unique keys even if salon IDs are duplicated
+          const uniqueKey = `${salonId}-${index}`;
 
           const imageUrl = salon.profile_picture
-            ? `http://localhost:4000${salon.profile_picture}`
+            ? `${API_BASE_URL}${salon.profile_picture}`
             : salon.imageUrl ||
               "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=400&h=300&fit=crop";
 
           return (
             <SalonCard
-              key={salonId}
+              key={uniqueKey}
               id={salonId}
               name={salon.name}
               city={salon.city || "Location TBD"}

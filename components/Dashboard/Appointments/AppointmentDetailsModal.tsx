@@ -10,6 +10,7 @@ import {
   FileText,
 } from "lucide-react";
 import { fetchWithRefresh } from "@/libs/api/fetchWithRefresh";
+import { API_ENDPOINTS } from "@/libs/api/config";
 import {
   APPOINTMENT_STATUS_META,
   AppointmentStatus,
@@ -57,7 +58,7 @@ const AppointmentDetailsModal = ({
       try {
         setLoading(true);
         const res = await fetchWithRefresh(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/appointments/${appointmentId}`,
+          API_ENDPOINTS.APPOINTMENTS.GET_BY_ID(appointmentId),
           { credentials: "include" }
         );
         const data = await res.json();
