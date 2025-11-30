@@ -9,7 +9,17 @@ interface Service {
   service_id: number;
   custom_name: string;
   category_name: string;
+  description: string;
   duration: number;
+  price: number | string;
+}
+
+interface ServiceApiResponse {
+  service_id: number;
+  custom_name: string;
+  category_name: string;
+  description?: string;
+  duration: number | string;
   price: number | string;
 }
 
@@ -25,27 +35,33 @@ export default function SalonDetailServices({ salonId }: { salonId: string }) {
         setLoading(false);
         return;
       }
-
       try {
-        setLoading(true);
-        const response = await fetch(
-          API_ENDPOINTS.SALONS.SERVICES(salonId)
-        );
-        
+        const response = await fetch(API_ENDPOINTS.SALONS.SERVICES(salonId));
         if (response.ok) {
           const data = await response.json();
-          // Ensure price is a number
-          const normalizedServices = Array.isArray(data) 
-            ? data.map((s: any) => ({
+          const normalizedServices = Array.isArray(data)
+            ? data.map((s: ServiceApiResponse) => ({
                 ...s,
-                price: typeof s.price === 'string' ? parseFloat(s.price) || 0 : s.price || 0,
-                duration: typeof s.duration === 'string' ? parseInt(s.duration) || 0 : s.duration || 0,
+                description: s.description || "",
+                price:
+                  typeof s.price === "string"
+                    ? parseFloat(s.price) || 0
+                    : s.price || 0,
+                duration:
+                  typeof s.duration === "string"
+                    ? parseInt(s.duration) || 0
+                    : s.duration || 0,
               }))
             : [];
           setServices(normalizedServices);
         } else {
-          const errorData = await response.json().catch(() => ({ error: response.statusText }));
-          console.error("Failed to fetch services:", errorData.error || response.statusText);
+          const errorData = await response
+            .json()
+            .catch(() => ({ error: response.statusText }));
+          console.error(
+            "Failed to fetch services:",
+            errorData.error || response.statusText
+          );
           setServices([]);
         }
       } catch (error) {
@@ -71,9 +87,9 @@ export default function SalonDetailServices({ salonId }: { salonId: string }) {
       : services.filter((s) => s.category_name === activeCategory);
 
   if (sortBy === "Lowest Price")
-    filtered = [...filtered].sort((a, b) => a.price - b.price);
+    filtered = [...filtered].sort((a, b) => Number(a.price) - Number(b.price));
   if (sortBy === "Highest Price")
-    filtered = [...filtered].sort((a, b) => b.price - a.price);
+    filtered = [...filtered].sort((a, b) => Number(b.price) - Number(a.price));
 
   const groupNames = Array.from(new Set(filtered.map((s) => s.category_name)));
 
@@ -89,7 +105,9 @@ export default function SalonDetailServices({ salonId }: { salonId: string }) {
     return (
       <section className="mt-5 w-full">
         <h2 className="text-2xl font-extrabold mb-6">Our Services</h2>
-        <p className="text-muted-foreground">No services available at this time.</p>
+        <p className="text-muted-foreground">
+          No services available at this time.
+        </p>
       </section>
     );
   }
@@ -138,22 +156,20 @@ export default function SalonDetailServices({ salonId }: { salonId: string }) {
         return (
           <div key={group} className="mb-10">
             <h3 className="text-lg font-semibold mb-4">{group}</h3>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {items.map((service) => (
-                <SalonServiceDetailCard 
-                  key={service.service_id} 
-                  service={{
-                    id: service.service_id,
-                    name: service.custom_name,
-                    category: service.category_name,
-                    duration: `${service.duration} min`,
-                    price: service.price,
-                  }} 
-                  salonId={salonId} 
-                />
-              ))}
-            </div>
+            {items.map((service) => (
+              <SalonServiceDetailCard
+                key={service.service_id}
+                service={{
+                  id: service.service_id,
+                  name: service.custom_name,
+                  category: service.category_name,
+                  description: service.description,
+                  duration: `${service.duration} min`,
+                  price: Number(service.price),
+                }}
+                salonId={salonId}
+              />
+            ))}
           </div>
         );
       })}

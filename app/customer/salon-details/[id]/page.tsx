@@ -136,6 +136,54 @@ const SalonDetailsPage: React.FC<{ params: Promise<{ id: string }> }> = ({
 
   const displayId = salon.id || salon.salon_id?.toString() || salonId;
 
+  // Transform businessHours to match SidebarOpeningHours.BusinessHours type
+  const transformBusinessHours = (
+    hours: BusinessHours | null
+  ):
+    | Record<
+        string,
+        {
+          enabled: boolean;
+          start: string;
+          end: string;
+          open?: string;
+          close?: string;
+        }
+      >
+    | undefined => {
+    if (!hours) return undefined;
+    const result: Record<
+      string,
+      {
+        enabled: boolean;
+        start: string;
+        end: string;
+        open?: string;
+        close?: string;
+      }
+    > = {};
+    Object.entries(hours).forEach(([day, value]) => {
+      if (value) {
+        result[day] = {
+          enabled: !value.closed,
+          start: value.open,
+          end: value.close,
+          open: value.open,
+          close: value.close,
+        };
+      } else {
+        result[day] = {
+          enabled: false,
+          start: "",
+          end: "",
+        };
+      }
+    });
+    return result;
+  };
+
+  const sidebarBusinessHours = transformBusinessHours(businessHours);
+
   return (
     <div className="w-full">
       <SalonDetailNavbar salonName={salon.name} />
@@ -157,12 +205,12 @@ const SalonDetailsPage: React.FC<{ params: Promise<{ id: string }> }> = ({
           <SalonDetailReview salonId={displayId} />
 
           <div className="block sm:hidden mt-8">
-            <SalonSidebar salon={salon} businessHours={businessHours} />
+            <SalonSidebar salon={salon} businessHours={sidebarBusinessHours} />
           </div>
         </div>
 
         <div className="sm:mt-2 hidden sm:block w-1/3 p-6 overflow-y-auto max-h-screen sticky top-0">
-          <SalonSidebar salon={salon} businessHours={businessHours} />
+          <SalonSidebar salon={salon} businessHours={sidebarBusinessHours} />
         </div>
       </div>
     </div>
