@@ -417,19 +417,22 @@ export async function get2FAStatus(): Promise<{
   }
 }
 
-export async function deleteAccount(password: string): Promise<{ message?: string; error?: string }> {
+export async function deleteAccount(
+  password: string
+): Promise<{ message?: string; error?: string }> {
   try {
-    const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+    const token =
+      localStorage.getItem("token") || localStorage.getItem("authToken");
     if (!token) {
-      return { error: 'Not authenticated' };
+      return { error: "Not authenticated" };
     }
 
     const response = await fetch(API_ENDPOINTS.AUTH.DELETE_ACCOUNT, {
       ...fetchConfig,
-      method: 'DELETE',
+      method: "DELETE",
       headers: {
         ...fetchConfig.headers,
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({ password }),
     });
@@ -437,16 +440,18 @@ export async function deleteAccount(password: string): Promise<{ message?: strin
     const result = await response.json();
 
     if (!response.ok) {
-      return { error: result.error || 'Failed to delete account' };
+      return { error: result.error || "Failed to delete account" };
     }
 
     localStorage.clear();
     document.cookie.split(";").forEach((c) => {
-      document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+      document.cookie = c
+        .replace(/^ +/, "")
+        .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
     });
 
     return result;
-  } catch (error) {
-    return { error: 'Network error' };
+  } catch {
+    return { error: "Network error" };
   }
 }

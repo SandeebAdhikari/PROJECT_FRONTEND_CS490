@@ -1,4 +1,4 @@
-import { API_ENDPOINTS, fetchConfig } from './config';
+import { API_ENDPOINTS, fetchConfig } from "./config";
 
 export interface Product {
   product_id: number;
@@ -20,9 +20,11 @@ export interface AddProductData {
   image_url?: string;
 }
 
-export async function getProducts(salonId?: number): Promise<{ products?: Product[]; error?: string }> {
+export async function getProducts(
+  salonId?: number
+): Promise<{ products?: Product[]; error?: string }> {
   try {
-    const url = salonId 
+    const url = salonId
       ? `${API_ENDPOINTS.SHOP.PRODUCTS}?salon_id=${salonId}`
       : API_ENDPOINTS.SHOP.PRODUCTS;
 
@@ -33,16 +35,18 @@ export async function getProducts(salonId?: number): Promise<{ products?: Produc
     const result = await response.json();
 
     if (!response.ok) {
-      return { error: result.error || 'Failed to get products' };
+      return { error: result.error || "Failed to get products" };
     }
 
     return { products: result };
-  } catch (error) {
-    return { error: 'Network error. Please try again.' };
+  } catch {
+    return { error: "Network error. Please try again." };
   }
 }
 
-export async function getProduct(productId: number): Promise<{ product?: Product; error?: string }> {
+export async function getProduct(
+  productId: number
+): Promise<{ product?: Product; error?: string }> {
   try {
     const response = await fetch(API_ENDPOINTS.SHOP.PRODUCT(productId), {
       ...fetchConfig,
@@ -51,28 +55,30 @@ export async function getProduct(productId: number): Promise<{ product?: Product
     const result = await response.json();
 
     if (!response.ok) {
-      return { error: result.error || 'Failed to get product' };
+      return { error: result.error || "Failed to get product" };
     }
 
     return { product: result };
-  } catch (error) {
-    return { error: 'Network error. Please try again.' };
+  } catch {
+    return { error: "Network error. Please try again." };
   }
 }
 
-export async function addProduct(data: AddProductData): Promise<{ product_id?: number; message?: string; error?: string }> {
+export async function addProduct(
+  data: AddProductData
+): Promise<{ product_id?: number; message?: string; error?: string }> {
   try {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (!token) {
-      return { error: 'Not authenticated' };
+      return { error: "Not authenticated" };
     }
 
     const response = await fetch(API_ENDPOINTS.SHOP.ADD, {
       ...fetchConfig,
-      method: 'POST',
+      method: "POST",
       headers: {
         ...fetchConfig.headers,
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(data),
     });
@@ -80,28 +86,31 @@ export async function addProduct(data: AddProductData): Promise<{ product_id?: n
     const result = await response.json();
 
     if (!response.ok) {
-      return { error: result.error || 'Failed to add product' };
+      return { error: result.error || "Failed to add product" };
     }
 
     return result;
-  } catch (error) {
-    return { error: 'Network error. Please try again.' };
+  } catch {
+    return { error: "Network error. Please try again." };
   }
 }
 
-export async function updateProduct(productId: number, data: Partial<AddProductData>): Promise<{ message?: string; error?: string }> {
+export async function updateProduct(
+  productId: number,
+  data: Partial<AddProductData>
+): Promise<{ message?: string; error?: string }> {
   try {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (!token) {
-      return { error: 'Not authenticated' };
+      return { error: "Not authenticated" };
     }
 
     const response = await fetch(API_ENDPOINTS.SHOP.UPDATE(productId), {
       ...fetchConfig,
-      method: 'PUT',
+      method: "PUT",
       headers: {
         ...fetchConfig.headers,
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(data),
     });
@@ -109,40 +118,41 @@ export async function updateProduct(productId: number, data: Partial<AddProductD
     const result = await response.json();
 
     if (!response.ok) {
-      return { error: result.error || 'Failed to update product' };
+      return { error: result.error || "Failed to update product" };
     }
 
     return result;
-  } catch (error) {
-    return { error: 'Network error. Please try again.' };
+  } catch {
+    return { error: "Network error. Please try again." };
   }
 }
 
-export async function deleteProduct(productId: number): Promise<{ message?: string; error?: string }> {
+export async function deleteProduct(
+  productId: number
+): Promise<{ message?: string; error?: string }> {
   try {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (!token) {
-      return { error: 'Not authenticated' };
+      return { error: "Not authenticated" };
     }
 
     const response = await fetch(API_ENDPOINTS.SHOP.DELETE(productId), {
       ...fetchConfig,
-      method: 'DELETE',
+      method: "DELETE",
       headers: {
         ...fetchConfig.headers,
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     });
 
     const result = await response.json();
 
     if (!response.ok) {
-      return { error: result.error || 'Failed to delete product' };
+      return { error: result.error || "Failed to delete product" };
     }
 
     return result;
-  } catch (error) {
-    return { error: 'Network error. Please try again.' };
+  } catch {
+    return { error: "Network error. Please try again." };
   }
 }
-

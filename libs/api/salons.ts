@@ -185,12 +185,16 @@ export async function updateSalon(
 
     const formData = new FormData();
     // Helper to only append non-empty values
-    const appendIfValue = (key, value) => {
-      if (value !== undefined && value !== null && value !== '') {
+    interface AppendIfValue {
+      (key: string, value: string | number | undefined | null): void;
+    }
+
+    const appendIfValue: AppendIfValue = (key, value) => {
+      if (value !== undefined && value !== null && value !== "") {
         formData.append(key, String(value));
       }
     };
-    
+
     // Always send required fields if they exist and are not empty
     appendIfValue("name", data.name);
     appendIfValue("address", data.address);
@@ -203,7 +207,7 @@ export async function updateSalon(
     appendIfValue("description", data.description);
     appendIfValue("email", data.email);
     appendIfValue("website", data.website);
-    
+
     if (profilePicture) {
       formData.append("profile_picture", profilePicture);
     }
@@ -340,7 +344,7 @@ export async function updateSalonBusinessHours(
       console.error("Business hours update error:", {
         status: response.status,
         statusText: response.statusText,
-        error: result
+        error: result,
       });
       return { error: result.error || "Failed to update business hours" };
     }
@@ -368,13 +372,16 @@ export async function getSalonNotificationSettings(
       return { error: "Not authenticated" };
     }
 
-    const response = await fetch(API_ENDPOINTS.SALONS.NOTIFICATION_SETTINGS(salonId), {
-      ...fetchConfig,
-      headers: {
-        ...fetchConfig.headers,
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const response = await fetch(
+      API_ENDPOINTS.SALONS.NOTIFICATION_SETTINGS(salonId),
+      {
+        ...fetchConfig,
+        headers: {
+          ...fetchConfig.headers,
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
     const result = await response.json();
 
@@ -400,23 +407,30 @@ export async function updateSalonNotificationSettings(
       return { error: "Not authenticated" };
     }
 
-    const response = await fetch(API_ENDPOINTS.SALONS.NOTIFICATION_SETTINGS(salonId), {
-      ...fetchConfig,
-      method: "PUT",
-      headers: {
-        ...fetchConfig.headers,
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ notificationSettings }),
-    });
+    const response = await fetch(
+      API_ENDPOINTS.SALONS.NOTIFICATION_SETTINGS(salonId),
+      {
+        ...fetchConfig,
+        method: "PUT",
+        headers: {
+          ...fetchConfig.headers,
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ notificationSettings }),
+      }
+    );
 
     const result = await response.json();
 
     if (!response.ok) {
-      return { error: result.error || "Failed to update notification settings" };
+      return {
+        error: result.error || "Failed to update notification settings",
+      };
     }
 
-    return { message: result.message || "Notification settings updated successfully" };
+    return {
+      message: result.message || "Notification settings updated successfully",
+    };
   } catch (error) {
     console.error("Network error:", error);
     return { error: "Network error. Please try again." };
@@ -504,13 +518,16 @@ export async function getSalonLoyaltySettings(
       return { error: "Not authenticated" };
     }
 
-    const response = await fetch(API_ENDPOINTS.SALONS.LOYALTY_SETTINGS(salonId), {
-      ...fetchConfig,
-      headers: {
-        ...fetchConfig.headers,
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const response = await fetch(
+      API_ENDPOINTS.SALONS.LOYALTY_SETTINGS(salonId),
+      {
+        ...fetchConfig,
+        headers: {
+          ...fetchConfig.headers,
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
     const result = await response.json();
 
@@ -535,15 +552,18 @@ export async function updateSalonLoyaltySettings(
       return { error: "Not authenticated" };
     }
 
-    const response = await fetch(API_ENDPOINTS.SALONS.LOYALTY_SETTINGS(salonId), {
-      ...fetchConfig,
-      method: "PUT",
-      headers: {
-        ...fetchConfig.headers,
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(settings),
-    });
+    const response = await fetch(
+      API_ENDPOINTS.SALONS.LOYALTY_SETTINGS(salonId),
+      {
+        ...fetchConfig,
+        method: "PUT",
+        headers: {
+          ...fetchConfig.headers,
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(settings),
+      }
+    );
 
     const result = await response.json();
 
@@ -551,7 +571,9 @@ export async function updateSalonLoyaltySettings(
       return { error: result.error || "Failed to update loyalty settings" };
     }
 
-    return { message: result.message || "Loyalty settings updated successfully" };
+    return {
+      message: result.message || "Loyalty settings updated successfully",
+    };
   } catch (error) {
     console.error("Network error:", error);
     return { error: "Network error. Please try again." };
@@ -644,13 +666,16 @@ export async function getSalonReviewSettings(
       return { error: "Not authenticated" };
     }
 
-    const response = await fetch(API_ENDPOINTS.SALONS.REVIEW_SETTINGS(salonId), {
-      ...fetchConfig,
-      headers: {
-        ...fetchConfig.headers,
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const response = await fetch(
+      API_ENDPOINTS.SALONS.REVIEW_SETTINGS(salonId),
+      {
+        ...fetchConfig,
+        headers: {
+          ...fetchConfig.headers,
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
     const result = await response.json();
 
@@ -675,15 +700,18 @@ export async function updateSalonReviewSettings(
       return { error: "Not authenticated" };
     }
 
-    const response = await fetch(API_ENDPOINTS.SALONS.REVIEW_SETTINGS(salonId), {
-      ...fetchConfig,
-      method: "PUT",
-      headers: {
-        ...fetchConfig.headers,
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(settings),
-    });
+    const response = await fetch(
+      API_ENDPOINTS.SALONS.REVIEW_SETTINGS(salonId),
+      {
+        ...fetchConfig,
+        method: "PUT",
+        headers: {
+          ...fetchConfig.headers,
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(settings),
+      }
+    );
 
     const result = await response.json();
 
@@ -691,7 +719,9 @@ export async function updateSalonReviewSettings(
       return { error: result.error || "Failed to update review settings" };
     }
 
-    return { message: result.message || "Review settings updated successfully" };
+    return {
+      message: result.message || "Review settings updated successfully",
+    };
   } catch (error) {
     console.error("Network error:", error);
     return { error: "Network error. Please try again." };
@@ -714,13 +744,16 @@ export async function getSalonOperatingPolicies(
       return { error: "Not authenticated" };
     }
 
-    const response = await fetch(API_ENDPOINTS.SALONS.OPERATING_POLICIES(salonId), {
-      ...fetchConfig,
-      headers: {
-        ...fetchConfig.headers,
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const response = await fetch(
+      API_ENDPOINTS.SALONS.OPERATING_POLICIES(salonId),
+      {
+        ...fetchConfig,
+        headers: {
+          ...fetchConfig.headers,
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
     const result = await response.json();
 
@@ -745,15 +778,18 @@ export async function updateSalonOperatingPolicies(
       return { error: "Not authenticated" };
     }
 
-    const response = await fetch(API_ENDPOINTS.SALONS.OPERATING_POLICIES(salonId), {
-      ...fetchConfig,
-      method: "PUT",
-      headers: {
-        ...fetchConfig.headers,
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(policies),
-    });
+    const response = await fetch(
+      API_ENDPOINTS.SALONS.OPERATING_POLICIES(salonId),
+      {
+        ...fetchConfig,
+        method: "PUT",
+        headers: {
+          ...fetchConfig.headers,
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(policies),
+      }
+    );
 
     const result = await response.json();
 
@@ -761,7 +797,9 @@ export async function updateSalonOperatingPolicies(
       return { error: result.error || "Failed to update operating policies" };
     }
 
-    return { message: result.message || "Operating policies updated successfully" };
+    return {
+      message: result.message || "Operating policies updated successfully",
+    };
   } catch (error) {
     console.error("Network error:", error);
     return { error: "Network error. Please try again." };

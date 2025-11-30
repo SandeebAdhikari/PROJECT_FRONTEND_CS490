@@ -56,7 +56,7 @@ export const bookAppointment = async (data: BookAppointmentData) => {
         userEmail = userEmail || payload.email || payload.user_email;
         userPhone = userPhone || payload.phone || payload.user_phone;
       }
-    } catch (e) {
+    } catch {
       // If JWT decode fails, try localStorage
       userEmail = userEmail || localStorage.getItem("userEmail") || "";
       userPhone = userPhone || localStorage.getItem("userPhone") || "";
@@ -64,7 +64,16 @@ export const bookAppointment = async (data: BookAppointmentData) => {
   }
 
   // Transform field names to match backend expectations
-  const requestBody: any = {
+  const requestBody: {
+    salonId: number;
+    staffId?: number;
+    serviceId?: number;
+    scheduledTime: string;
+    price?: number;
+    notes?: string;
+    email?: string;
+    phone?: string;
+  } = {
     salonId: data.salon_id,
     staffId: data.staff_id,
     serviceId: data.service_id,
@@ -93,7 +102,7 @@ export const bookAppointment = async (data: BookAppointmentData) => {
     let error;
     try {
       error = await response.json();
-    } catch (e) {
+    } catch {
       error = { error: await response.text() };
     }
     console.error("❌ Booking failed:", {
@@ -123,7 +132,7 @@ export const getAppointmentById = async (
       return { error: "Please login to view appointments" };
     }
 
-    const response = await fetch(API_ENDPOINTS.APPOINTMENTS.DETAIL(id), {
+    const response = await fetch(API_ENDPOINTS.APPOINTMENTS.GET_BY_ID(id), {
       ...fetchConfig,
       headers: {
         ...fetchConfig.headers,
@@ -172,7 +181,7 @@ export async function getSalonAppointments(
     }
 
     return { appointments: Array.isArray(result) ? result : [] };
-  } catch (error) {
+  } catch {
     return { error: "Network error. Please try again." };
   }
 }
@@ -207,10 +216,9 @@ export async function updateAppointmentStatus(
     try {
       responseText = await response.text();
       result = responseText ? JSON.parse(responseText) : {};
-    } catch (e) {
+    } catch {
       console.error(
         "Failed to parse response:",
-        e,
         "Response text:",
         responseText
       );
