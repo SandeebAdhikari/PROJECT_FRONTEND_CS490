@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Calendar, Clock, DollarSign, User, Scissors } from "lucide-react";
 import { bookAppointment } from "@/libs/api";
-import { API_ENDPOINTS, fetchConfig } from "@/libs/api/config";
+import { API_ENDPOINTS } from "@/libs/api/config";
 import data from "@/data/data.json";
 import { useCart } from "@/hooks/useCart";
 
@@ -449,6 +449,7 @@ const BookingContent = () => {
                 setFormData({ ...formData, date: e.target.value })
               }
               className="w-full px-4 py-2.5 border border-border rounded-lg"
+              placeholder="Select a date"
               required
             />
           </div>
