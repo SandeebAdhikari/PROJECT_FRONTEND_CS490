@@ -1,33 +1,78 @@
 "use client";
 
-import { Bell, LogOut, User } from "lucide-react";
-import Image from "next/image";
+import NextImage from "next/image";
+import Link from "next/link";
+import { User, Bell } from "lucide-react";
+import Icon9 from "@/public/icons/9.png";
 
-export default function AdminHeader({ adminName }: { adminName: string }) {
+type AdminHeaderProps = {
+  adminName: string;
+  notificationCount?: number;
+};
+
+export default function AdminHeader({ adminName, notificationCount = 3 }: AdminHeaderProps) {
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("tempToken");
+    window.location.href = "/sign-in";
+  };
+
   return (
-    <header className="flex items-center justify-between mb-10 pb-4 border-b border-border">
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">
-          Welcome back, <span className="text-primary">{adminName}</span>
-        </h1>
-        <p className="text-muted-foreground mt-1">Here’s your analytics overview.</p>
+    <div
+      className="
+        flex items-center justify-between 
+        w-full px-8 py-4 rounded-3xl mb-6
+        bg-white 
+        border-b border-border 
+        shadow-sm
+      "
+    >
+      {/* LEFT: LOGO + STYGO */}
+      <div className="flex items-center gap-3">
+        <NextImage src={Icon9} alt="logo" width={40} height={40} />
+        <h1 className="text-2xl font-bold text-primary">StyGo Admin</h1>
       </div>
 
-      <div className="flex items-center gap-6">
-        <button className="relative p-2 rounded-xl hover:bg-secondary transition-smooth">
-          <Bell className="text-muted-foreground" size={22} />
-          <span className="absolute top-1 right-1 w-2 h-2 bg-destructive rounded-full" />
-        </button>
+      {/* RIGHT: BELL + PROFILE + LOGOUT */}
+      <div className="flex items-center gap-5">
 
-        <div className="flex items-center gap-2 p-2 px-3 rounded-xl bg-secondary hover:bg-muted transition-smooth">
-          <User size={20} className="text-primary" />
-          <span className="text-foreground text-sm font-medium">{adminName}</span>
-        </div>
+        {/* NOTIFICATION BELL */}
+        <Link href="/sidra/overview/pending-approvals" className="relative">
+          <Bell size={22} className="hover:text-primary transition" />
 
-        <button className="flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl bg-destructive/10 text-destructive hover:bg-destructive/20 transition-smooth">
-          <LogOut size={18} /> Logout
+          {notificationCount > 0 && (
+            <span
+              className="
+                absolute -top-1 -right-2 
+                bg-red-500 text-white 
+                text-[10px] 
+                w-4 h-4 
+                flex items-center justify-center 
+                rounded-full
+              "
+            >
+              {notificationCount}
+            </span>
+          )}
+        </Link>
+
+        {/* ADMIN PROFILE */}
+        <Link
+          href="/sidra/overview/admin"
+          className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-base font-semibold hover:bg-accent transition shadow-sm"
+        >
+          <User size={18} />
+          Admin Profile 
+        </Link>
+
+        {/* LOGOUT BUTTON */}
+        <button
+          onClick={handleLogout}
+          className="px-5 py-2.5 rounded-lg border border-border text-base font-semibold hover:bg-accent transition shadow-sm"
+        >
+          Logout
         </button>
       </div>
-    </header>
+    </div>
   );
 }
