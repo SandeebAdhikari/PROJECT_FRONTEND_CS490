@@ -1,6 +1,8 @@
 "use client";
+export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { Suspense, useState, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   CheckCircle,
@@ -38,7 +40,7 @@ interface PaymentDetails {
   stripe_checkout_session_id: string;
 }
 
-const PaymentSuccessPage = () => {
+const PaymentSuccessContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("session_id");
@@ -431,5 +433,22 @@ const PaymentSuccessPage = () => {
     </div>
   );
 };
+
+const PaymentSuccessPage = () => (
+  <Suspense
+    fallback={
+      <div className="min-h-screen bg-muted flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground font-semibold">
+            Loading payment details...
+          </p>
+        </div>
+      </div>
+    }
+  >
+    <PaymentSuccessContent />
+  </Suspense>
+);
 
 export default PaymentSuccessPage;

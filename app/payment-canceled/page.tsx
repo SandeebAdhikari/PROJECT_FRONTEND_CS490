@@ -1,4 +1,6 @@
 "use client";
+export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
 
 import React from "react";
 import { useRouter } from "next/navigation";
@@ -16,13 +18,15 @@ const PaymentCanceledPage = () => {
 
         <h1 className="text-3xl font-bold mb-3">Payment Canceled</h1>
         <p className="text-muted-foreground text-lg mb-6">
-          Your payment was not completed. Your appointment is still on hold and will need to be paid for to confirm.
+          Your payment was not completed. Your appointment is still on hold and
+          will need to be paid for to confirm.
         </p>
 
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 text-left">
           <p className="text-sm text-blue-800">
-            <span className="font-semibold">Note:</span> Your appointment slot is temporarily reserved.
-            Please complete the payment within 24 hours to confirm your booking.
+            <span className="font-semibold">Note:</span> Your appointment slot
+            is temporarily reserved. Please complete the payment within 24 hours
+            to confirm your booking.
           </p>
         </div>
 
@@ -54,7 +58,10 @@ const PaymentCanceledPage = () => {
         <div className="mt-6 pt-6 border-t border-border">
           <p className="text-sm text-muted-foreground">
             Need help?{" "}
-            <a href="mailto:support@salon.com" className="text-primary hover:underline font-semibold">
+            <a
+              href="mailto:support@salon.com"
+              className="text-primary hover:underline font-semibold"
+            >
               Contact Support
             </a>
           </p>
