@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Lock, Eye, EyeOff, Loader2, CheckCircle2 } from "lucide-react";
 import { setCustomerPassword } from "@/libs/api/auth";
@@ -8,7 +8,7 @@ import { setAuthCookie } from "@/libs/auth/cookies";
 
 const MIN_PASSWORD_LENGTH = 8;
 
-export default function SetupPasswordPage() {
+function SetupPasswordContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token") || "";
@@ -189,5 +189,22 @@ export default function SetupPasswordPage() {
         </button>
       </form>
     </div>
+  );
+}
+
+export default function SetupPasswordPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-muted px-4">
+          <div className="max-w-md w-full bg-card border border-border rounded-xl shadow p-6 space-y-4 text-center">
+            <div className="mx-auto w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+            <p className="text-muted-foreground">Loading...</p>
+          </div>
+        </div>
+      }
+    >
+      <SetupPasswordContent />
+    </Suspense>
   );
 }
