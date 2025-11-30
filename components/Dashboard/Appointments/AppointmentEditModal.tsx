@@ -77,14 +77,12 @@ const AppointmentEditModal = ({
             API_ENDPOINTS.APPOINTMENTS.GET_BY_ID(appointmentId),
             { credentials: "include" }
           ),
-          fetchWithRefresh(
-            API_ENDPOINTS.STAFF.GET_SALON_STAFF(salonId),
-            { credentials: "include" }
-          ),
-          fetchWithRefresh(
-            API_ENDPOINTS.SALONS.SERVICES(salonId),
-            { credentials: "include" }
-          ),
+          fetchWithRefresh(API_ENDPOINTS.STAFF.GET_SALON_STAFF(salonId), {
+            credentials: "include",
+          }),
+          fetchWithRefresh(API_ENDPOINTS.SALONS.SERVICES(salonId), {
+            credentials: "include",
+          }),
         ]);
 
         const apptData = await apptRes.json();
@@ -166,6 +164,11 @@ const AppointmentEditModal = ({
     };
 
     try {
+      if (appointmentId == null) {
+        alert("Invalid appointment ID.");
+        setSaving(false);
+        return;
+      }
       const res = await fetchWithRefresh(
         API_ENDPOINTS.APPOINTMENTS.UPDATE(appointmentId),
         {
