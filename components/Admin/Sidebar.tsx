@@ -8,6 +8,7 @@ import {
     Download,
     Activity,
     Users,
+    ClipboardCheck,
 } from "lucide-react";
 
 import Link from "next/link";
@@ -26,6 +27,8 @@ const navItems = [
     { href: "/sidra/overview/reliability", icon: <Download size={18} />, label: "Reports" },
 
     { href: "/sidra/overview/settings", icon: <Activity size={18} />, label: "System Health" },
+
+    { href: "/sidra/overview/pending-approvals", icon: <ClipboardCheck size={18} />, label: "Approvals" },
 ];
 
 
@@ -36,7 +39,7 @@ export default function Sidebar() {
         <aside className="w-64 bg-card border-r border-border p-5 shadow-soft">
             <Link href="/" className="flex items-center gap-3 mb-10">
                 <NextImage
-                    src="/icons/8.svg"
+                    src="/icons/9.png"
                     alt="StyGo logo"
                     width={40}
                     height={40}
