@@ -17,7 +17,7 @@ import {
 import SalonRatingStar from "./SalonRatingStar";
 import { useFavorites } from "@/hooks/useFavorites";
 
-import { API_BASE_URL } from "@/libs/api/config"; // ✅ IMPORTANT
+import { API_BASE_URL, API_ENDPOINTS } from "@/libs/api/config";
 import { sendMessage } from "@/libs/api/messages";
 
 interface SalonDetailHeroProps {
@@ -34,6 +34,7 @@ interface SalonDetailHeroProps {
     imageUrl?: string;
     profile_picture?: string;
     owner_id?: number;
+    category?: string;
   };
 }
 
@@ -55,7 +56,7 @@ const SalonDetailHero: React.FC<SalonDetailHeroProps> = ({ salon }) => {
   const [rating, setRating] = useState<number>(0);
   const [totalReviews, setTotalReviews] = useState<number>(0);
   const salonId = salon.salon_id || salon.id;
-  
+
   // Use the shared favorites hook for consistency
   const { isFavorite, toggleFavorite } = useFavorites();
   const favoriteStatus = salonId ? isFavorite(String(salonId)) : false;
@@ -97,10 +98,9 @@ const SalonDetailHero: React.FC<SalonDetailHeroProps> = ({ salon }) => {
       if (!salonId) return;
 
       try {
-        const response = await fetch(
-          API_ENDPOINTS.PHOTOS.LIST(salonId),
-          { cache: "no-store" }
-        );
+        const response = await fetch(API_ENDPOINTS.PHOTOS.LIST(salonId), {
+          cache: "no-store",
+        });
 
         if (response.ok) {
           const photos = await response.json();
@@ -123,10 +123,9 @@ const SalonDetailHero: React.FC<SalonDetailHeroProps> = ({ salon }) => {
 
       try {
         // Try public endpoint (includes owner_id now)
-        const response = await fetch(
-          API_ENDPOINTS.SALONS.GET_PUBLIC(salonId),
-          { cache: "no-store" }
-        );
+        const response = await fetch(API_ENDPOINTS.SALONS.GET_PUBLIC(salonId), {
+          cache: "no-store",
+        });
 
         if (response.ok) {
           const salonData = await response.json();
@@ -304,27 +303,35 @@ const SalonDetailHero: React.FC<SalonDetailHeroProps> = ({ salon }) => {
           <div className="flex gap-2">
             <button
               className={`border border-border p-3 rounded-lg shadow-soft-br hover:bg-muted transition ${
-                favoriteStatus ? 'bg-red-50 border-red-200' : ''
+                favoriteStatus ? "bg-red-50 border-red-200" : ""
               }`}
-              aria-label={favoriteStatus ? "Remove from favorites" : "Add to favorites"}
+              aria-label={
+                favoriteStatus ? "Remove from favorites" : "Add to favorites"
+              }
               onClick={handleToggleFavorite}
             >
-              <Heart className={`w-4 h-4 ${favoriteStatus ? 'fill-red-500 text-red-500' : ''}`} />
+              <Heart
+                className={`w-4 h-4 ${
+                  favoriteStatus ? "fill-red-500 text-red-500" : ""
+                }`}
+              />
             </button>
             <button
               className="border border-border p-3 rounded-lg shadow-soft-br hover:bg-muted transition"
               aria-label="Share salon"
               onClick={() => {
                 if (navigator.share) {
-                  navigator.share({
-                    title: salon.name,
-                    text: `Check out ${salon.name}`,
-                    url: window.location.href,
-                  }).catch(() => {
-                    // Fallback: copy to clipboard
-                    navigator.clipboard.writeText(window.location.href);
-                    alert("Link copied to clipboard!");
-                  });
+                  navigator
+                    .share({
+                      title: salon.name,
+                      text: `Check out ${salon.name}`,
+                      url: window.location.href,
+                    })
+                    .catch(() => {
+                      // Fallback: copy to clipboard
+                      navigator.clipboard.writeText(window.location.href);
+                      alert("Link copied to clipboard!");
+                    });
                 } else {
                   // Fallback: copy to clipboard
                   navigator.clipboard.writeText(window.location.href);
@@ -358,12 +365,14 @@ const SalonDetailHero: React.FC<SalonDetailHeroProps> = ({ salon }) => {
           >
             Book Appointment Now
           </Link>
-          <button 
+          <button
             onClick={() => {
-              const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+              const token =
+                localStorage.getItem("token") ||
+                localStorage.getItem("authToken");
               if (!token) {
-                alert('Please login to message the salon');
-                window.location.href = '/sign-in';
+                alert("Please login to message the salon");
+                window.location.href = "/sign-in";
                 return;
               }
               setShowMessageModal(true);
@@ -382,7 +391,9 @@ const SalonDetailHero: React.FC<SalonDetailHeroProps> = ({ salon }) => {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-background border border-border rounded-2xl shadow-lg max-w-md w-full p-6 font-inter">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-2xl font-bold text-foreground">Message {salon.name}</h3>
+              <h3 className="text-2xl font-bold text-foreground">
+                Message {salon.name}
+              </h3>
               <button
                 onClick={() => {
                   setShowMessageModal(false);
@@ -402,8 +413,12 @@ const SalonDetailHero: React.FC<SalonDetailHeroProps> = ({ salon }) => {
                 <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Share2 className="w-8 h-8 text-green-600" />
                 </div>
-                <p className="text-lg font-semibold text-foreground">Message sent!</p>
-                <p className="text-sm text-muted-foreground mt-2">Your message has been sent to the salon.</p>
+                <p className="text-lg font-semibold text-foreground">
+                  Message sent!
+                </p>
+                <p className="text-sm text-muted-foreground mt-2">
+                  Your message has been sent to the salon.
+                </p>
               </div>
             ) : (
               <>
@@ -450,7 +465,9 @@ const SalonDetailHero: React.FC<SalonDetailHeroProps> = ({ salon }) => {
                       }
 
                       if (!salonId) {
-                        setMessageError("Unable to send message. Please try again.");
+                        setMessageError(
+                          "Unable to send message. Please try again."
+                        );
                         return;
                       }
 
@@ -482,7 +499,9 @@ const SalonDetailHero: React.FC<SalonDetailHeroProps> = ({ salon }) => {
                         }
 
                         if (!ownerId) {
-                          setMessageError("Unable to find salon owner. Please try again.");
+                          setMessageError(
+                            "Unable to find salon owner. Please try again."
+                          );
                           setSending(false);
                           return;
                         }
@@ -505,7 +524,9 @@ const SalonDetailHero: React.FC<SalonDetailHeroProps> = ({ salon }) => {
                         }
                       } catch (error) {
                         console.error("Error sending message:", error);
-                        setMessageError("Failed to send message. Please try again.");
+                        setMessageError(
+                          "Failed to send message. Please try again."
+                        );
                       } finally {
                         setSending(false);
                       }
