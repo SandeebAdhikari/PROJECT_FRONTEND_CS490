@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Clock, CreditCard } from "lucide-react";
-import { API_BASE_URL } from "@/libs/api/config";
+import { API_ENDPOINTS } from "@/libs/api/config";
 
 interface BookingSettings {
   cancellationPolicy?: string | null;
@@ -18,8 +18,12 @@ interface SalonDetailBookingPolicyProps {
   bookingSettings?: BookingSettings | null;
 }
 
-const SalonDetailBookingPolicy: React.FC<SalonDetailBookingPolicyProps> = ({ salonId, bookingSettings: propBookingSettings }) => {
-  const [bookingSettings, setBookingSettings] = useState<BookingSettings | null>(propBookingSettings || null);
+const SalonDetailBookingPolicy: React.FC<SalonDetailBookingPolicyProps> = ({
+  salonId,
+  bookingSettings: propBookingSettings,
+}) => {
+  const [bookingSettings, setBookingSettings] =
+    useState<BookingSettings | null>(propBookingSettings || null);
   const [loading, setLoading] = useState(!propBookingSettings && !!salonId);
 
   useEffect(() => {
@@ -36,7 +40,9 @@ const SalonDetailBookingPolicy: React.FC<SalonDetailBookingPolicyProps> = ({ sal
 
     const fetchPolicy = async () => {
       try {
-        const response = await fetch(API_ENDPOINTS.SALONS.GET_BOOKING_POLICY_PUBLIC(salonId));
+        const response = await fetch(
+          API_ENDPOINTS.SALONS.GET_BOOKING_POLICY_PUBLIC(salonId)
+        );
         if (response.ok) {
           const data = await response.json();
           setBookingSettings(data);
@@ -60,7 +66,7 @@ const SalonDetailBookingPolicy: React.FC<SalonDetailBookingPolicyProps> = ({ sal
   }
 
   const policies = [];
-  
+
   // Add policies from salon_settings
   if (bookingSettings?.cancellationPolicy) {
     policies.push({
@@ -74,7 +80,7 @@ const SalonDetailBookingPolicy: React.FC<SalonDetailBookingPolicyProps> = ({ sal
     policies.push({
       icon: CreditCard,
       title: "Deposit Requirements",
-      description: bookingSettings.depositAmount 
+      description: bookingSettings.depositAmount
         ? `A deposit of $${bookingSettings.depositAmount} is required for booking`
         : "A deposit is required for booking",
     });
@@ -126,7 +132,8 @@ const SalonDetailBookingPolicy: React.FC<SalonDetailBookingPolicyProps> = ({ sal
       {
         icon: Clock,
         title: "Late Arrival Policy",
-        description: "15-minute grace period. Late arrivals may result in shortened service time",
+        description:
+          "15-minute grace period. Late arrivals may result in shortened service time",
       }
     );
   }
@@ -148,7 +155,9 @@ const SalonDetailBookingPolicy: React.FC<SalonDetailBookingPolicyProps> = ({ sal
           ))}
         </div>
       ) : (
-        <p className="text-sm text-muted-foreground">No booking policies available</p>
+        <p className="text-sm text-muted-foreground">
+          No booking policies available
+        </p>
       )}
     </div>
   );

@@ -1,8 +1,18 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { CheckCircle, Calendar, Clock, User, Scissors, MapPin, DollarSign, Mail, Download } from "lucide-react";
+import {
+  CheckCircle,
+  Calendar,
+  Clock,
+  User,
+  Scissors,
+  MapPin,
+  DollarSign,
+  Mail,
+  Download,
+} from "lucide-react";
 import { API_ENDPOINTS, fetchConfig } from "@/libs/api/config";
 
 interface AppointmentDetails {
@@ -33,24 +43,18 @@ const PaymentSuccessPage = () => {
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("session_id");
 
-  const [appointment, setAppointment] = useState<AppointmentDetails | null>(null);
+  const [appointment, setAppointment] = useState<AppointmentDetails | null>(
+    null
+  );
   const [payment, setPayment] = useState<PaymentDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    if (sessionId) {
-      fetchPaymentDetails();
-    } else {
-      setError("No payment session found");
-      setLoading(false);
-    }
-  }, [sessionId]);
-
-  const fetchPaymentDetails = async () => {
+  const fetchPaymentDetails = useCallback(async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem("token") || localStorage.getItem("authToken");
+      const token =
+        localStorage.getItem("token") || localStorage.getItem("authToken");
 
       // In a real implementation, you would call an endpoint that verifies the session
       // and returns both payment and appointment details
@@ -85,11 +89,13 @@ const PaymentSuccessPage = () => {
         });
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load payment details");
+      setError(
+        err instanceof Error ? err.message : "Failed to load payment details"
+      );
     } finally {
       setLoading(false);
     }
-  };
+  }, [sessionId]);
 
   const handleDownloadReceipt = () => {
     // In production, this would generate a PDF receipt
@@ -97,16 +103,28 @@ const PaymentSuccessPage = () => {
   };
 
   const handleEmailReceipt = () => {
-    // In production, this would send receipt via email
-    alert("Receipt will be sent to your email shortly!");
+    // In production, this would email the receipt
+    alert("Email receipt feature coming soon!");
   };
+
+  useEffect(() => {
+    if (sessionId) {
+      fetchPaymentDetails();
+    } else {
+      setError("No payment session found");
+      setLoading(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionId]);
 
   if (loading) {
     return (
       <div className="min-h-screen bg-muted flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-primary mx-auto"></div>
-          <p className="mt-4 text-muted-foreground font-semibold">Verifying payment...</p>
+          <p className="mt-4 text-muted-foreground font-semibold">
+            Verifying payment...
+          </p>
         </div>
       </div>
     );
@@ -117,11 +135,23 @@ const PaymentSuccessPage = () => {
       <div className="min-h-screen bg-muted flex items-center justify-center p-4">
         <div className="max-w-md w-full bg-card border border-border rounded-2xl p-8 text-center">
           <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <svg
+              className="w-8 h-8 text-red-600"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </div>
-          <h2 className="text-2xl font-bold mb-2">Payment Verification Failed</h2>
+          <h2 className="text-2xl font-bold mb-2">
+            Payment Verification Failed
+          </h2>
           <p className="text-muted-foreground mb-6">{error}</p>
           <button
             onClick={() => router.push("/customer/my-profile")}
@@ -139,7 +169,9 @@ const PaymentSuccessPage = () => {
       <div className="min-h-screen bg-muted flex items-center justify-center p-4">
         <div className="max-w-md w-full bg-card border border-border rounded-2xl p-8 text-center">
           <h2 className="text-2xl font-bold mb-2">No Payment Information</h2>
-          <p className="text-muted-foreground mb-6">Unable to find payment details</p>
+          <p className="text-muted-foreground mb-6">
+            Unable to find payment details
+          </p>
           <button
             onClick={() => router.push("/customer")}
             className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 font-semibold transition-colors"
@@ -153,7 +185,7 @@ const PaymentSuccessPage = () => {
 
   const appointmentDate = new Date(appointment.scheduled_time);
   const paymentDate = new Date(payment.created_at);
-  const taxAmount = payment.amount * 0.08 / 1.08; // Calculate tax from total
+  const taxAmount = (payment.amount * 0.08) / 1.08; // Calculate tax from total
   const subtotal = payment.amount - taxAmount;
 
   return (
@@ -164,12 +196,17 @@ const PaymentSuccessPage = () => {
           <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <CheckCircle className="w-14 h-14 text-green-600" />
           </div>
-          <h1 className="text-4xl font-bold mb-3 text-green-600">Payment Successful!</h1>
+          <h1 className="text-4xl font-bold mb-3 text-green-600">
+            Payment Successful!
+          </h1>
           <p className="text-muted-foreground text-lg mb-2">
             Your payment has been confirmed
           </p>
           <p className="text-sm text-muted-foreground">
-            Payment ID: <span className="font-mono font-semibold">#{payment.payment_id}</span>
+            Payment ID:{" "}
+            <span className="font-mono font-semibold">
+              #{payment.payment_id}
+            </span>
           </p>
         </div>
 
@@ -190,7 +227,9 @@ const PaymentSuccessPage = () => {
               </div>
               <div className="flex-1">
                 <p className="text-sm text-muted-foreground">Salon</p>
-                <p className="text-xl font-semibold">{appointment.salon_name}</p>
+                <p className="text-xl font-semibold">
+                  {appointment.salon_name}
+                </p>
               </div>
             </div>
 
@@ -200,7 +239,9 @@ const PaymentSuccessPage = () => {
               </div>
               <div className="flex-1">
                 <p className="text-sm text-muted-foreground">Service</p>
-                <p className="text-xl font-semibold">{appointment.service_name}</p>
+                <p className="text-xl font-semibold">
+                  {appointment.service_name}
+                </p>
               </div>
             </div>
 
@@ -210,7 +251,9 @@ const PaymentSuccessPage = () => {
               </div>
               <div className="flex-1">
                 <p className="text-sm text-muted-foreground">Stylist</p>
-                <p className="text-xl font-semibold">{appointment.staff_name}</p>
+                <p className="text-xl font-semibold">
+                  {appointment.staff_name}
+                </p>
               </div>
             </div>
 
@@ -264,7 +307,9 @@ const PaymentSuccessPage = () => {
               <div className="h-px bg-border"></div>
               <div className="flex justify-between text-xl">
                 <span className="font-bold">Total Paid</span>
-                <span className="font-bold text-primary">${payment.amount.toFixed(2)}</span>
+                <span className="font-bold text-primary">
+                  ${payment.amount.toFixed(2)}
+                </span>
               </div>
             </div>
 
@@ -272,7 +317,9 @@ const PaymentSuccessPage = () => {
               <div className="flex items-center gap-2 text-sm">
                 <DollarSign className="w-4 h-4 text-muted-foreground" />
                 <span className="text-muted-foreground">Payment Method:</span>
-                <span className="font-semibold capitalize">{payment.payment_method}</span>
+                <span className="font-semibold capitalize">
+                  {payment.payment_method}
+                </span>
               </div>
               <div className="flex items-center gap-2 text-sm mt-2">
                 <Calendar className="w-4 h-4 text-muted-foreground" />
@@ -311,7 +358,7 @@ const PaymentSuccessPage = () => {
 
         {/* Next Steps */}
         <div className="bg-card border border-border rounded-2xl p-6 sm:p-8 shadow-soft-br mb-6">
-          <h2 className="text-xl font-bold mb-4">What's Next?</h2>
+          <h2 className="text-xl font-bold mb-4">What&apos;s Next?</h2>
           <div className="space-y-4">
             <div className="flex items-start gap-3">
               <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center flex-shrink-0 text-white font-bold">
@@ -320,7 +367,8 @@ const PaymentSuccessPage = () => {
               <div>
                 <p className="font-semibold">Confirmation Email</p>
                 <p className="text-sm text-muted-foreground">
-                  You'll receive a confirmation email with your appointment details and receipt.
+                  You&apos;ll receive a confirmation email with your appointment
+                  details and receipt.
                 </p>
               </div>
             </div>
@@ -331,7 +379,8 @@ const PaymentSuccessPage = () => {
               <div>
                 <p className="font-semibold">Appointment Reminder</p>
                 <p className="text-sm text-muted-foreground">
-                  We'll send you a reminder 24 hours before your appointment.
+                  We&apos;ll send you a reminder 24 hours before your
+                  appointment.
                 </p>
               </div>
             </div>
@@ -342,7 +391,8 @@ const PaymentSuccessPage = () => {
               <div>
                 <p className="font-semibold">Arrive on Time</p>
                 <p className="text-sm text-muted-foreground">
-                  Please arrive 5-10 minutes early to check in for your appointment.
+                  Please arrive 5-10 minutes early to check in for your
+                  appointment.
                 </p>
               </div>
             </div>
@@ -369,7 +419,10 @@ const PaymentSuccessPage = () => {
         <div className="mt-6 text-center">
           <p className="text-sm text-muted-foreground">
             Questions about your appointment?{" "}
-            <a href="mailto:support@salon.com" className="text-primary hover:underline font-semibold">
+            <a
+              href="mailto:support@salon.com"
+              className="text-primary hover:underline font-semibold"
+            >
               Contact Support
             </a>
           </p>

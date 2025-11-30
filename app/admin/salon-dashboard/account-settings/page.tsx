@@ -14,17 +14,13 @@ import {
   deleteAccount as deleteAccountAPI,
 } from "@/libs/api/account";
 // import { createSubscriptionCheckout } from "@/libs/api/subscriptions"; // Disabled until payment implementation
-import type {
-  AccountSettings,
-  ChangePasswordData,
-  SubscriptionPlan,
-} from "@/libs/api/account";
+import type { AccountSettings, SubscriptionPlan } from "@/libs/api/account";
 
 const AccountSettingsPage = () => {
   const router = useRouter();
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [account, setAccount] = useState<AccountSettings | null>(null);
+  const [_account, setAccount] = useState<AccountSettings | null>(null);
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [currentPlan, setCurrentPlan] = useState<string>("free");
   const [message, setMessage] = useState("");
@@ -51,18 +47,18 @@ const AccountSettingsPage = () => {
 
   useEffect(() => {
     loadAccountData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadAccountData = async () => {
     setLoading(true);
     setError("");
     try {
-      const [accountResult, plansResult, subscriptionResult] = await Promise.all([
-        getAccountSettings(),
-        getSubscriptionPlans(),
-        getCurrentSubscription(),
-      ]);
+      const [accountResult, plansResult, subscriptionResult] =
+        await Promise.all([
+          getAccountSettings(),
+          getSubscriptionPlans(),
+          getCurrentSubscription(),
+        ]);
 
       // Handle account data (fetched from database - signup data)
       if (accountResult.error) {
@@ -120,7 +116,7 @@ const AccountSettingsPage = () => {
         }
         setTimeout(() => setMessage(""), 3000);
       }
-    } catch (err) {
+    } catch {
       setError("Failed to update profile");
     } finally {
       setProfileLoading(false);
@@ -162,7 +158,7 @@ const AccountSettingsPage = () => {
         });
         setTimeout(() => setMessage(""), 3000);
       }
-    } catch (err) {
+    } catch {
       setError("Failed to change password");
     } finally {
       setPasswordLoading(false);
@@ -198,18 +194,23 @@ const AccountSettingsPage = () => {
       if (result.error) {
         // If backend says to use checkout, show message instead
         if (result.error.includes("checkout")) {
-          setError("Payment processing is not yet implemented. Please contact support to upgrade your plan.");
+          setError(
+            "Payment processing is not yet implemented. Please contact support to upgrade your plan."
+          );
         } else {
           setError(result.error);
         }
       } else {
         setCurrentPlan(planId);
-        setMessage(result.message || `Successfully switched to ${selectedPlan.plan_name} plan`);
+        setMessage(
+          result.message ||
+            `Successfully switched to ${selectedPlan.plan_name} plan`
+        );
         // Reload account data to get updated subscription
         await loadAccountData();
         setTimeout(() => setMessage(""), 5000);
       }
-    } catch (err) {
+    } catch {
       setError("Failed to update subscription. Please try again.");
     } finally {
       setSubscriptionLoading(false);
@@ -286,8 +287,11 @@ const AccountSettingsPage = () => {
         <h2 className="text-lg font-bold">Profile Information</h2>
         <form onSubmit={handleUpdateProfile} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium">Full Name</label>
+            <label htmlFor="full_name" className="block text-sm font-medium">
+              Full Name
+            </label>
             <input
+              id="full_name"
               type="text"
               value={profileData.full_name}
               onChange={(e) =>
@@ -297,8 +301,11 @@ const AccountSettingsPage = () => {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium">Email</label>
+            <label htmlFor="email" className="block text-sm font-medium">
+              Email
+            </label>
             <input
+              id="email"
               type="email"
               value={profileData.email}
               onChange={(e) =>
@@ -308,8 +315,11 @@ const AccountSettingsPage = () => {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium">Phone</label>
+            <label htmlFor="phone" className="block text-sm font-medium">
+              Phone
+            </label>
             <input
+              id="phone"
               type="tel"
               value={profileData.phone}
               onChange={(e) =>
@@ -333,8 +343,14 @@ const AccountSettingsPage = () => {
         <h2 className="text-lg font-bold">Change Password</h2>
         <form onSubmit={handleChangePassword} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium">Current Password</label>
+            <label
+              htmlFor="current_password"
+              className="block text-sm font-medium"
+            >
+              Current Password
+            </label>
             <input
+              id="current_password"
               type="password"
               value={passwordData.current_password}
               onChange={(e) =>
@@ -347,8 +363,11 @@ const AccountSettingsPage = () => {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium">New Password</label>
+            <label htmlFor="new_password" className="block text-sm font-medium">
+              New Password
+            </label>
             <input
+              id="new_password"
               type="password"
               value={passwordData.new_password}
               onChange={(e) =>
@@ -361,8 +380,14 @@ const AccountSettingsPage = () => {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium">Confirm New Password</label>
+            <label
+              htmlFor="confirm_password"
+              className="block text-sm font-medium"
+            >
+              Confirm New Password
+            </label>
             <input
+              id="confirm_password"
               type="password"
               value={passwordData.confirm_password}
               onChange={(e) =>
@@ -402,11 +427,13 @@ const AccountSettingsPage = () => {
                 <div className="text-right">
                   <span className="text-3xl font-bold">${plan.price}</span>
                   {plan.price > 0 && (
-                    <span className="text-sm text-muted-foreground block">/month</span>
+                    <span className="text-sm text-muted-foreground block">
+                      /month
+                    </span>
                   )}
                 </div>
               </div>
-              
+
               {currentPlan === plan.plan_id && (
                 <span className="inline-block mb-3 text-xs bg-primary text-primary-foreground px-2 py-1 rounded-full">
                   Current Plan

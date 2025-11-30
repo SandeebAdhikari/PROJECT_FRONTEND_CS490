@@ -57,7 +57,7 @@ const SalonCard: React.FC<SalonCardProps> = ({
             onToggleFavorite?.(id);
           }}
           aria-label={toggleLabel}
-          aria-pressed={isFavorite ? "true" : "false"}
+          aria-pressed={isFavorite}
           title={toggleLabel}
           className="absolute top-3 right-3 sm:top-4 sm:right-4 bg-white/90 hover:bg-white rounded-full p-1.5 sm:p-2 shadow-md transition active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >

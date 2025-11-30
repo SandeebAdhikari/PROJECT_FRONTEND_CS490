@@ -2,7 +2,8 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Package, CreditCard, Trash2, Mail } from "lucide-react";
+import Image from "next/image";
+import { Package, CreditCard, Mail } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 import { API_ENDPOINTS, fetchConfig } from "@/libs/api/config";
 
@@ -27,7 +28,8 @@ const ProductCheckoutPage = () => {
     setError("");
 
     try {
-      const token = localStorage.getItem("token") || localStorage.getItem("authToken");
+      const token =
+        localStorage.getItem("token") || localStorage.getItem("authToken");
 
       if (!token) {
         throw new Error("Please login to continue");
@@ -44,7 +46,7 @@ const ProductCheckoutPage = () => {
         body: JSON.stringify({
           amount: totalAmount,
           type: "products",
-          items: products.map(p => ({
+          items: products.map((p) => ({
             product_id: p.product_id,
             name: p.name,
             quantity: p.quantity,
@@ -61,12 +63,14 @@ const ProductCheckoutPage = () => {
       const data = await response.json();
 
       // Clear products from cart after successful checkout initiation
-      products.forEach(p => cart.removeItem(p.product_id, "product"));
+      products.forEach((p) => cart.removeItem(p.product_id, "product"));
 
       // Redirect to Stripe payment page
       window.location.href = data.payment_link;
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Payment failed. Please try again.");
+      setError(
+        err instanceof Error ? err.message : "Payment failed. Please try again."
+      );
       setProcessing(false);
     }
   };
@@ -79,7 +83,9 @@ const ProductCheckoutPage = () => {
             <Package className="w-8 h-8 text-muted-foreground" />
           </div>
           <h2 className="text-2xl font-bold mb-2">No Products to Checkout</h2>
-          <p className="text-muted-foreground mb-6">Add some products to your cart first</p>
+          <p className="text-muted-foreground mb-6">
+            Add some products to your cart first
+          </p>
           <button
             onClick={() => router.push("/customer/cart")}
             className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 font-semibold transition-colors"
@@ -96,7 +102,9 @@ const ProductCheckoutPage = () => {
       <div className="max-w-4xl mx-auto">
         <div className="mb-6">
           <h1 className="text-3xl font-bold">Checkout Products</h1>
-          <p className="text-muted-foreground mt-2">Review your products and proceed to payment</p>
+          <p className="text-muted-foreground mt-2">
+            Review your products and proceed to payment
+          </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -112,9 +120,11 @@ const ProductCheckoutPage = () => {
                     className="flex gap-4 pb-4 border-b border-border last:border-0"
                   >
                     {product.image_url ? (
-                      <img
+                      <Image
                         src={product.image_url}
                         alt={product.name}
+                        width={80}
+                        height={80}
                         className="w-20 h-20 object-cover rounded-lg"
                       />
                     ) : (
@@ -126,7 +136,9 @@ const ProductCheckoutPage = () => {
                     <div className="flex-1">
                       <h3 className="font-semibold">{product.name}</h3>
                       {product.description && (
-                        <p className="text-sm text-muted-foreground mt-1">{product.description}</p>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {product.description}
+                        </p>
                       )}
                       <p className="text-sm text-muted-foreground mt-1">
                         ${product.price.toFixed(2)} × {product.quantity}
@@ -148,10 +160,14 @@ const ProductCheckoutPage = () => {
               <div className="flex items-start gap-3">
                 <Mail className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
                 <div className="flex-1">
-                  <p className="font-semibold text-blue-900 mb-1">Payment Link Will Be Sent to Your Email</p>
+                  <p className="font-semibold text-blue-900 mb-1">
+                    Payment Link Will Be Sent to Your Email
+                  </p>
                   <p className="text-sm text-blue-700">
-                    After clicking "Proceed to Payment", we'll send you a secure payment link via email.
-                    You'll then be redirected to complete your payment through Stripe's secure checkout.
+                    After clicking &quot;Proceed to Payment&quot;, we&apos;ll
+                    send you a secure payment link via email. You&apos;ll then
+                    be redirected to complete your payment through Stripe&apos;s
+                    secure checkout.
                   </p>
                 </div>
               </div>
@@ -166,7 +182,9 @@ const ProductCheckoutPage = () => {
               <div className="space-y-3 mb-6 pb-4 border-b border-border">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Subtotal</span>
-                  <span className="font-semibold">${productTotal.toFixed(2)}</span>
+                  <span className="font-semibold">
+                    ${productTotal.toFixed(2)}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Tax (8%)</span>
@@ -176,7 +194,9 @@ const ProductCheckoutPage = () => {
 
               <div className="flex justify-between items-center mb-6">
                 <span className="text-lg font-bold">Total</span>
-                <span className="text-2xl font-bold text-primary">${totalAmount.toFixed(2)}</span>
+                <span className="text-2xl font-bold text-primary">
+                  ${totalAmount.toFixed(2)}
+                </span>
               </div>
 
               <button
@@ -204,8 +224,18 @@ const ProductCheckoutPage = () => {
 
               <div className="mt-6 pt-6 border-t border-border">
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                    />
                   </svg>
                   <span>Payments secured by Stripe</span>
                 </div>

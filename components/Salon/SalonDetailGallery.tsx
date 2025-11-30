@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import { ImageIcon, X } from "lucide-react";
-import { API_BASE_URL } from "@/libs/api/config";
+import { X } from "lucide-react";
+import { API_BASE_URL, API_ENDPOINTS } from "@/libs/api/config";
 
 interface Photo {
   photo_id: number;
@@ -23,9 +23,7 @@ const SalonDetailGallery: React.FC<SalonDetailGalleryProps> = ({ salonId }) => {
   useEffect(() => {
     const fetchGallery = async () => {
       try {
-        const response = await fetch(
-          API_ENDPOINTS.PHOTOS.LIST(salonId)
-        );
+        const response = await fetch(API_ENDPOINTS.PHOTOS.LIST(salonId));
         if (response.ok) {
           const data = await response.json();
           setPhotos(Array.isArray(data) ? data : []);
@@ -110,4 +108,3 @@ const SalonDetailGallery: React.FC<SalonDetailGalleryProps> = ({ salonId }) => {
 };
 
 export default SalonDetailGallery;
-

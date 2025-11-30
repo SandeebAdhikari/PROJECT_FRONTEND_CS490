@@ -75,12 +75,27 @@ interface FavoritesContentProps {
   isFavorite: (id: string) => boolean;
 }
 
+interface Salon {
+  salon_id?: string | number;
+  id?: string | number;
+  name?: string;
+  salon_name?: string;
+  city?: string;
+  description?: string;
+  category?: string;
+  rating?: number;
+  totalReviews?: number;
+  priceFrom?: number;
+  profile_picture?: string;
+  imageUrl?: string;
+}
+
 const FavoritesContent: React.FC<FavoritesContentProps> = ({
   favorites,
   toggleFavorite,
   isFavorite,
 }) => {
-  const [favoriteSalons, setFavoriteSalons] = useState<any[]>([]);
+  const [favoriteSalons, setFavoriteSalons] = useState<Salon[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -95,8 +110,9 @@ const FavoritesContent: React.FC<FavoritesContentProps> = ({
       try {
         setLoading(true);
         setError("");
-        const token = localStorage.getItem('token') || localStorage.getItem('authToken');
-        
+        const token =
+          localStorage.getItem("token") || localStorage.getItem("authToken");
+
         // Fetch all salons and filter by favorites
         const response = await fetch(API_ENDPOINTS.SALONS.LIST, {
           ...fetchConfig,
@@ -109,7 +125,7 @@ const FavoritesContent: React.FC<FavoritesContentProps> = ({
         if (response.ok) {
           const allSalons = await response.json();
           // Filter to only show favorited salons
-          const filtered = allSalons.filter((salon: any) => 
+          const filtered = allSalons.filter((salon: Salon) =>
             favorites.includes(String(salon.salon_id || salon.id))
           );
           setFavoriteSalons(filtered);
@@ -190,10 +206,10 @@ const FavoritesContent: React.FC<FavoritesContentProps> = ({
             <SalonCard
               key={salonId}
               id={salonId}
-              name={salon.name || salon.salon_name}
-              city={salon.city}
-              description={salon.description}
-              category={salon.category}
+              name={salon.name || salon.salon_name || ""}
+              city={salon.city || ""}
+              description={salon.description || ""}
+              category={salon.category || ""}
               rating={salon.rating || 0}
               totalReviews={salon.totalReviews || 0}
               priceFrom={salon.priceFrom || 0}

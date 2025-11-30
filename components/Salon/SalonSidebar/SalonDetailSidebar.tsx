@@ -1,7 +1,9 @@
 "use client";
 
 import React from "react";
-import SidebarOpeningHours from "@/components/Salon/SalonSidebar/SidebarOpeningHours";
+import SidebarOpeningHours, {
+  BusinessHours,
+} from "@/components/Salon/SalonSidebar/SidebarOpeningHours";
 import SidebarContactCard from "@/components/Salon/SalonSidebar/SidebarContactCard";
 
 interface SalonDetailSidebarProps {
@@ -13,10 +15,13 @@ interface SalonDetailSidebarProps {
     phone?: string;
     email?: string;
   };
-  businessHours?: any;
+  businessHours?: BusinessHours;
 }
 
-const SalonDetailSidebar: React.FC<SalonDetailSidebarProps> = ({ salon, businessHours }) => {
+const SalonDetailSidebar: React.FC<SalonDetailSidebarProps> = ({
+  salon,
+  businessHours,
+}) => {
   const salonId = salon?.salon_id || salon?.id;
 
   return (

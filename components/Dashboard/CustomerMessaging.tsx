@@ -1,20 +1,60 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { MessageSquare, Send, User } from "lucide-react";
 import { checkOwnerSalon } from "@/libs/api/salons";
-import { getSalonCustomers, getConversation, sendMessage } from "@/libs/api/messages";
+import {
+  getSalonCustomers,
+  getConversation,
+  sendMessage,
+} from "@/libs/api/messages";
 import type { Customer, Message } from "@/libs/api/messages";
 
 const CustomerMessaging = () => {
   const [salonId, setSalonId] = useState<number | null>(null);
   const [customers, setCustomers] = useState<Customer[]>([]);
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
+    null
+  );
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [loadingMessages, setLoadingMessages] = useState(false);
+
+  const loadCustomers = useCallback(async (id: number) => {
+    try {
+      const result = await getSalonCustomers(id);
+      if (result.customers) {
+        setCustomers(result.customers);
+        if (result.customers.length > 0) {
+          setSelectedCustomer((current) => {
+            if (!current && result.customers) {
+              loadConversation(id, result.customers[0].user_id);
+              return result.customers[0];
+            }
+            return current;
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Error loading customers:", error);
+    }
+  }, []);
+
+  const loadConversation = async (salonId: number, customerId: number) => {
+    setLoadingMessages(true);
+    try {
+      const result = await getConversation(salonId, customerId);
+      if (result.messages) {
+        setMessages(result.messages);
+      }
+    } catch (error) {
+      console.error("Error loading conversation:", error);
+    } finally {
+      setLoadingMessages(false);
+    }
+  };
 
   useEffect(() => {
     const loadSalonData = async () => {
@@ -32,50 +72,18 @@ const CustomerMessaging = () => {
     };
 
     loadSalonData();
-  }, []);
-
-  const loadCustomers = async (id: number) => {
-    try {
-      const result = await getSalonCustomers(id);
-      if (result.customers) {
-        setCustomers(result.customers);
-        if (result.customers.length > 0 && !selectedCustomer) {
-          setSelectedCustomer(result.customers[0]);
-          await loadConversation(id, result.customers[0].user_id);
-        }
-      }
-    } catch (error) {
-      console.error("Error loading customers:", error);
-    }
-  };
-
-  const loadConversation = async (salonId: number, customerId: number) => {
-    setLoadingMessages(true);
-    try {
-      const result = await getConversation(salonId, customerId);
-      if (result.messages) {
-        setMessages(result.messages);
-      }
-    } catch (error) {
-      console.error("Error loading conversation:", error);
-    } finally {
-      setLoadingMessages(false);
-    }
-  };
-
-  const handleSelectCustomer = async (customer: Customer) => {
-    setSelectedCustomer(customer);
-    if (salonId) {
-      await loadConversation(salonId, customer.user_id);
-    }
-  };
+  }, [loadCustomers]);
 
   const handleSendMessage = async () => {
     if (!salonId || !selectedCustomer || !newMessage.trim()) return;
 
     setSending(true);
     try {
-      const result = await sendMessage(salonId, selectedCustomer.user_id, newMessage);
+      const result = await sendMessage(
+        salonId,
+        selectedCustomer.user_id,
+        newMessage
+      );
       if (result.message_id) {
         setNewMessage("");
         // Reload conversation
@@ -98,6 +106,12 @@ const CustomerMessaging = () => {
     );
   }
 
+  const handleSelectCustomer = (customer: Customer) => {
+    setSelectedCustomer(customer);
+    if (salonId) {
+      loadConversation(salonId, customer.user_id);
+    }
+  };
   return (
     <div className="bg-card border border-border rounded-2xl p-6 h-[600px] flex flex-col">
       <div className="flex items-center gap-2 mb-4">
@@ -110,7 +124,9 @@ const CustomerMessaging = () => {
         <div className="w-1/3 border-r border-border pr-4 overflow-y-auto">
           <div className="space-y-2">
             {customers.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No customers to message yet</p>
+              <p className="text-sm text-muted-foreground">
+                No customers to message yet
+              </p>
             ) : (
               customers.map((customer) => (
                 <button
@@ -119,14 +135,16 @@ const CustomerMessaging = () => {
                   className={`w-full text-left p-3 rounded-lg border transition-smooth ${
                     selectedCustomer?.user_id === customer.user_id
                       ? "bg-primary/10 border-primary"
-                      : "border-border hover:bg-muted"
+                      : "bg-card border-border hover:bg-muted"
                   }`}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <User className="w-4 h-4 text-muted-foreground" />
                       <div>
-                        <p className="font-medium text-sm">{customer.full_name}</p>
+                        <p className="font-medium text-sm">
+                          {customer.full_name}
+                        </p>
                         {customer.last_message && (
                           <p className="text-xs text-muted-foreground truncate max-w-[150px]">
                             {customer.last_message}
@@ -152,21 +170,30 @@ const CustomerMessaging = () => {
             <>
               <div className="border-b border-border pb-3 mb-3">
                 <h3 className="font-medium">{selectedCustomer.full_name}</h3>
-                <p className="text-sm text-muted-foreground">{selectedCustomer.email}</p>
+                <p className="text-sm text-muted-foreground">
+                  {selectedCustomer.email}
+                </p>
               </div>
 
               <div className="flex-1 overflow-y-auto space-y-3 mb-4">
                 {loadingMessages ? (
-                  <p className="text-sm text-muted-foreground">Loading messages...</p>
+                  <p className="text-sm text-muted-foreground">
+                    Loading messages...
+                  </p>
                 ) : messages.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No messages yet. Start the conversation!</p>
+                  <p className="text-sm text-muted-foreground">
+                    No messages yet. Start the conversation!
+                  </p>
                 ) : (
                   messages.map((message) => {
-                    const isOwner = message.from_user_id !== selectedCustomer.user_id;
+                    const isOwner =
+                      message.from_user_id !== selectedCustomer.user_id;
                     return (
                       <div
                         key={message.message_id}
-                        className={`flex ${isOwner ? "justify-end" : "justify-start"}`}
+                        className={`flex ${
+                          isOwner ? "justify-end" : "justify-start"
+                        }`}
                       >
                         <div
                           className={`max-w-[70%] p-3 rounded-lg ${
@@ -176,7 +203,13 @@ const CustomerMessaging = () => {
                           }`}
                         >
                           <p className="text-sm">{message.message}</p>
-                          <p className={`text-xs mt-1 ${isOwner ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
+                          <p
+                            className={`text-xs mt-1 ${
+                              isOwner
+                                ? "text-primary-foreground/70"
+                                : "text-muted-foreground"
+                            }`}
+                          >
                             {new Date(message.created_at).toLocaleString()}
                           </p>
                         </div>
@@ -212,7 +245,9 @@ const CustomerMessaging = () => {
             </>
           ) : (
             <div className="flex items-center justify-center h-full">
-              <p className="text-muted-foreground">Select a customer to start messaging</p>
+              <p className="text-muted-foreground">
+                Select a customer to start messaging
+              </p>
             </div>
           )}
         </div>
@@ -222,4 +257,3 @@ const CustomerMessaging = () => {
 };
 
 export default CustomerMessaging;
-

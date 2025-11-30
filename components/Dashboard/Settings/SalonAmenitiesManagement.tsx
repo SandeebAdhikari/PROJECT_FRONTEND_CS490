@@ -1,8 +1,17 @@
 "use client";
 
-import React, { useState, useEffect, forwardRef, useImperativeHandle } from "react";
+import React, {
+  useState,
+  useEffect,
+  forwardRef,
+  useImperativeHandle,
+} from "react";
 import { X } from "lucide-react";
-import { checkOwnerSalon, getSalonAmenities, updateSalonAmenities } from "@/libs/api/salons";
+import {
+  checkOwnerSalon,
+  getSalonAmenities,
+  updateSalonAmenities,
+} from "@/libs/api/salons";
 
 // Common salon amenities that can be selected
 const AVAILABLE_AMENITIES = [
@@ -44,8 +53,11 @@ const SalonAmenitiesManagement = forwardRef<
   const [salonId, setSalonId] = useState<number | null>(null);
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [_saving, setSaving] = useState(false);
+  const [message, setMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
 
   useEffect(() => {
     const loadSalonData = async () => {
@@ -53,9 +65,11 @@ const SalonAmenitiesManagement = forwardRef<
         const result = await checkOwnerSalon();
         if (result.salon?.salon_id) {
           setSalonId(result.salon.salon_id);
-          
+
           // Fetch amenities
-          const amenitiesResult = await getSalonAmenities(result.salon.salon_id);
+          const amenitiesResult = await getSalonAmenities(
+            result.salon.salon_id
+          );
           if (amenitiesResult.amenities) {
             setSelectedAmenities(amenitiesResult.amenities);
           }
@@ -101,7 +115,10 @@ const SalonAmenitiesManagement = forwardRef<
         setMessage({ type: "error", text: result.error });
         throw new Error(result.error);
       } else {
-        setMessage({ type: "success", text: result.message || "Amenities updated successfully!" });
+        setMessage({
+          type: "success",
+          text: result.message || "Amenities updated successfully!",
+        });
       }
     } catch (error) {
       console.error("Error saving amenities:", error);
@@ -130,14 +147,19 @@ const SalonAmenitiesManagement = forwardRef<
         <h2 className="text-lg font-bold">Amenities & Features</h2>
       </div>
       <p className="text-sm text-muted-foreground mb-4">
-        Select amenities that your salon offers. Customers will see these on your salon page.
+        Select amenities that your salon offers. Customers will see these on
+        your salon page.
       </p>
 
       {/* Selected Amenities */}
       <div className="mb-4">
-        <label className="block text-sm font-medium mb-2">Selected Amenities</label>
+        <label className="block text-sm font-medium mb-2">
+          Selected Amenities
+        </label>
         {selectedAmenities.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No amenities selected yet</p>
+          <p className="text-sm text-muted-foreground">
+            No amenities selected yet
+          </p>
         ) : (
           <div className="flex flex-wrap gap-2">
             {selectedAmenities.map((amenity) => (
@@ -161,9 +183,13 @@ const SalonAmenitiesManagement = forwardRef<
 
       {/* Available Amenities */}
       <div className="mb-4">
-        <label className="block text-sm font-medium mb-2">Available Amenities</label>
+        <label className="block text-sm font-medium mb-2">
+          Available Amenities
+        </label>
         {availableAmenities.length === 0 ? (
-          <p className="text-sm text-muted-foreground">All amenities have been added</p>
+          <p className="text-sm text-muted-foreground">
+            All amenities have been added
+          </p>
         ) : (
           <div className="border border-border rounded-lg bg-card max-h-64 overflow-y-auto">
             {availableAmenities.map((amenity) => (
@@ -198,4 +224,3 @@ const SalonAmenitiesManagement = forwardRef<
 SalonAmenitiesManagement.displayName = "SalonAmenitiesManagement";
 
 export default SalonAmenitiesManagement;
-

@@ -42,6 +42,11 @@ export const API_ENDPOINTS = {
     UPDATE: (id: number) => `${API_BASE_URL}/api/shop/products/${id}`,
     DELETE: (id: number) => `${API_BASE_URL}/api/shop/products/${id}`,
   },
+  PAYMENTS: {
+    CHECKOUT: `${API_BASE_URL}/api/payments/checkout`,
+    SALON_PAYMENTS: (salonId: number | string) =>
+      `${API_BASE_URL}/api/payments/salon/${salonId}`,
+  },
   APPOINTMENTS: {
     BOOK: `${API_BASE_URL}/api/appointments/create`,
     UPDATE: (id: number | string) => `${API_BASE_URL}/api/appointments/${id}`,

@@ -118,7 +118,8 @@ const SalonServicesManagement = () => {
 
       if (!response.ok) {
         const err = await response.json();
-        const errorMessage = err.error || err.message || "Failed to save service";
+        const errorMessage =
+          err.error || err.message || "Failed to save service";
         console.error("Service creation error:", err);
         alert(errorMessage);
         return;
@@ -142,8 +143,8 @@ const SalonServicesManagement = () => {
     setFormData({
       name: service.custom_name,
       category: service.category_name,
-      duration: service.duration,
-      price: service.price,
+      duration: service.duration.toString(),
+      price: service.price.toString(),
     });
     setShowModal(true);
   };

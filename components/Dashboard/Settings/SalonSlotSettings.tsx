@@ -1,8 +1,17 @@
 "use client";
 
-import React, { useState, useEffect, forwardRef, useImperativeHandle } from "react";
+import React, {
+  useState,
+  useEffect,
+  forwardRef,
+  useImperativeHandle,
+} from "react";
 import { Clock } from "lucide-react";
-import { checkOwnerSalon, getSalonSlotSettings, updateSalonSlotSettings } from "@/libs/api/salons";
+import {
+  checkOwnerSalon,
+  getSalonSlotSettings,
+  updateSalonSlotSettings,
+} from "@/libs/api/salons";
 import type { SlotSettings } from "@/libs/api/salons";
 
 interface SalonSlotSettingsProps {
@@ -15,9 +24,12 @@ const SalonSlotSettings = forwardRef<
 >(({ suppressMessages = false }, ref) => {
   const [salonId, setSalonId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
-  
+  const [_saving, setSaving] = useState(false);
+  const [message, setMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
+
   const [slotSettings, setSlotSettings] = useState<SlotSettings>({
     slotDuration: 30,
     bufferTime: 0,
@@ -30,15 +42,17 @@ const SalonSlotSettings = forwardRef<
         const result = await checkOwnerSalon();
         if (result.hasSalon && result.salon?.salon_id) {
           setSalonId(result.salon.salon_id);
-          
-          const settingsResult = await getSalonSlotSettings(result.salon.salon_id);
+
+          const settingsResult = await getSalonSlotSettings(
+            result.salon.salon_id
+          );
           if (settingsResult.slotSettings) {
             setSlotSettings(settingsResult.slotSettings);
           }
         }
       } catch (error) {
         console.error("Error fetching salon data:", error);
-        setMessage({ type: 'error', text: 'Failed to load slot settings' });
+        setMessage({ type: "error", text: "Failed to load slot settings" });
       } finally {
         setLoading(false);
       }
@@ -49,8 +63,8 @@ const SalonSlotSettings = forwardRef<
 
   const handleSave = async () => {
     if (!salonId) {
-      setMessage({ type: 'error', text: 'No salon found' });
-      throw new Error('No salon found');
+      setMessage({ type: "error", text: "No salon found" });
+      throw new Error("No salon found");
     }
 
     setSaving(true);
@@ -58,16 +72,19 @@ const SalonSlotSettings = forwardRef<
 
     try {
       const result = await updateSalonSlotSettings(salonId, slotSettings);
-      
+
       if (result.error) {
-        setMessage({ type: 'error', text: result.error });
+        setMessage({ type: "error", text: result.error });
         throw new Error(result.error);
       } else {
-        setMessage({ type: 'success', text: result.message || 'Slot settings updated successfully!' });
+        setMessage({
+          type: "success",
+          text: result.message || "Slot settings updated successfully!",
+        });
       }
     } catch (error) {
       console.error("Error saving slot settings:", error);
-      setMessage({ type: 'error', text: 'Failed to save slot settings' });
+      setMessage({ type: "error", text: "Failed to save slot settings" });
       throw error;
     } finally {
       setSaving(false);
@@ -94,20 +111,35 @@ const SalonSlotSettings = forwardRef<
       </div>
 
       {!suppressMessages && message && (
-        <div className={`p-3 rounded-lg ${message.type === 'success' ? 'bg-secondary text-foreground' : 'bg-destructive/10 text-destructive'}`}>
+        <div
+          className={`p-3 rounded-lg ${
+            message.type === "success"
+              ? "bg-secondary text-foreground"
+              : "bg-destructive/10 text-destructive"
+          }`}
+        >
           {message.text}
         </div>
       )}
 
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium mb-2">
-            Default Slot Duration (minutes)
+          <label
+            htmlFor="slotDuration"
+            className="block text-sm font-medium mb-2"
+          >
+            Appointment Duration (minutes)
           </label>
           <input
+            id="slotDuration"
             type="number"
             value={slotSettings.slotDuration}
-            onChange={(e) => setSlotSettings({ ...slotSettings, slotDuration: parseInt(e.target.value) || 30 })}
+            onChange={(e) =>
+              setSlotSettings({
+                ...slotSettings,
+                slotDuration: parseInt(e.target.value) || 30,
+              })
+            }
             className="w-full rounded-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
             min="15"
             step="15"
@@ -116,15 +148,23 @@ const SalonSlotSettings = forwardRef<
             Standard appointment duration (e.g., 30, 45, 60 minutes)
           </p>
         </div>
-
         <div>
-          <label className="block text-sm font-medium mb-2">
+          <label
+            htmlFor="bufferTime"
+            className="block text-sm font-medium mb-2"
+          >
             Buffer Time Between Appointments (minutes)
           </label>
           <input
+            id="bufferTime"
             type="number"
             value={slotSettings.bufferTime}
-            onChange={(e) => setSlotSettings({ ...slotSettings, bufferTime: parseInt(e.target.value) || 0 })}
+            onChange={(e) =>
+              setSlotSettings({
+                ...slotSettings,
+                bufferTime: parseInt(e.target.value) || 0,
+              })
+            }
             className="w-full rounded-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
             min="0"
             step="5"
@@ -133,15 +173,23 @@ const SalonSlotSettings = forwardRef<
             Time between appointments for cleanup/preparation
           </p>
         </div>
-
         <div>
-          <label className="block text-sm font-medium mb-2">
+          <label
+            htmlFor="minAdvanceBookingHours"
+            className="block text-sm font-medium mb-2"
+          >
             Minimum Advance Booking (hours)
           </label>
           <input
+            id="minAdvanceBookingHours"
             type="number"
             value={slotSettings.minAdvanceBookingHours}
-            onChange={(e) => setSlotSettings({ ...slotSettings, minAdvanceBookingHours: parseInt(e.target.value) || 2 })}
+            onChange={(e) =>
+              setSlotSettings({
+                ...slotSettings,
+                minAdvanceBookingHours: parseInt(e.target.value) || 2,
+              })
+            }
             className="w-full rounded-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
             min="0"
           />
@@ -157,4 +205,3 @@ const SalonSlotSettings = forwardRef<
 SalonSlotSettings.displayName = "SalonSlotSettings";
 
 export default SalonSlotSettings;
-

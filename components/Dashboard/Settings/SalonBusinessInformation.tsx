@@ -1,6 +1,11 @@
 "use client";
 
-import React, { useState, useEffect, forwardRef, useImperativeHandle } from "react";
+import React, {
+  useState,
+  useEffect,
+  forwardRef,
+  useImperativeHandle,
+} from "react";
 import { MapPin, Upload, Camera } from "lucide-react";
 import Image from "next/image";
 import { checkOwnerSalon, createSalon, updateSalon } from "@/libs/api/salons";
@@ -28,8 +33,11 @@ const SalonBusinessInformation = forwardRef<
   const [profilePicture, setProfilePicture] = useState<File | null>(null);
   const [profilePreview, setProfilePreview] = useState("");
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+  const [_saving, setSaving] = useState(false);
+  const [message, setMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
 
   useEffect(() => {
     const fetchSalonData = async () => {
@@ -55,7 +63,7 @@ const SalonBusinessInformation = forwardRef<
         }
       } catch (error) {
         console.error("Error fetching salon data:", error);
-        setMessage({ type: 'error', text: 'Failed to load salon data' });
+        setMessage({ type: "error", text: "Failed to load salon data" });
       } finally {
         setLoading(false);
       }
@@ -64,12 +72,16 @@ const SalonBusinessInformation = forwardRef<
     fetchSalonData();
   }, []);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleProfilePictureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleProfilePictureChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = e.target.files?.[0];
     if (file) {
       setProfilePicture(file);
@@ -84,8 +96,11 @@ const SalonBusinessInformation = forwardRef<
   const handleSave = async () => {
     // Validate required fields
     if (!formData.name || !formData.address || !formData.phone) {
-      setMessage({ type: 'error', text: 'Name, address, and phone are required' });
-      throw new Error('Name, address, and phone are required');
+      setMessage({
+        type: "error",
+        text: "Name, address, and phone are required",
+      });
+      throw new Error("Name, address, and phone are required");
     }
 
     setSaving(true);
@@ -97,52 +112,61 @@ const SalonBusinessInformation = forwardRef<
         // Create new salon
         result = await createSalon(formData, profilePicture);
         if (result.error) {
-          setMessage({ type: 'error', text: result.error });
+          setMessage({ type: "error", text: result.error });
           throw new Error(result.error);
         }
         if (result.salon) {
           setSalonId(result.salon.salon_id || null);
           setIsNewSalon(false);
         }
-        setMessage({ type: 'success', text: 'Salon created successfully!' });
+        setMessage({ type: "success", text: "Salon created successfully!" });
         setProfilePicture(null);
       } else if (salonId) {
         // Update existing salon
         result = await updateSalon(salonId, formData, profilePicture);
-        
+
         if (!result) {
-          const errorMsg = 'No response from server';
-          setMessage({ type: 'error', text: errorMsg });
+          const errorMsg = "No response from server";
+          setMessage({ type: "error", text: errorMsg });
           throw new Error(errorMsg);
         }
-        
+
         if (result.error) {
           // If backend says "No fields to update", treat as success (nothing changed)
           if (result.error.includes("No fields to update")) {
-            setMessage({ type: 'success', text: 'Salon information is up to date' });
+            setMessage({
+              type: "success",
+              text: "Salon information is up to date",
+            });
             setProfilePicture(null);
             return;
           }
-          const errorMsg = result.error || 'Failed to update salon';
-          setMessage({ type: 'error', text: errorMsg });
+          const errorMsg = result.error || "Failed to update salon";
+          setMessage({ type: "error", text: errorMsg });
           throw new Error(errorMsg);
         }
-        
+
         // Success case
-        setMessage({ type: 'success', text: result.message || 'Salon updated successfully!' });
+        setMessage({
+          type: "success",
+          text: result.message || "Salon updated successfully!",
+        });
         // Clear profile picture file after successful save
         setProfilePicture(null);
       } else {
-        const errorMsg = 'No salon ID available for update';
-        setMessage({ type: 'error', text: errorMsg });
+        const errorMsg = "No salon ID available for update";
+        setMessage({ type: "error", text: errorMsg });
         throw new Error(errorMsg);
       }
     } catch (error) {
       console.error("Error saving salon:", error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to save salon information';
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to save salon information";
       // Set error message if not already set
-      if (!message || message.type !== 'error') {
-        setMessage({ type: 'error', text: errorMessage });
+      if (!message || message.type !== "error") {
+        setMessage({ type: "error", text: errorMessage });
       }
       throw error;
     } finally {
@@ -167,12 +191,18 @@ const SalonBusinessInformation = forwardRef<
       <div className="flex items-center gap-2 mb-4">
         <MapPin className="w-5 h-5" />
         <h2 className="text-lg font-bold">
-          {isNewSalon ? 'Setup Your Salon' : 'Business Information'}
+          {isNewSalon ? "Setup Your Salon" : "Business Information"}
         </h2>
       </div>
 
       {!suppressMessages && message && (
-        <div className={`p-3 rounded-lg ${message.type === 'success' ? 'bg-secondary text-foreground' : 'bg-destructive/10 text-destructive'}`}>
+        <div
+          className={`p-3 rounded-lg ${
+            message.type === "success"
+              ? "bg-secondary text-foreground"
+              : "bg-destructive/10 text-destructive"
+          }`}
+        >
           {message.text}
         </div>
       )}
@@ -180,7 +210,8 @@ const SalonBusinessInformation = forwardRef<
       {isNewSalon && (
         <div className="p-4 bg-primary/10 border border-primary/20 rounded-lg">
           <p className="text-foreground text-sm">
-            <strong>Welcome!</strong> Let&apos;s set up your salon profile. Fill in the information below to get started.
+            <strong>Welcome!</strong> Let&apos;s set up your salon profile. Fill
+            in the information below to get started.
           </p>
         </div>
       )}
@@ -188,7 +219,9 @@ const SalonBusinessInformation = forwardRef<
       <div className="space-y-4">
         {/* Profile Picture */}
         <div>
-          <label className="block text-sm font-medium mb-2">Profile Picture</label>
+          <label className="block text-sm font-medium mb-2">
+            Profile Picture
+          </label>
           <div className="flex items-center gap-4">
             <div className="relative w-24 h-24 rounded-full overflow-hidden bg-muted flex items-center justify-center">
               {profilePreview ? (
@@ -215,13 +248,17 @@ const SalonBusinessInformation = forwardRef<
                   className="hidden"
                 />
               </label>
-              <p className="text-xs text-muted-foreground mt-1">JPG, PNG up to 5MB</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                JPG, PNG up to 5MB
+              </p>
             </div>
           </div>
         </div>
 
         <div>
-          <label className="block text-sm font-medium">Business Name <span className="text-destructive">*</span></label>
+          <label className="block text-sm font-medium">
+            Business Name <span className="text-destructive">*</span>
+          </label>
           <input
             type="text"
             name="name"
@@ -234,7 +271,9 @@ const SalonBusinessInformation = forwardRef<
         </div>
 
         <div>
-          <label className="block text-sm font-medium">Address <span className="text-destructive">*</span></label>
+          <label className="block text-sm font-medium">
+            Address <span className="text-destructive">*</span>
+          </label>
           <textarea
             name="address"
             value={formData.address}
@@ -272,7 +311,9 @@ const SalonBusinessInformation = forwardRef<
 
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium">Phone <span className="text-destructive">*</span></label>
+            <label className="block text-sm font-medium">
+              Phone <span className="text-destructive">*</span>
+            </label>
             <input
               type="text"
               name="phone"

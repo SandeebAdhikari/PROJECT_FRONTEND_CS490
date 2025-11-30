@@ -1,8 +1,17 @@
 "use client";
 
-import React, { useState, useEffect, forwardRef, useImperativeHandle } from "react";
+import React, {
+  useState,
+  useEffect,
+  forwardRef,
+  useImperativeHandle,
+} from "react";
 import { FileText } from "lucide-react";
-import { checkOwnerSalon, getSalonOperatingPolicies, updateSalonOperatingPolicies } from "@/libs/api/salons";
+import {
+  checkOwnerSalon,
+  getSalonOperatingPolicies,
+  updateSalonOperatingPolicies,
+} from "@/libs/api/salons";
 import type { OperatingPolicies } from "@/libs/api/salons";
 
 interface SalonOperatingPoliciesProps {
@@ -15,9 +24,12 @@ const SalonOperatingPolicies = forwardRef<
 >(({ suppressMessages = false }, ref) => {
   const [salonId, setSalonId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
-  
+  const [_saving, setSaving] = useState(false);
+  const [message, setMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
+
   const [policies, setPolicies] = useState<OperatingPolicies>({
     refundPolicy: "",
     lateArrivalPolicy: "",
@@ -30,15 +42,20 @@ const SalonOperatingPolicies = forwardRef<
         const result = await checkOwnerSalon();
         if (result.hasSalon && result.salon?.salon_id) {
           setSalonId(result.salon.salon_id);
-          
-          const policiesResult = await getSalonOperatingPolicies(result.salon.salon_id);
+
+          const policiesResult = await getSalonOperatingPolicies(
+            result.salon.salon_id
+          );
           if (policiesResult.policies) {
             setPolicies(policiesResult.policies);
           }
         }
       } catch (error) {
         console.error("Error fetching salon data:", error);
-        setMessage({ type: 'error', text: 'Failed to load operating policies' });
+        setMessage({
+          type: "error",
+          text: "Failed to load operating policies",
+        });
       } finally {
         setLoading(false);
       }
@@ -49,8 +66,8 @@ const SalonOperatingPolicies = forwardRef<
 
   const handleSave = async () => {
     if (!salonId) {
-      setMessage({ type: 'error', text: 'No salon found' });
-      throw new Error('No salon found');
+      setMessage({ type: "error", text: "No salon found" });
+      throw new Error("No salon found");
     }
 
     setSaving(true);
@@ -58,16 +75,19 @@ const SalonOperatingPolicies = forwardRef<
 
     try {
       const result = await updateSalonOperatingPolicies(salonId, policies);
-      
+
       if (result.error) {
-        setMessage({ type: 'error', text: result.error });
+        setMessage({ type: "error", text: result.error });
         throw new Error(result.error);
       } else {
-        setMessage({ type: 'success', text: result.message || 'Operating policies updated successfully!' });
+        setMessage({
+          type: "success",
+          text: result.message || "Operating policies updated successfully!",
+        });
       }
     } catch (error) {
       console.error("Error saving operating policies:", error);
-      setMessage({ type: 'error', text: 'Failed to save operating policies' });
+      setMessage({ type: "error", text: "Failed to save operating policies" });
       throw error;
     } finally {
       setSaving(false);
@@ -94,7 +114,13 @@ const SalonOperatingPolicies = forwardRef<
       </div>
 
       {!suppressMessages && message && (
-        <div className={`p-3 rounded-lg ${message.type === 'success' ? 'bg-secondary text-foreground' : 'bg-destructive/10 text-destructive'}`}>
+        <div
+          className={`p-3 rounded-lg ${
+            message.type === "success"
+              ? "bg-secondary text-foreground"
+              : "bg-destructive/10 text-destructive"
+          }`}
+        >
           {message.text}
         </div>
       )}
@@ -106,7 +132,9 @@ const SalonOperatingPolicies = forwardRef<
           </label>
           <textarea
             value={policies.refundPolicy}
-            onChange={(e) => setPolicies({ ...policies, refundPolicy: e.target.value })}
+            onChange={(e) =>
+              setPolicies({ ...policies, refundPolicy: e.target.value })
+            }
             className="w-full rounded-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
             rows={3}
             placeholder="Enter your refund policy (e.g., Full refund if cancelled 24 hours before appointment)"
@@ -119,7 +147,9 @@ const SalonOperatingPolicies = forwardRef<
           </label>
           <textarea
             value={policies.lateArrivalPolicy}
-            onChange={(e) => setPolicies({ ...policies, lateArrivalPolicy: e.target.value })}
+            onChange={(e) =>
+              setPolicies({ ...policies, lateArrivalPolicy: e.target.value })
+            }
             className="w-full rounded-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
             rows={3}
             placeholder="Enter your late arrival policy (e.g., Appointments may be shortened if client arrives more than 15 minutes late)"
@@ -132,7 +162,9 @@ const SalonOperatingPolicies = forwardRef<
           </label>
           <textarea
             value={policies.noShowPolicy}
-            onChange={(e) => setPolicies({ ...policies, noShowPolicy: e.target.value })}
+            onChange={(e) =>
+              setPolicies({ ...policies, noShowPolicy: e.target.value })
+            }
             className="w-full rounded-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
             rows={3}
             placeholder="Enter your no-show policy (e.g., No-shows may be charged 50% of service fee)"
@@ -146,4 +178,3 @@ const SalonOperatingPolicies = forwardRef<
 SalonOperatingPolicies.displayName = "SalonOperatingPolicies";
 
 export default SalonOperatingPolicies;
-

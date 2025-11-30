@@ -47,9 +47,9 @@ const SalonDetailReview: React.FC<SalonReviewsSectionProps> = ({
       try {
         setLoading(true);
         const response = await fetch(
-          API_ENDPOINTS.REVIEWS.GET_SALON_REVIEWS(salonId)
+          `${API_BASE_URL}/reviews/salon/${salonId}`
         );
-        
+
         if (response.ok) {
           const data = await response.json();
           setStats({
@@ -59,8 +59,13 @@ const SalonDetailReview: React.FC<SalonReviewsSectionProps> = ({
           });
           setReviews(data.reviews || []);
         } else {
-          const errorData = await response.json().catch(() => ({ error: response.statusText }));
-          console.error("Failed to fetch reviews:", errorData.error || response.statusText);
+          const errorData = await response
+            .json()
+            .catch(() => ({ error: response.statusText }));
+          console.error(
+            "Failed to fetch reviews:",
+            errorData.error || response.statusText
+          );
           setStats({
             average: 0,
             totalReviews: 0,
@@ -85,12 +90,14 @@ const SalonDetailReview: React.FC<SalonReviewsSectionProps> = ({
   }, [salonId]);
 
   const handleOpenReviewModal = () => {
-    const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+    const token =
+      localStorage.getItem("token") || localStorage.getItem("authToken");
     if (!token) {
-      alert('Please login to write a review');
-      window.location.href = '/sign-in';
+      alert("Please login to write a review");
+      window.location.href = "/sign-in";
       return;
     }
+    onWriteReview?.();
     setShowReviewModal(true);
     setReviewError("");
     setReviewSuccess(false);
@@ -98,7 +105,7 @@ const SalonDetailReview: React.FC<SalonReviewsSectionProps> = ({
 
   const handleSubmitReview = async () => {
     if (!salonId) return;
-    
+
     if (reviewRating === 0) {
       setReviewError("Please select a rating");
       return;
@@ -113,7 +120,8 @@ const SalonDetailReview: React.FC<SalonReviewsSectionProps> = ({
     setReviewError("");
 
     try {
-      const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+      const token =
+        localStorage.getItem("token") || localStorage.getItem("authToken");
       if (!token) {
         setReviewError("Please login to write a review");
         return;
@@ -179,7 +187,9 @@ const SalonDetailReview: React.FC<SalonReviewsSectionProps> = ({
           </button>
         </div>
         <div className="bg-card border border-border rounded-2xl shadow-sm p-6 text-center">
-          <p className="text-muted-foreground mb-4">No reviews yet. Be the first to review this salon!</p>
+          <p className="text-muted-foreground mb-4">
+            No reviews yet. Be the first to review this salon!
+          </p>
           <button
             onClick={handleOpenReviewModal}
             className="bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-medium px-6 py-2 rounded-lg transition-shadow shadow-sm font-inter cursor-pointer"
@@ -193,7 +203,9 @@ const SalonDetailReview: React.FC<SalonReviewsSectionProps> = ({
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
             <div className="bg-background border border-border rounded-2xl shadow-lg max-w-md w-full p-6 font-inter">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-2xl font-bold text-foreground">Write a Review</h3>
+                <h3 className="text-2xl font-bold text-foreground">
+                  Write a Review
+                </h3>
                 <button
                   onClick={() => {
                     setShowReviewModal(false);
@@ -212,8 +224,12 @@ const SalonDetailReview: React.FC<SalonReviewsSectionProps> = ({
                   <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Star className="w-8 h-8 text-green-600 fill-green-600" />
                   </div>
-                  <p className="text-lg font-semibold text-foreground">Thank you for your review!</p>
-                  <p className="text-sm text-muted-foreground mt-2">Your review has been submitted.</p>
+                  <p className="text-lg font-semibold text-foreground">
+                    Thank you for your review!
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Your review has been submitted.
+                  </p>
                 </div>
               ) : (
                 <>
@@ -276,7 +292,11 @@ const SalonDetailReview: React.FC<SalonReviewsSectionProps> = ({
                     </button>
                     <button
                       onClick={handleSubmitReview}
-                      disabled={submitting || reviewRating === 0 || !reviewComment.trim()}
+                      disabled={
+                        submitting ||
+                        reviewRating === 0 ||
+                        !reviewComment.trim()
+                      }
                       className="flex-1 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {submitting ? "Submitting..." : "Submit Review"}
@@ -308,11 +328,12 @@ const SalonDetailReview: React.FC<SalonReviewsSectionProps> = ({
         </button>
       </div>
 
-
       {/* Individual Reviews List */}
       {reviews.length > 0 && (
         <div className="mt-6 space-y-4">
-          <h3 className="text-xl font-bold text-foreground mb-4">Customer Reviews</h3>
+          <h3 className="text-xl font-bold text-foreground mb-4">
+            Customer Reviews
+          </h3>
           {reviews.map((review, index) => (
             <div
               key={index}
@@ -372,7 +393,9 @@ const SalonDetailReview: React.FC<SalonReviewsSectionProps> = ({
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-background border border-border rounded-2xl shadow-lg max-w-md w-full p-6 font-inter">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-2xl font-bold text-foreground">Write a Review</h3>
+              <h3 className="text-2xl font-bold text-foreground">
+                Write a Review
+              </h3>
               <button
                 onClick={() => {
                   setShowReviewModal(false);
@@ -391,8 +414,12 @@ const SalonDetailReview: React.FC<SalonReviewsSectionProps> = ({
                 <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Star className="w-8 h-8 text-green-600 fill-green-600" />
                 </div>
-                <p className="text-lg font-semibold text-foreground">Thank you for your review!</p>
-                <p className="text-sm text-muted-foreground mt-2">Your review has been submitted.</p>
+                <p className="text-lg font-semibold text-foreground">
+                  Thank you for your review!
+                </p>
+                <p className="text-sm text-muted-foreground mt-2">
+                  Your review has been submitted.
+                </p>
               </div>
             ) : (
               <>
@@ -455,7 +482,9 @@ const SalonDetailReview: React.FC<SalonReviewsSectionProps> = ({
                   </button>
                   <button
                     onClick={handleSubmitReview}
-                    disabled={submitting || reviewRating === 0 || !reviewComment.trim()}
+                    disabled={
+                      submitting || reviewRating === 0 || !reviewComment.trim()
+                    }
                     className="flex-1 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {submitting ? "Submitting..." : "Submit Review"}

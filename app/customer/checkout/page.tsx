@@ -1,8 +1,16 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Calendar, Clock, DollarSign, User, Scissors, MapPin, Mail, CreditCard } from "lucide-react";
+import {
+  Calendar,
+  Clock,
+  User,
+  Scissors,
+  MapPin,
+  Mail,
+  CreditCard,
+} from "lucide-react";
 import { API_ENDPOINTS, fetchConfig } from "@/libs/api/config";
 
 interface AppointmentDetails {
@@ -24,29 +32,29 @@ const CheckoutPage = () => {
   const searchParams = useSearchParams();
   const appointmentId = searchParams.get("appointmentId");
 
-  const [appointment, setAppointment] = useState<AppointmentDetails | null>(null);
+  const [appointment, setAppointment] = useState<AppointmentDetails | null>(
+    null
+  );
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    if (appointmentId) {
-      fetchAppointmentDetails();
-    }
-  }, [appointmentId]);
-
-  const fetchAppointmentDetails = async () => {
+  const fetchAppointmentDetails = useCallback(async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem("token") || localStorage.getItem("authToken");
+      const token =
+        localStorage.getItem("token") || localStorage.getItem("authToken");
 
-      const response = await fetch(`${API_ENDPOINTS.APPOINTMENTS.BOOK}/${appointmentId}`, {
-        ...fetchConfig,
-        headers: {
-          ...fetchConfig.headers,
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-      });
+      const response = await fetch(
+        `${API_ENDPOINTS.APPOINTMENTS.BOOK}/${appointmentId}`,
+        {
+          ...fetchConfig,
+          headers: {
+            ...fetchConfig.headers,
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Failed to fetch appointment details");
@@ -55,26 +63,34 @@ const CheckoutPage = () => {
       const data = await response.json();
       setAppointment(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load appointment");
+      setError(
+        err instanceof Error ? err.message : "Failed to load appointment"
+      );
     } finally {
       setLoading(false);
     }
-  };
+  }, [appointmentId]);
+
+  useEffect(() => {
+    if (appointmentId) {
+      fetchAppointmentDetails();
+    }
+  }, [appointmentId, fetchAppointmentDetails]);
 
   const handleProceedToPayment = async () => {
-    if (!appointment) {
-      setError("Appointment not found");
-      return;
-    }
-
     setProcessing(true);
     setError("");
 
     try {
-      const token = localStorage.getItem("token") || localStorage.getItem("authToken");
+      const token =
+        localStorage.getItem("token") || localStorage.getItem("authToken");
 
       if (!token) {
         throw new Error("Please login to continue");
+      }
+
+      if (!appointment) {
+        throw new Error("Appointment details not found");
       }
 
       // Calculate total amount (price + tax)
@@ -105,7 +121,9 @@ const CheckoutPage = () => {
       // Redirect to Stripe payment page
       window.location.href = data.payment_link;
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Payment failed. Please try again.");
+      setError(
+        err instanceof Error ? err.message : "Payment failed. Please try again."
+      );
       setProcessing(false);
     }
   };
@@ -115,7 +133,9 @@ const CheckoutPage = () => {
       <div className="min-h-screen bg-muted flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-primary mx-auto"></div>
-          <p className="mt-4 text-muted-foreground font-semibold">Loading checkout...</p>
+          <p className="mt-4 text-muted-foreground font-semibold">
+            Loading checkout...
+          </p>
         </div>
       </div>
     );
@@ -126,8 +146,18 @@ const CheckoutPage = () => {
       <div className="min-h-screen bg-muted flex items-center justify-center p-4">
         <div className="max-w-md w-full bg-card border border-border rounded-2xl p-8 text-center">
           <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <svg
+              className="w-8 h-8 text-red-600"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </div>
           <h2 className="text-2xl font-bold mb-2">Checkout Error</h2>
@@ -154,7 +184,9 @@ const CheckoutPage = () => {
       <div className="max-w-4xl mx-auto">
         <div className="mb-6">
           <h1 className="text-3xl font-bold">Review & Pay</h1>
-          <p className="text-muted-foreground mt-2">Review your appointment and proceed to payment</p>
+          <p className="text-muted-foreground mt-2">
+            Review your appointment and proceed to payment
+          </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -171,7 +203,9 @@ const CheckoutPage = () => {
                   </div>
                   <div className="flex-1">
                     <p className="text-sm text-muted-foreground">Salon</p>
-                    <p className="text-xl font-semibold">{appointment.salon_name}</p>
+                    <p className="text-xl font-semibold">
+                      {appointment.salon_name}
+                    </p>
                   </div>
                 </div>
 
@@ -181,7 +215,9 @@ const CheckoutPage = () => {
                   </div>
                   <div className="flex-1">
                     <p className="text-sm text-muted-foreground">Service</p>
-                    <p className="text-xl font-semibold">{appointment.service_name}</p>
+                    <p className="text-xl font-semibold">
+                      {appointment.service_name}
+                    </p>
                   </div>
                 </div>
 
@@ -191,7 +227,9 @@ const CheckoutPage = () => {
                   </div>
                   <div className="flex-1">
                     <p className="text-sm text-muted-foreground">Stylist</p>
-                    <p className="text-xl font-semibold">{appointment.staff_name}</p>
+                    <p className="text-xl font-semibold">
+                      {appointment.staff_name}
+                    </p>
                   </div>
                 </div>
 
@@ -231,7 +269,9 @@ const CheckoutPage = () => {
                 {appointment.notes && (
                   <div className="mt-4 p-4 bg-muted rounded-lg">
                     <p className="text-sm font-semibold mb-1">Notes:</p>
-                    <p className="text-sm text-muted-foreground">{appointment.notes}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {appointment.notes}
+                    </p>
                   </div>
                 )}
               </div>
@@ -242,10 +282,14 @@ const CheckoutPage = () => {
               <div className="flex items-start gap-3">
                 <Mail className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
                 <div className="flex-1">
-                  <p className="font-semibold text-blue-900 mb-1">Payment Link Will Be Sent to Your Email</p>
+                  <p className="font-semibold text-blue-900 mb-1">
+                    Payment Link Will Be Sent to Your Email
+                  </p>
                   <p className="text-sm text-blue-700">
-                    After clicking "Proceed to Payment", we'll send you a secure payment link via email.
-                    You'll then be redirected to complete your payment through Stripe's secure checkout.
+                    After clicking &ldquo;Proceed to Payment&rdquo;, we&apos;ll
+                    send you a secure payment link via email. You&apos;ll then
+                    be redirected to complete your payment through Stripe&apos;s
+                    secure checkout.
                   </p>
                 </div>
               </div>
@@ -261,7 +305,9 @@ const CheckoutPage = () => {
               <div className="space-y-3 mb-6 pb-4 border-b border-border">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Service Price</span>
-                  <span className="font-semibold">${appointment.price.toFixed(2)}</span>
+                  <span className="font-semibold">
+                    ${appointment.price.toFixed(2)}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Tax (8%)</span>
@@ -271,7 +317,9 @@ const CheckoutPage = () => {
 
               <div className="flex justify-between items-center mb-6">
                 <span className="text-lg font-bold">Total</span>
-                <span className="text-2xl font-bold text-primary">${totalAmount.toFixed(2)}</span>
+                <span className="text-2xl font-bold text-primary">
+                  ${totalAmount.toFixed(2)}
+                </span>
               </div>
 
               {/* Payment Button */}
@@ -300,8 +348,18 @@ const CheckoutPage = () => {
 
               <div className="mt-6 pt-6 border-t border-border">
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                    />
                   </svg>
                   <span>Payments secured by Stripe</span>
                 </div>

@@ -13,6 +13,10 @@ import SalonDetailStaffProfile from "@/components/Salon/SalonDetailStaffProfile"
 import SalonDetailReview from "@/components/Salon/SalonDetailReviews";
 import SalonDetailGallery from "@/components/Salon/SalonDetailGallery";
 
+interface BusinessHours {
+  [key: string]: { open: string; close: string; closed?: boolean } | undefined;
+}
+
 interface Salon {
   id?: string;
   salon_id?: number;
@@ -35,14 +39,23 @@ interface Salon {
 const SalonDetailsPage: React.FC<{ params: Promise<{ id: string }> }> = ({
   params,
 }) => {
-  const unwrappedParams = React.use(params);
-  const salonId = String(unwrappedParams.id);
-
+  const [salonId, setSalonId] = useState<string>("");
   const [salon, setSalon] = useState<Salon | null>(null);
-  const [businessHours, setBusinessHours] = useState<any>(null);
-  const [bookingSettings, setBookingSettings] = useState<any>(null);
+  const [businessHours, setBusinessHours] = useState<BusinessHours | null>(
+    null
+  );
+  const [bookingSettings, setBookingSettings] = useState<Record<
+    string,
+    unknown
+  > | null>(null);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    params.then((resolvedParams) => {
+      setSalonId(resolvedParams.id);
+    });
+  }, [params]);
 
   useEffect(() => {
     const fetchSalon = async () => {
@@ -59,8 +72,13 @@ const SalonDetailsPage: React.FC<{ params: Promise<{ id: string }> }> = ({
             setBookingSettings(backendSalon.bookingSettings);
           }
         } else {
-          const errorData = await response.json().catch(() => ({ error: response.statusText }));
-          console.error("Failed to fetch salon:", errorData.error || response.statusText);
+          const errorData = await response
+            .json()
+            .catch(() => ({ error: response.statusText }));
+          console.error(
+            "Failed to fetch salon:",
+            errorData.error || response.statusText
+          );
           // Set error message if provided by backend
           if (errorData.message) {
             setErrorMessage(errorData.message);
@@ -98,10 +116,13 @@ const SalonDetailsPage: React.FC<{ params: Promise<{ id: string }> }> = ({
     return (
       <div className="p-6 text-center">
         <h1 className="text-2xl font-bold mb-2">
-          {errorMessage?.includes("not available") ? "Salon Not Available" : "Salon Not Found"}
+          {errorMessage?.includes("not available")
+            ? "Salon Not Available"
+            : "Salon Not Found"}
         </h1>
         <p className="text-muted-foreground mb-4">
-          {errorMessage || "The salon you're looking for doesn't exist or is not available."}
+          {errorMessage ||
+            "The salon you're looking for doesn't exist or is not available."}
         </p>
         <a
           href="/customer"
@@ -121,9 +142,15 @@ const SalonDetailsPage: React.FC<{ params: Promise<{ id: string }> }> = ({
       <div className="flex">
         <div className="p-6 sm:p-8 w-full sm:w-2/3 ">
           <SalonDetailHero salon={salon} />
-          <SalonDetailInfo amenities={salon.amenities || []} description={salon.description} />
+          <SalonDetailInfo
+            amenities={salon.amenities || []}
+            description={salon.description}
+          />
           <SalonDetailGallery salonId={displayId} />
-          <SalonDetailBookingPolicy salonId={displayId} bookingSettings={bookingSettings} />
+          <SalonDetailBookingPolicy
+            salonId={displayId}
+            bookingSettings={bookingSettings}
+          />
           <SalonDetailServices salonId={displayId} />
           <SalonDetailStaffProfile salonId={displayId} />
 

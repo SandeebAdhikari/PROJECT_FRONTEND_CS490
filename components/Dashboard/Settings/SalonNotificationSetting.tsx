@@ -1,9 +1,18 @@
 "use client";
 
-import React, { useState, useEffect, forwardRef, useImperativeHandle } from "react";
+import React, {
+  useState,
+  useEffect,
+  forwardRef,
+  useImperativeHandle,
+} from "react";
 import { Bell } from "lucide-react";
 import ToggleButton from "../ToggleButton";
-import { checkOwnerSalon, getSalonNotificationSettings, updateSalonNotificationSettings } from "@/libs/api/salons";
+import {
+  checkOwnerSalon,
+  getSalonNotificationSettings,
+  updateSalonNotificationSettings,
+} from "@/libs/api/salons";
 import type { NotificationSettings } from "@/libs/api/salons";
 
 interface SalonNotificationSettingsProps {
@@ -16,14 +25,18 @@ const SalonNotificationSettings = forwardRef<
 >(({ suppressMessages = false }, ref) => {
   const [salonId, setSalonId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
-  
-  const [notificationSettings, setNotificationSettings] = useState<NotificationSettings>({
-    emailReminders: true,
-    inAppReminders: true,
-    reminderHoursBefore: 24,
-  });
+  const [_saving, setSaving] = useState(false);
+  const [message, setMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
+
+  const [notificationSettings, setNotificationSettings] =
+    useState<NotificationSettings>({
+      emailReminders: true,
+      inAppReminders: true,
+      reminderHoursBefore: 24,
+    });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -31,16 +44,21 @@ const SalonNotificationSettings = forwardRef<
         const result = await checkOwnerSalon();
         if (result.hasSalon && result.salon?.salon_id) {
           setSalonId(result.salon.salon_id);
-          
+
           // Fetch notification settings
-          const settingsResult = await getSalonNotificationSettings(result.salon.salon_id);
+          const settingsResult = await getSalonNotificationSettings(
+            result.salon.salon_id
+          );
           if (settingsResult.notificationSettings) {
             setNotificationSettings(settingsResult.notificationSettings);
           }
         }
       } catch (error) {
         console.error("Error fetching salon data:", error);
-        setMessage({ type: 'error', text: 'Failed to load notification settings' });
+        setMessage({
+          type: "error",
+          text: "Failed to load notification settings",
+        });
       } finally {
         setLoading(false);
       }
@@ -49,8 +67,8 @@ const SalonNotificationSettings = forwardRef<
     fetchData();
   }, []);
 
-  const handleToggle = (field: 'emailReminders' | 'inAppReminders') => {
-    setNotificationSettings(prev => ({
+  const handleToggle = (field: "emailReminders" | "inAppReminders") => {
+    setNotificationSettings((prev) => ({
       ...prev,
       [field]: !prev[field],
     }));
@@ -58,7 +76,7 @@ const SalonNotificationSettings = forwardRef<
 
   const handleReminderTimeChange = (value: string) => {
     const hours = parseInt(value);
-    setNotificationSettings(prev => ({
+    setNotificationSettings((prev) => ({
       ...prev,
       reminderHoursBefore: hours,
     }));
@@ -66,25 +84,34 @@ const SalonNotificationSettings = forwardRef<
 
   const handleSave = async () => {
     if (!salonId) {
-      setMessage({ type: 'error', text: 'No salon found' });
-      throw new Error('No salon found');
+      setMessage({ type: "error", text: "No salon found" });
+      throw new Error("No salon found");
     }
 
     setSaving(true);
     setMessage(null);
 
     try {
-      const result = await updateSalonNotificationSettings(salonId, notificationSettings);
-      
+      const result = await updateSalonNotificationSettings(
+        salonId,
+        notificationSettings
+      );
+
       if (result.error) {
-        setMessage({ type: 'error', text: result.error });
+        setMessage({ type: "error", text: result.error });
         throw new Error(result.error);
       } else {
-        setMessage({ type: 'success', text: result.message || 'Notification settings updated successfully!' });
+        setMessage({
+          type: "success",
+          text: result.message || "Notification settings updated successfully!",
+        });
       }
     } catch (error) {
       console.error("Error saving notification settings:", error);
-      setMessage({ type: 'error', text: 'Failed to save notification settings' });
+      setMessage({
+        type: "error",
+        text: "Failed to save notification settings",
+      });
       throw error;
     } finally {
       setSaving(false);
@@ -98,7 +125,9 @@ const SalonNotificationSettings = forwardRef<
   if (loading) {
     return (
       <div className="bg-card border border-border rounded-2xl p-6">
-        <p className="text-muted-foreground">Loading notification settings...</p>
+        <p className="text-muted-foreground">
+          Loading notification settings...
+        </p>
       </div>
     );
   }
@@ -111,7 +140,13 @@ const SalonNotificationSettings = forwardRef<
       </div>
 
       {!suppressMessages && message && (
-        <div className={`p-3 rounded-lg ${message.type === 'success' ? 'bg-secondary text-foreground' : 'bg-destructive/10 text-destructive'}`}>
+        <div
+          className={`p-3 rounded-lg ${
+            message.type === "success"
+              ? "bg-secondary text-foreground"
+              : "bg-destructive/10 text-destructive"
+          }`}
+        >
           {message.text}
         </div>
       )}
@@ -127,7 +162,7 @@ const SalonNotificationSettings = forwardRef<
           <div className="flex items-center gap-3">
             <ToggleButton
               checked={notificationSettings.emailReminders}
-              onChange={() => handleToggle('emailReminders')}
+              onChange={() => handleToggle("emailReminders")}
             />
           </div>
         </div>
@@ -142,7 +177,7 @@ const SalonNotificationSettings = forwardRef<
           <div className="flex items-center gap-3">
             <ToggleButton
               checked={notificationSettings.inAppReminders}
-              onChange={() => handleToggle('inAppReminders')}
+              onChange={() => handleToggle("inAppReminders")}
             />
           </div>
         </div>

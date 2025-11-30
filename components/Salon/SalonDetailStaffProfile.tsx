@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { API_BASE_URL } from "@/libs/api/config";
 import StaffProfileCard from "@/components/Dashboard/Staff/StaffProfileCard";
+import { API_ENDPOINTS } from "@/libs/api/config";
 
 interface Staff {
   staff_id: number;
@@ -56,7 +56,9 @@ const SalonStaffSection: React.FC<{ salonId: string }> = ({ salonId }) => {
     return (
       <div className="mt-10 w-full">
         <h2 className="text-2xl font-extrabold mb-6">Our Expert Team</h2>
-        <p className="text-muted-foreground">No staff members available at this time.</p>
+        <p className="text-muted-foreground">
+          No staff members available at this time.
+        </p>
       </div>
     );
   }
@@ -73,9 +75,8 @@ const SalonStaffSection: React.FC<{ salonId: string }> = ({ salonId }) => {
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {staffMembers.map((member) => (
-          <StaffProfileCard 
-            key={member.staff_id} 
-            id={member.staff_id}
+          <StaffProfileCard
+            key={member.staff_id}
             name={member.full_name}
             role={member.staff_role || "Staff"}
             rating={member.avg_rating || 0}

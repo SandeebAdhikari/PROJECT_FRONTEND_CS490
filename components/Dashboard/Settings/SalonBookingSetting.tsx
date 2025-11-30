@@ -1,6 +1,11 @@
 "use client";
 
-import React, { useState, useEffect, forwardRef, useImperativeHandle } from "react";
+import React, {
+  useState,
+  useEffect,
+  forwardRef,
+  useImperativeHandle,
+} from "react";
 import { Calendar } from "lucide-react";
 import ToggleButton from "../ToggleButton";
 import { checkOwnerSalon } from "@/libs/api/salons";
@@ -20,8 +25,11 @@ const SalonBookingSettings = forwardRef<
   const [advanceBookingDays, setAdvanceBookingDays] = useState(30);
   const [depositAmount, setDepositAmount] = useState(25);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [_saving, setSaving] = useState(false);
+  const [message, setMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
 
   useEffect(() => {
     const loadSalonData = async () => {
@@ -29,7 +37,7 @@ const SalonBookingSettings = forwardRef<
         const result = await checkOwnerSalon();
         if (result.salon?.salon_id) {
           setSalonId(result.salon.salon_id);
-          
+
           // Fetch booking settings
           const token = localStorage.getItem("token");
           const response = await fetch(
@@ -90,10 +98,16 @@ const SalonBookingSettings = forwardRef<
       const result = await response.json();
 
       if (!response.ok) {
-        setMessage({ type: "error", text: result.error || "Failed to save settings" });
+        setMessage({
+          type: "error",
+          text: result.error || "Failed to save settings",
+        });
         throw new Error(result.error || "Failed to save settings");
       } else {
-        setMessage({ type: "success", text: "Booking settings updated successfully!" });
+        setMessage({
+          type: "success",
+          text: "Booking settings updated successfully!",
+        });
       }
     } catch (error) {
       console.error("Error saving booking settings:", error);

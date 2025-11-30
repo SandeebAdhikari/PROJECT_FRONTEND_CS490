@@ -1,9 +1,18 @@
 "use client";
 
-import React, { useState, useEffect, forwardRef, useImperativeHandle } from "react";
+import React, {
+  useState,
+  useEffect,
+  forwardRef,
+  useImperativeHandle,
+} from "react";
 import { Star } from "lucide-react";
 import ToggleButton from "../ToggleButton";
-import { checkOwnerSalon, getSalonReviewSettings, updateSalonReviewSettings } from "@/libs/api/salons";
+import {
+  checkOwnerSalon,
+  getSalonReviewSettings,
+  updateSalonReviewSettings,
+} from "@/libs/api/salons";
 import type { ReviewSettings } from "@/libs/api/salons";
 
 interface SalonReviewSettingsProps {
@@ -16,9 +25,12 @@ const SalonReviewSettings = forwardRef<
 >(({ suppressMessages = false }, ref) => {
   const [salonId, setSalonId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
-  
+  const [_saving, setSaving] = useState(false);
+  const [message, setMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
+
   const [reviewSettings, setReviewSettings] = useState<ReviewSettings>({
     autoRequestReviews: true,
     reviewRequestTiming: 24,
@@ -31,15 +43,17 @@ const SalonReviewSettings = forwardRef<
         const result = await checkOwnerSalon();
         if (result.hasSalon && result.salon?.salon_id) {
           setSalonId(result.salon.salon_id);
-          
-          const settingsResult = await getSalonReviewSettings(result.salon.salon_id);
+
+          const settingsResult = await getSalonReviewSettings(
+            result.salon.salon_id
+          );
           if (settingsResult.reviewSettings) {
             setReviewSettings(settingsResult.reviewSettings);
           }
         }
       } catch (error) {
         console.error("Error fetching salon data:", error);
-        setMessage({ type: 'error', text: 'Failed to load review settings' });
+        setMessage({ type: "error", text: "Failed to load review settings" });
       } finally {
         setLoading(false);
       }
@@ -50,8 +64,8 @@ const SalonReviewSettings = forwardRef<
 
   const handleSave = async () => {
     if (!salonId) {
-      setMessage({ type: 'error', text: 'No salon found' });
-      throw new Error('No salon found');
+      setMessage({ type: "error", text: "No salon found" });
+      throw new Error("No salon found");
     }
 
     setSaving(true);
@@ -59,16 +73,19 @@ const SalonReviewSettings = forwardRef<
 
     try {
       const result = await updateSalonReviewSettings(salonId, reviewSettings);
-      
+
       if (result.error) {
-        setMessage({ type: 'error', text: result.error });
+        setMessage({ type: "error", text: result.error });
         throw new Error(result.error);
       } else {
-        setMessage({ type: 'success', text: result.message || 'Review settings updated successfully!' });
+        setMessage({
+          type: "success",
+          text: result.message || "Review settings updated successfully!",
+        });
       }
     } catch (error) {
       console.error("Error saving review settings:", error);
-      setMessage({ type: 'error', text: 'Failed to save review settings' });
+      setMessage({ type: "error", text: "Failed to save review settings" });
       throw error;
     } finally {
       setSaving(false);
@@ -95,7 +112,13 @@ const SalonReviewSettings = forwardRef<
       </div>
 
       {!suppressMessages && message && (
-        <div className={`p-3 rounded-lg ${message.type === 'success' ? 'bg-secondary text-foreground' : 'bg-destructive/10 text-destructive'}`}>
+        <div
+          className={`p-3 rounded-lg ${
+            message.type === "success"
+              ? "bg-secondary text-foreground"
+              : "bg-destructive/10 text-destructive"
+          }`}
+        >
           {message.text}
         </div>
       )}
@@ -110,18 +133,32 @@ const SalonReviewSettings = forwardRef<
           </div>
           <ToggleButton
             checked={reviewSettings.autoRequestReviews}
-            onChange={(checked) => setReviewSettings({ ...reviewSettings, autoRequestReviews: checked })}
+            onChange={(checked) =>
+              setReviewSettings({
+                ...reviewSettings,
+                autoRequestReviews: checked,
+              })
+            }
           />
         </div>
 
         {reviewSettings.autoRequestReviews && (
           <div>
-            <label className="block text-sm font-medium mb-2">
+            <label
+              htmlFor="review-timing"
+              className="block text-sm font-medium mb-2"
+            >
               Review Request Timing (hours after appointment)
             </label>
             <select
+              id="review-timing"
               value={reviewSettings.reviewRequestTiming}
-              onChange={(e) => setReviewSettings({ ...reviewSettings, reviewRequestTiming: parseInt(e.target.value) })}
+              onChange={(e) =>
+                setReviewSettings({
+                  ...reviewSettings,
+                  reviewRequestTiming: parseInt(e.target.value),
+                })
+              }
               className="w-full rounded-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <option value={1}>1 hour</option>
@@ -142,7 +179,12 @@ const SalonReviewSettings = forwardRef<
           </div>
           <ToggleButton
             checked={reviewSettings.publicReviewsEnabled}
-            onChange={(checked) => setReviewSettings({ ...reviewSettings, publicReviewsEnabled: checked })}
+            onChange={(checked) =>
+              setReviewSettings({
+                ...reviewSettings,
+                publicReviewsEnabled: checked,
+              })
+            }
           />
         </div>
       </div>
@@ -153,4 +195,3 @@ const SalonReviewSettings = forwardRef<
 SalonReviewSettings.displayName = "SalonReviewSettings";
 
 export default SalonReviewSettings;
-

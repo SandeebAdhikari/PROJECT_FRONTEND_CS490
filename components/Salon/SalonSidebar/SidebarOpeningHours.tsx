@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect } from "react";
 import { Clock } from "lucide-react";
-import { API_BASE_URL } from "@/libs/api/config";
+import { API_ENDPOINTS } from "@/libs/api/config";
 
-interface BusinessHours {
+export interface BusinessHours {
   [key: string]: {
     enabled: boolean;
     start: string;
@@ -20,10 +20,23 @@ interface SidebarOpeningHoursProps {
   businessHours?: BusinessHours;
 }
 
-const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+const DAYS = [
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+  "Sunday",
+];
 
-const SidebarOpeningHours: React.FC<SidebarOpeningHoursProps> = ({ salonId, businessHours: propBusinessHours }) => {
-  const [businessHours, setBusinessHours] = useState<BusinessHours | null>(propBusinessHours || null);
+const SidebarOpeningHours: React.FC<SidebarOpeningHoursProps> = ({
+  salonId,
+  businessHours: propBusinessHours,
+}) => {
+  const [businessHours, setBusinessHours] = useState<BusinessHours | null>(
+    propBusinessHours || null
+  );
   const [loading, setLoading] = useState(!propBusinessHours);
 
   useEffect(() => {
@@ -40,7 +53,9 @@ const SidebarOpeningHours: React.FC<SidebarOpeningHoursProps> = ({ salonId, busi
 
     const fetchBusinessHours = async () => {
       try {
-        const response = await fetch(API_ENDPOINTS.SALONS.GET_BUSINESS_HOURS_PUBLIC(salonId));
+        const response = await fetch(
+          API_ENDPOINTS.SALONS.GET_BUSINESS_HOURS_PUBLIC(salonId)
+        );
         if (response.ok) {
           const data = await response.json();
           if (data.businessHours) {
@@ -59,15 +74,20 @@ const SidebarOpeningHours: React.FC<SidebarOpeningHoursProps> = ({ salonId, busi
 
   const today = new Date().toLocaleString("en-US", { weekday: "long" });
   const now = new Date().getHours();
-  
+
   let isOpen = false;
   if (businessHours && businessHours[today]?.enabled) {
     const dayHours = businessHours[today];
     // Support both 'start/end' and legacy 'open/close' formats
     const openTime = dayHours.start || dayHours.open;
     const closeTime = dayHours.end || dayHours.close;
-    
-    if (openTime && closeTime && typeof openTime === 'string' && typeof closeTime === 'string') {
+
+    if (
+      openTime &&
+      closeTime &&
+      typeof openTime === "string" &&
+      typeof closeTime === "string"
+    ) {
       const [openHour] = openTime.split(":").map(Number);
       const [closeHour] = closeTime.split(":").map(Number);
       if (!isNaN(openHour) && !isNaN(closeHour)) {
@@ -108,9 +128,10 @@ const SidebarOpeningHours: React.FC<SidebarOpeningHoursProps> = ({ salonId, busi
             // Support both 'start/end' and legacy 'open/close' formats
             const openTime = dayHours?.start || dayHours?.open;
             const closeTime = dayHours?.end || dayHours?.close;
-            const timeDisplay = dayHours?.enabled && openTime && closeTime
-              ? `${openTime} - ${closeTime}`
-              : "Closed";
+            const timeDisplay =
+              dayHours?.enabled && openTime && closeTime
+                ? `${openTime} - ${closeTime}`
+                : "Closed";
 
             return (
               <li

@@ -1,9 +1,18 @@
 "use client";
 
-import React, { useState, useEffect, forwardRef, useImperativeHandle } from "react";
+import React, {
+  useState,
+  useEffect,
+  forwardRef,
+  useImperativeHandle,
+} from "react";
 import { Gift } from "lucide-react";
 import ToggleButton from "../ToggleButton";
-import { checkOwnerSalon, getSalonLoyaltySettings, updateSalonLoyaltySettings } from "@/libs/api/salons";
+import {
+  checkOwnerSalon,
+  getSalonLoyaltySettings,
+  updateSalonLoyaltySettings,
+} from "@/libs/api/salons";
 import type { LoyaltySettings } from "@/libs/api/salons";
 
 interface SalonLoyaltySettingsProps {
@@ -16,9 +25,12 @@ const SalonLoyaltySettings = forwardRef<
 >(({ suppressMessages = false }, ref) => {
   const [salonId, setSalonId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
-  
+  const [_saving, setSaving] = useState(false);
+  const [message, setMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
+
   const [loyaltySettings, setLoyaltySettings] = useState<LoyaltySettings>({
     loyaltyEnabled: false,
     pointsPerVisit: 10,
@@ -31,15 +43,17 @@ const SalonLoyaltySettings = forwardRef<
         const result = await checkOwnerSalon();
         if (result.hasSalon && result.salon?.salon_id) {
           setSalonId(result.salon.salon_id);
-          
-          const settingsResult = await getSalonLoyaltySettings(result.salon.salon_id);
+
+          const settingsResult = await getSalonLoyaltySettings(
+            result.salon.salon_id
+          );
           if (settingsResult.loyaltySettings) {
             setLoyaltySettings(settingsResult.loyaltySettings);
           }
         }
       } catch (error) {
         console.error("Error fetching salon data:", error);
-        setMessage({ type: 'error', text: 'Failed to load loyalty settings' });
+        setMessage({ type: "error", text: "Failed to load loyalty settings" });
       } finally {
         setLoading(false);
       }
@@ -50,8 +64,8 @@ const SalonLoyaltySettings = forwardRef<
 
   const handleSave = async () => {
     if (!salonId) {
-      setMessage({ type: 'error', text: 'No salon found' });
-      throw new Error('No salon found');
+      setMessage({ type: "error", text: "No salon found" });
+      throw new Error("No salon found");
     }
 
     setSaving(true);
@@ -59,16 +73,19 @@ const SalonLoyaltySettings = forwardRef<
 
     try {
       const result = await updateSalonLoyaltySettings(salonId, loyaltySettings);
-      
+
       if (result.error) {
-        setMessage({ type: 'error', text: result.error });
+        setMessage({ type: "error", text: result.error });
         throw new Error(result.error);
       } else {
-        setMessage({ type: 'success', text: result.message || 'Loyalty settings updated successfully!' });
+        setMessage({
+          type: "success",
+          text: result.message || "Loyalty settings updated successfully!",
+        });
       }
     } catch (error) {
       console.error("Error saving loyalty settings:", error);
-      setMessage({ type: 'error', text: 'Failed to save loyalty settings' });
+      setMessage({ type: "error", text: "Failed to save loyalty settings" });
       throw error;
     } finally {
       setSaving(false);
@@ -95,7 +112,13 @@ const SalonLoyaltySettings = forwardRef<
       </div>
 
       {!suppressMessages && message && (
-        <div className={`p-3 rounded-lg ${message.type === 'success' ? 'bg-secondary text-foreground' : 'bg-destructive/10 text-destructive'}`}>
+        <div
+          className={`p-3 rounded-lg ${
+            message.type === "success"
+              ? "bg-secondary text-foreground"
+              : "bg-destructive/10 text-destructive"
+          }`}
+        >
           {message.text}
         </div>
       )}
@@ -110,7 +133,12 @@ const SalonLoyaltySettings = forwardRef<
           </div>
           <ToggleButton
             checked={loyaltySettings.loyaltyEnabled}
-            onChange={(checked) => setLoyaltySettings({ ...loyaltySettings, loyaltyEnabled: checked })}
+            onChange={(checked) =>
+              setLoyaltySettings({
+                ...loyaltySettings,
+                loyaltyEnabled: checked,
+              })
+            }
           />
         </div>
 
@@ -123,12 +151,17 @@ const SalonLoyaltySettings = forwardRef<
               <input
                 type="number"
                 value={loyaltySettings.pointsPerVisit}
-                onChange={(e) => setLoyaltySettings({ ...loyaltySettings, pointsPerVisit: parseInt(e.target.value) || 10 })}
+                onChange={(e) =>
+                  setLoyaltySettings({
+                    ...loyaltySettings,
+                    pointsPerVisit: parseInt(e.target.value) || 10,
+                  })
+                }
                 className="w-full rounded-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
                 min="1"
+                placeholder="Enter points per visit"
               />
             </div>
-
             <div>
               <label className="block text-sm font-medium mb-2">
                 Redemption Rate (points = $1)
@@ -136,10 +169,16 @@ const SalonLoyaltySettings = forwardRef<
               <input
                 type="number"
                 value={loyaltySettings.redeemRate}
-                onChange={(e) => setLoyaltySettings({ ...loyaltySettings, redeemRate: parseFloat(e.target.value) || 100 })}
+                onChange={(e) =>
+                  setLoyaltySettings({
+                    ...loyaltySettings,
+                    redeemRate: parseFloat(e.target.value) || 100,
+                  })
+                }
                 className="w-full rounded-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
                 min="1"
                 step="0.01"
+                placeholder="Enter redemption rate"
               />
               <p className="text-xs text-muted-foreground mt-1">
                 Example: 100 points = $1 discount
@@ -155,4 +194,3 @@ const SalonLoyaltySettings = forwardRef<
 SalonLoyaltySettings.displayName = "SalonLoyaltySettings";
 
 export default SalonLoyaltySettings;
-

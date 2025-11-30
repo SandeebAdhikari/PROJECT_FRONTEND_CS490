@@ -1,8 +1,15 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Calendar, Clock, DollarSign, User, Scissors, MapPin } from "lucide-react";
+import {
+  Calendar,
+  Clock,
+  DollarSign,
+  User,
+  Scissors,
+  MapPin,
+} from "lucide-react";
 import { API_ENDPOINTS, fetchConfig } from "@/libs/api/config";
 
 interface AppointmentDetails {
@@ -25,28 +32,28 @@ const AppointmentConfirmationPage = () => {
   const router = useRouter();
   const appointmentId = params.id as string;
 
-  const [appointment, setAppointment] = useState<AppointmentDetails | null>(null);
+  const [appointment, setAppointment] = useState<AppointmentDetails | null>(
+    null
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    if (appointmentId) {
-      fetchAppointmentDetails();
-    }
-  }, [appointmentId]);
-
-  const fetchAppointmentDetails = async () => {
+  const fetchAppointmentDetails = useCallback(async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem("token") || localStorage.getItem("authToken");
+      const token =
+        localStorage.getItem("token") || localStorage.getItem("authToken");
 
-      const response = await fetch(`${API_ENDPOINTS.APPOINTMENTS.BOOK}/${appointmentId}`, {
-        ...fetchConfig,
-        headers: {
-          ...fetchConfig.headers,
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-      });
+      const response = await fetch(
+        `${API_ENDPOINTS.APPOINTMENTS.BOOK}/${appointmentId}`,
+        {
+          ...fetchConfig,
+          headers: {
+            ...fetchConfig.headers,
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Failed to fetch appointment details");
@@ -55,17 +62,23 @@ const AppointmentConfirmationPage = () => {
       const data = await response.json();
       setAppointment(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load appointment");
+      setError(
+        err instanceof Error ? err.message : "Failed to load appointment"
+      );
     } finally {
       setLoading(false);
     }
-  };
+  }, [appointmentId]);
 
   const handleProceedToCheckout = () => {
-    if (appointment) {
-      router.push(`/customer/checkout?appointmentId=${appointmentId}`);
-    }
+    router.push(`/customer/checkout/${appointmentId}`);
   };
+
+  useEffect(() => {
+    if (appointmentId) {
+      fetchAppointmentDetails();
+    }
+  }, [appointmentId, fetchAppointmentDetails]);
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -87,7 +100,9 @@ const AppointmentConfirmationPage = () => {
       <div className="min-h-screen bg-muted flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-primary mx-auto"></div>
-          <p className="mt-4 text-muted-foreground font-semibold">Loading appointment details...</p>
+          <p className="mt-4 text-muted-foreground font-semibold">
+            Loading appointment details...
+          </p>
         </div>
       </div>
     );
@@ -98,12 +113,24 @@ const AppointmentConfirmationPage = () => {
       <div className="min-h-screen bg-muted flex items-center justify-center p-4">
         <div className="max-w-md w-full bg-card border border-border rounded-2xl p-8 text-center">
           <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <svg
+              className="w-8 h-8 text-red-600"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </div>
           <h2 className="text-2xl font-bold mb-2">Appointment Not Found</h2>
-          <p className="text-muted-foreground mb-6">{error || "This appointment could not be found."}</p>
+          <p className="text-muted-foreground mb-6">
+            {error || "This appointment could not be found."}
+          </p>
           <button
             onClick={() => router.push("/customer/my-profile")}
             className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 font-semibold transition-colors"
@@ -124,8 +151,18 @@ const AppointmentConfirmationPage = () => {
         {/* Success Header */}
         <div className="bg-card border border-border rounded-2xl p-8 sm:p-10 shadow-soft-br mb-6 text-center">
           <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-10 h-10 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            <svg
+              className="w-10 h-10 text-green-600"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M5 13l4 4L19 7"
+              />
             </svg>
           </div>
           <h1 className="text-3xl font-bold mb-2">Appointment Confirmed!</h1>
@@ -138,7 +175,11 @@ const AppointmentConfirmationPage = () => {
         <div className="bg-card border border-border rounded-2xl p-6 sm:p-8 shadow-soft-br mb-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold">Appointment Details</h2>
-            <span className={`px-4 py-2 rounded-full text-sm font-semibold border ${getStatusColor(appointment.status)}`}>
+            <span
+              className={`px-4 py-2 rounded-full text-sm font-semibold border ${getStatusColor(
+                appointment.status
+              )}`}
+            >
               {appointment.status.toUpperCase()}
             </span>
           </div>
@@ -151,7 +192,9 @@ const AppointmentConfirmationPage = () => {
               </div>
               <div className="flex-1">
                 <p className="text-sm text-muted-foreground">Salon</p>
-                <p className="text-lg font-semibold">{appointment.salon_name}</p>
+                <p className="text-lg font-semibold">
+                  {appointment.salon_name}
+                </p>
               </div>
             </div>
 
@@ -162,7 +205,9 @@ const AppointmentConfirmationPage = () => {
               </div>
               <div className="flex-1">
                 <p className="text-sm text-muted-foreground">Service</p>
-                <p className="text-lg font-semibold">{appointment.service_name}</p>
+                <p className="text-lg font-semibold">
+                  {appointment.service_name}
+                </p>
               </div>
             </div>
 
@@ -173,7 +218,9 @@ const AppointmentConfirmationPage = () => {
               </div>
               <div className="flex-1">
                 <p className="text-sm text-muted-foreground">Stylist</p>
-                <p className="text-lg font-semibold">{appointment.staff_name}</p>
+                <p className="text-lg font-semibold">
+                  {appointment.staff_name}
+                </p>
               </div>
             </div>
 
@@ -218,7 +265,9 @@ const AppointmentConfirmationPage = () => {
               </div>
               <div className="flex-1">
                 <p className="text-sm text-muted-foreground">Total Price</p>
-                <p className="text-2xl font-bold text-primary">${appointment.price.toFixed(2)}</p>
+                <p className="text-2xl font-bold text-primary">
+                  ${appointment.price.toFixed(2)}
+                </p>
               </div>
             </div>
 
@@ -226,7 +275,9 @@ const AppointmentConfirmationPage = () => {
             {appointment.notes && (
               <div className="mt-4 p-4 bg-muted rounded-lg">
                 <p className="text-sm font-semibold mb-1">Notes:</p>
-                <p className="text-sm text-muted-foreground">{appointment.notes}</p>
+                <p className="text-sm text-muted-foreground">
+                  {appointment.notes}
+                </p>
               </div>
             )}
           </div>
@@ -263,7 +314,8 @@ const AppointmentConfirmationPage = () => {
           {!isPending && (
             <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
               <p className="text-sm text-blue-800">
-                <span className="font-semibold">Note:</span> Payment for this appointment has already been processed or is not required.
+                <span className="font-semibold">Note:</span> Payment for this
+                appointment has already been processed or is not required.
               </p>
             </div>
           )}
@@ -272,7 +324,10 @@ const AppointmentConfirmationPage = () => {
         {/* Appointment ID */}
         <div className="mt-6 text-center">
           <p className="text-sm text-muted-foreground">
-            Appointment ID: <span className="font-mono font-semibold">#{appointment.appointment_id}</span>
+            Appointment ID:{" "}
+            <span className="font-mono font-semibold">
+              #{appointment.appointment_id}
+            </span>
           </p>
           <p className="text-xs text-muted-foreground mt-2">
             Keep this ID for your records

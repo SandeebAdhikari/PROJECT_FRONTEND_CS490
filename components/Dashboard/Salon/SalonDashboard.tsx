@@ -50,14 +50,12 @@ const formatCurrency = (value: number) =>
     maximumFractionDigits: 2,
   })}`;
 
-const formatInteger = (value: number) =>
-  Number(value || 0).toLocaleString();
+const formatInteger = (value: number) => Number(value || 0).toLocaleString();
 
 const formatPercent = (value: number) =>
   `${(Number(value || 0) * 100).toFixed(1)}%`;
 
-const formatRating = (value: number) =>
-  `${Number(value || 0).toFixed(1)}/5`;
+const formatRating = (value: number) => `${Number(value || 0).toFixed(1)}/5`;
 
 const cardConfigs: CardConfig[] = [
   {
@@ -148,13 +146,17 @@ const SalonDashboard = () => {
         salonId: String(salonId),
         range: "lifetime",
       });
-        const res = await fetchWithRefresh(
-          API_ENDPOINTS.ANALYTICS.OVERVIEW(undefined, params),
-          { credentials: "include" }
-        );
+      const res = await fetchWithRefresh(
+        API_ENDPOINTS.ANALYTICS.OVERVIEW(salonId, params.toString()),
+        { credentials: "include" }
+      );
       const payload = await res.json();
       if (!res.ok || !payload?.data) {
-        throw new Error(payload?.message || payload?.error || "Failed to load overview metrics");
+        throw new Error(
+          payload?.message ||
+            payload?.error ||
+            "Failed to load overview metrics"
+        );
       }
       setOverview({
         ...defaultOverview,
@@ -235,9 +237,7 @@ const SalonDashboard = () => {
           Loading lifetime metrics…
         </p>
       ) : null}
-      {error && (
-        <p className="text-sm text-destructive mt-2">{error}</p>
-      )}
+      {error && <p className="text-sm text-destructive mt-2">{error}</p>}
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mt-6">
         {cards.map((card) => (

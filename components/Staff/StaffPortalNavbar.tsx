@@ -34,7 +34,7 @@ const StaffPortalNavbar: React.FC<StaffPortalNavbarProps> = ({
             {salonName}
           </p>
           <h1 className="text-3xl font-semibold leading-tight sm:text-4xl">
-            Hey {staffName.split(" ")[0]}, it's a great day to create.
+            Hey {staffName.split(" ")[0]}, it&apos;s a great day to create.
           </h1>
           <p className="text-white/80">
             {staffRole} • Shift {shiftWindow}
