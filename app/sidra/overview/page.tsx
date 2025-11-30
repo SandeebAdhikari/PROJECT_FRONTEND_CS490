@@ -8,6 +8,8 @@ import {
 import DashboardCards from "@/components/Admin/DashboardCards";
 import ChartCard from "@/components/Admin/ChartCard";
 import AdminHeader from "@/components/Admin/AdminHeader";
+import { ResponsiveContainer } from "recharts";
+
 
 import { 
   appointmentsPerHour, 
@@ -26,27 +28,27 @@ export default function SidraDashboard() {
 
   return (
     <div className="pb-10">
-
-      {/* 🔥 TOP HEADER WITH LOGO, WELCOME, PROFILE, NOTIFICATIONS */}
+     
       <AdminHeader adminName={ADMIN_NAME} />
-
-      {/* 📊 QUICK STATS CARDS */}
       <DashboardCards stats={stats} />
-
-      {/* 📈 DASHBOARD CHARTS */}
+     
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
-        {/* APPOINTMENT TRENDS */}
+    
         <ChartCard title="Appointment Trends Per Hour">
-          <LineChart width={400} height={250} data={appointmentsPerHour}>
+        <ResponsiveContainer width="100%" height={250}>
+  <LineChart data={appointmentsPerHour}>
             <XAxis dataKey="hour" stroke="#999" />
             <YAxis stroke="#999" />
             <Tooltip />
             <Line type="monotone" dataKey="count" stroke="#6366f1" strokeWidth={3} />
           </LineChart>
+         
+</ResponsiveContainer>
+
         </ChartCard>
 
-        {/* MONTHLY REVENUE */}
+    
         <ChartCard title="Monthly Revenue">
           <BarChart width={400} height={250} data={revenueData}>
             <XAxis dataKey="month" stroke="#999" />
@@ -55,8 +57,7 @@ export default function SidraDashboard() {
             <Bar dataKey="revenue" fill="#818cf8" />
           </BarChart>
         </ChartCard>
-
-        {/* USER DEMOGRAPHICS */}
+       
         <ChartCard title="User Demographics">
           <PieChart width={400} height={250}>
             <Pie 
@@ -78,7 +79,7 @@ export default function SidraDashboard() {
           </PieChart>
         </ChartCard>
 
-        {/* CUSTOMER RETENTION */}
+      
         <ChartCard title="Customer Retention (%)">
           <BarChart width={400} height={250} data={[{ name: "Retention", value: 73 }]}>
             <XAxis dataKey="name" stroke="#999" />
