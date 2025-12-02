@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { API_ENDPOINTS } from "@/libs/api/config";
+import { staffPortalLogin } from "@/libs/api/staffPortal";
 
 type Props = {
   salonSlug: string;
@@ -30,29 +30,30 @@ const StaffLoginCard: React.FC<Props> = ({ salonSlug }) => {
 
     setLoading(true);
     try {
-      const res = await fetch(API_ENDPOINTS.STAFF.LOGIN, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          staffCode: staffCode.trim(),
-          pin: pin.trim(),
-        }),
-      });
+      // Use staff portal login which stores token and returns dashboard data
+      const data = await staffPortalLogin(staffCode.trim(), pin.trim());
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data?.error || "Invalid staff code or PIN");
+      // Token is already stored in localStorage by staffPortalLogin
+      // Store staff profile data as well
+      if (typeof window !== "undefined") {
+        localStorage.setItem("staffUser", JSON.stringify(data.staff));
       }
-
-      // If you get a token or something here, store it first (localStorage/cookie)
 
       setSuccess("Login successful! Redirecting to staff portal…");
       setStaffCode("");
       setPin("");
 
-      // 🔥 Auto-redirect to staff portal
-      router.push(`/salon/${salonSlug}/staff/staff-portal`);
+      // Small delay to ensure token is stored and show success message
+      setTimeout(() => {
+        // Verify token was stored before redirecting
+        const token = localStorage.getItem("staffToken");
+        if (token) {
+          router.push(`/salon/${salonSlug}/staff/staff-portal`);
+        } else {
+          setError("Token storage failed. Please try again.");
+          setSuccess("");
+        }
+      }, 300);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");
     } finally {

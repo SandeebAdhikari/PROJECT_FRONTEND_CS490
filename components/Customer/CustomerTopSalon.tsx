@@ -100,6 +100,7 @@ const CustomerTopSalon: React.FC<CustomerTopSalonProps> = ({
               totalReviews={salon.totalReviews || 0}
               priceFrom={salon.priceFrom || 50}
               imageUrl={imageUrl}
+              status={salon.status}
               isFavorite={isFavorite?.(salonId) || false}
               onToggleFavorite={onToggleFavorite}
             />

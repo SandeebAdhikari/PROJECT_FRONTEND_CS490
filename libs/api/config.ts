@@ -16,8 +16,9 @@ export const API_ENDPOINTS = {
     DISABLE_2FA: `${API_BASE_URL}/api/auth/2fa/disable`,
     STATUS_2FA: `${API_BASE_URL}/api/auth/2fa/status`,
     DELETE_ACCOUNT: `${API_BASE_URL}/api/auth/delete-account`,
-    SET_CUSTOMER_PASSWORD: `${API_BASE_URL}/api/auth/customer/set-password`,
-  },
+          SET_CUSTOMER_PASSWORD: `${API_BASE_URL}/api/auth/customer/set-password`,
+          SETUP_ADMIN: `${API_BASE_URL}/api/auth/setup-admin`,
+        },
   NOTIFICATIONS: {
     LIST: `${API_BASE_URL}/api/notifications`,
     MARK_READ: (id: number) => `${API_BASE_URL}/api/notifications/${id}/read`,
@@ -34,18 +35,23 @@ export const API_ENDPOINTS = {
   },
   HISTORY: {
     APPOINTMENTS: `${API_BASE_URL}/api/history/user`,
+    EXPORT: `${API_BASE_URL}/api/history/user/export?format=csv`,
   },
   SHOP: {
-    PRODUCTS: `${API_BASE_URL}/api/shop/products`,
+    PRODUCTS: (salonId: number | string) => `${API_BASE_URL}/api/shop/products/${salonId}`,
     PRODUCT: (id: number) => `${API_BASE_URL}/api/shop/products/${id}`,
-    ADD: `${API_BASE_URL}/api/shop/products`,
-    UPDATE: (id: number) => `${API_BASE_URL}/api/shop/products/${id}`,
+    ADD: `${API_BASE_URL}/api/shop/add-product`,
+    UPDATE: (id: number) => `${API_BASE_URL}/api/shop/update-product/${id}`,
     DELETE: (id: number) => `${API_BASE_URL}/api/shop/products/${id}`,
+    CART: `${API_BASE_URL}/api/shop/cart`,
+    ADD_TO_CART: `${API_BASE_URL}/api/shop/add-to-cart`,
+    CHECKOUT: `${API_BASE_URL}/api/shop/checkout`,
   },
   PAYMENTS: {
     CHECKOUT: `${API_BASE_URL}/api/payments/checkout`,
     SALON_PAYMENTS: (salonId: number | string) =>
       `${API_BASE_URL}/api/payments/salon/${salonId}`,
+    GET_BY_SESSION: `${API_BASE_URL}/api/payments/session`,
   },
   APPOINTMENTS: {
     BOOK: `${API_BASE_URL}/api/appointments/create`,
@@ -60,6 +66,16 @@ export const API_ENDPOINTS = {
     GET_BY_ID: (id: number | string) =>
       `${API_BASE_URL}/api/appointments/${id}`,
   },
+  BOOKINGS: {
+    AVAILABLE_SLOTS: (salonId: number | string, staffId: number | string, date: string, serviceId?: number | string) => {
+      const params = new URLSearchParams();
+      params.append('salon_id', String(salonId));
+      params.append('staff_id', String(staffId));
+      params.append('date', date);
+      if (serviceId) params.append('service_id', String(serviceId));
+      return `${API_BASE_URL}/api/bookings/slots?${params.toString()}`;
+    },
+  },
   SALONS: {
     CREATE: `${API_BASE_URL}/api/salons`,
     LIST: `${API_BASE_URL}/api/salons`,
@@ -70,6 +86,10 @@ export const API_ENDPOINTS = {
       `${API_BASE_URL}/api/staff/salon/${salonId}/staff`,
     SERVICES: (salonId: number | string) =>
       `${API_BASE_URL}/api/salons/${salonId}/services`,
+    PRODUCTS: (salonId: number | string) =>
+      `${API_BASE_URL}/api/salons/${salonId}/products`,
+    PRODUCTS_PUBLIC: (salonId: number | string) =>
+      `${API_BASE_URL}/api/salons/public/${salonId}/products`,
     CREATE_SERVICE: `${API_BASE_URL}/api/services`,
     UPDATE_SERVICE: (serviceId: number | string) =>
       `${API_BASE_URL}/api/services/${serviceId}`,
@@ -95,6 +115,8 @@ export const API_ENDPOINTS = {
       `${API_BASE_URL}/api/salons/public/${salonId}/business-hours`,
     GET_BOOKING_POLICY_PUBLIC: (salonId: number | string) =>
       `${API_BASE_URL}/api/salons/public/${salonId}/booking-policy`,
+    SERVICES_PUBLIC: (salonId: number | string) =>
+      `${API_BASE_URL}/api/salons/public/${salonId}/services`,
   },
   MESSAGES: {
     SEND: `${API_BASE_URL}/api/messages`,
@@ -156,6 +178,8 @@ export const API_ENDPOINTS = {
     RESPOND: (id: number) => `${API_BASE_URL}/api/reviews/respond/${id}`,
     GET_SALON_REVIEWS: (salonId: number | string) =>
       `${API_BASE_URL}/api/reviews/salon/${salonId}`,
+    UPDATE: (id: number | string) => `${API_BASE_URL}/api/reviews/${id}`,
+    DELETE: (id: number | string) => `${API_BASE_URL}/api/reviews/${id}`,
   },
   SUBSCRIPTIONS: {
     CHECKOUT: `${API_BASE_URL}/api/subscriptions/checkout`,
@@ -163,6 +187,34 @@ export const API_ENDPOINTS = {
     STATUS: `${API_BASE_URL}/api/subscriptions/status`,
   },
   HEALTH: `${API_BASE_URL}/health`,
+  ADMINS: {
+    USER_ENGAGEMENT: `${API_BASE_URL}/api/admins/user-engagement`,
+    APPOINTMENT_TRENDS: (startDate?: string, endDate?: string) => {
+      const params = new URLSearchParams();
+      if (startDate) params.append("start_date", startDate);
+      if (endDate) params.append("end_date", endDate);
+      return `${API_BASE_URL}/api/admins/appointment-trends${params.toString() ? "?" + params.toString() : ""}`;
+    },
+    SALON_REVENUES: (startDate?: string, endDate?: string) => {
+      const params = new URLSearchParams();
+      if (startDate) params.append("start_date", startDate);
+      if (endDate) params.append("end_date", endDate);
+      return `${API_BASE_URL}/api/admins/salon-revenues${params.toString() ? "?" + params.toString() : ""}`;
+    },
+    LOYALTY_USAGE: `${API_BASE_URL}/api/admins/loyalty-usage`,
+    USER_DEMOGRAPHICS: `${API_BASE_URL}/api/admins/user-demographics`,
+    CUSTOMER_RETENTION: `${API_BASE_URL}/api/admins/customer-retention`,
+    REPORTS: (startDate?: string, endDate?: string, format?: string) => {
+      const params = new URLSearchParams();
+      if (startDate) params.append("start_date", startDate);
+      if (endDate) params.append("end_date", endDate);
+      if (format) params.append("format", format);
+      return `${API_BASE_URL}/api/admins/reports${params.toString() ? "?" + params.toString() : ""}`;
+    },
+    SYSTEM_LOGS: `${API_BASE_URL}/api/admins/system-logs`,
+    PENDING_SALONS: `${API_BASE_URL}/api/admins/pending-salons`,
+    VERIFY_SALON: (salonId: number | string) => `${API_BASE_URL}/api/admins/verify/${salonId}`,
+  },
 };
 
 export const fetchConfig = {

@@ -12,6 +12,7 @@ import SalonSidebar from "@/components/Salon/SalonSidebar/SalonDetailSidebar";
 import SalonDetailInfo from "@/components/Salon/SalonDetailInfo";
 import SalonDetailBookingPolicy from "@/components/Salon/SalonDetailBookingPolicy";
 import SalonDetailServices from "@/components/Salon/SalonDetailServices";
+import SalonDetailProducts from "@/components/Salon/SalonDetailProducts";
 import SalonDetailStaffProfile from "@/components/Salon/SalonDetailStaffProfile";
 import SalonDetailReview from "@/components/Salon/SalonDetailReviews";
 import SalonDetailGallery from "@/components/Salon/SalonDetailGallery";
@@ -37,6 +38,7 @@ interface Salon {
   email?: string;
   website?: string;
   amenities?: string[];
+  status?: string;
 }
 
 const SalonDetailsPage: React.FC<{ params: Promise<{ id: string }> }> = ({
@@ -203,6 +205,7 @@ const SalonDetailsPage: React.FC<{ params: Promise<{ id: string }> }> = ({
             bookingSettings={bookingSettings}
           />
           <SalonDetailServices salonId={displayId} />
+          <SalonDetailProducts salonId={displayId} />
           <SalonDetailStaffProfile salonId={displayId} />
 
           <SalonDetailReview salonId={displayId} />

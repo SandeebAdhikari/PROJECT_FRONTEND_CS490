@@ -84,3 +84,65 @@ export async function respondToReview(
     return { error: "Network error. Please try again." };
   }
 }
+
+export async function updateReview(
+  reviewId: number | string,
+  data: { rating?: number; comment?: string }
+): Promise<{ review?: Review; message?: string; error?: string }> {
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      return { error: "Not authenticated" };
+    }
+
+    const res = await fetch(API_ENDPOINTS.REVIEWS.UPDATE(reviewId), {
+      ...fetchConfig,
+      method: "PUT",
+      headers: {
+        ...fetchConfig.headers,
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    });
+
+    const result = await res.json();
+
+    if (!res.ok) {
+      return { error: result.error || "Failed to update review" };
+    }
+
+    return result;
+  } catch {
+    return { error: "Network error. Please try again." };
+  }
+}
+
+export async function deleteReview(
+  reviewId: number | string
+): Promise<{ message?: string; error?: string }> {
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      return { error: "Not authenticated" };
+    }
+
+    const res = await fetch(API_ENDPOINTS.REVIEWS.DELETE(reviewId), {
+      ...fetchConfig,
+      method: "DELETE",
+      headers: {
+        ...fetchConfig.headers,
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const result = await res.json();
+
+    if (!res.ok) {
+      return { error: result.error || "Failed to delete review" };
+    }
+
+    return result;
+  } catch {
+    return { error: "Network error. Please try again." };
+  }
+}

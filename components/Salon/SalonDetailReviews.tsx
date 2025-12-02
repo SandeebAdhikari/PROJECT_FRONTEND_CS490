@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Star, X } from "lucide-react";
-import { API_BASE_URL } from "@/libs/api/config";
-import { addReview } from "@/libs/api/reviews";
+import { Star, X, Edit2, Trash2 } from "lucide-react";
+import { API_BASE_URL, API_ENDPOINTS } from "@/libs/api/config";
+import { addReview, updateReview, deleteReview } from "@/libs/api/reviews";
 
 interface RatingStats {
   average: number;
@@ -12,10 +12,12 @@ interface RatingStats {
 }
 
 interface Review {
+  review_id?: number;
   rating: number;
   comment: string;
   created_at: string;
   customer_name: string;
+  user_id?: number;
 }
 
 interface SalonReviewsSectionProps {
@@ -36,6 +38,25 @@ const SalonDetailReview: React.FC<SalonReviewsSectionProps> = ({
   const [submitting, setSubmitting] = useState(false);
   const [reviewError, setReviewError] = useState("");
   const [reviewSuccess, setReviewSuccess] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
+  const [editingReview, setEditingReview] = useState<Review | null>(null);
+  const [deletingReviewId, setDeletingReviewId] = useState<number | null>(null);
+
+  useEffect(() => {
+    // Get current user ID from token
+    const token = localStorage.getItem("token") || localStorage.getItem("authToken");
+    if (token) {
+      try {
+        const parts = token.split(".");
+        if (parts.length > 1) {
+          const payload = JSON.parse(atob(parts[1]));
+          setCurrentUserId(payload?.user_id || payload?.id || null);
+        }
+      } catch (err) {
+        console.error("Error decoding token:", err);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     const fetchReviews = async () => {
@@ -46,8 +67,14 @@ const SalonDetailReview: React.FC<SalonReviewsSectionProps> = ({
 
       try {
         setLoading(true);
+        const token = localStorage.getItem("token") || localStorage.getItem("authToken");
+        const headers: HeadersInit = {};
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`;
+        }
         const response = await fetch(
-          `${API_BASE_URL}/reviews/salon/${salonId}`
+          `${API_BASE_URL}/api/reviews/salon/${salonId}`,
+          { headers }
         );
 
         if (response.ok) {
@@ -89,6 +116,75 @@ const SalonDetailReview: React.FC<SalonReviewsSectionProps> = ({
     fetchReviews();
   }, [salonId]);
 
+  const handleEditReview = (review: Review) => {
+    setEditingReview(review);
+    setReviewRating(review.rating);
+    setReviewComment(review.comment);
+    setShowReviewModal(true);
+    setReviewError("");
+    setReviewSuccess(false);
+  };
+
+  const handleDeleteReview = async (reviewId: number) => {
+    if (!confirm("Are you sure you want to delete this review?")) return;
+
+    try {
+      const result = await deleteReview(reviewId);
+      if (result.error) {
+        alert(`Failed to delete review: ${result.error}`);
+      } else {
+        alert("Review deleted successfully");
+        window.location.reload();
+      }
+    } catch (error) {
+      console.error("Delete review error:", error);
+      alert("Failed to delete review");
+    }
+  };
+
+  const handleUpdateReview = async () => {
+    if (!editingReview || !editingReview.review_id) return;
+
+    if (reviewRating === 0) {
+      setReviewError("Please select a rating");
+      return;
+    }
+
+    if (!reviewComment.trim()) {
+      setReviewError("Please write a comment");
+      return;
+    }
+
+    setSubmitting(true);
+    setReviewError("");
+
+    try {
+      const result = await updateReview(editingReview.review_id, {
+        rating: reviewRating,
+        comment: reviewComment.trim(),
+      });
+
+      if (result.error) {
+        setReviewError(result.error);
+      } else {
+        setReviewSuccess(true);
+        setReviewComment("");
+        setReviewRating(0);
+        setEditingReview(null);
+        setTimeout(() => {
+          setShowReviewModal(false);
+          setReviewSuccess(false);
+          window.location.reload();
+        }, 1500);
+      }
+    } catch (error) {
+      console.error("Error updating review:", error);
+      setReviewError("Failed to update review. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const handleOpenReviewModal = () => {
     const token =
       localStorage.getItem("token") || localStorage.getItem("authToken");
@@ -105,6 +201,12 @@ const SalonDetailReview: React.FC<SalonReviewsSectionProps> = ({
 
   const handleSubmitReview = async () => {
     if (!salonId) return;
+
+    // If editing, use update function
+    if (editingReview && editingReview.review_id) {
+      await handleUpdateReview();
+      return;
+    }
 
     if (reviewRating === 0) {
       setReviewError("Please select a rating");
@@ -204,13 +306,16 @@ const SalonDetailReview: React.FC<SalonReviewsSectionProps> = ({
             <div className="bg-background border border-border rounded-2xl shadow-lg max-w-md w-full p-6 font-inter">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-2xl font-bold text-foreground">
-                  Write a Review
+                  {editingReview ? "Edit Review" : "Write a Review"}
                 </h3>
                 <button
                   onClick={() => {
                     setShowReviewModal(false);
                     setReviewError("");
                     setReviewSuccess(false);
+                    setEditingReview(null);
+                    setReviewComment("");
+                    setReviewRating(0);
                   }}
                   className="text-muted-foreground hover:text-foreground transition-colors"
                   aria-label="Close modal"
@@ -284,6 +389,9 @@ const SalonDetailReview: React.FC<SalonReviewsSectionProps> = ({
                       onClick={() => {
                         setShowReviewModal(false);
                         setReviewError("");
+                        setEditingReview(null);
+                        setReviewComment("");
+                        setReviewRating(0);
                       }}
                       className="flex-1 px-4 py-2 border border-border rounded-lg text-foreground hover:bg-muted transition-colors font-medium"
                       disabled={submitting}
@@ -299,7 +407,7 @@ const SalonDetailReview: React.FC<SalonReviewsSectionProps> = ({
                       }
                       className="flex-1 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {submitting ? "Submitting..." : "Submit Review"}
+                      {submitting ? (editingReview ? "Updating..." : "Submitting...") : (editingReview ? "Update Review" : "Submit Review")}
                     </button>
                   </div>
                 </>
@@ -364,13 +472,33 @@ const SalonDetailReview: React.FC<SalonReviewsSectionProps> = ({
                     </div>
                   </div>
                 </div>
-                <span className="text-sm text-muted-foreground">
-                  {new Date(review.created_at).toLocaleDateString("en-US", {
-                    year: "numeric",
-                    month: "short",
-                    day: "numeric",
-                  })}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">
+                    {new Date(review.created_at).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "short",
+                      day: "numeric",
+                    })}
+                  </span>
+                  {currentUserId && review.user_id === currentUserId && review.review_id && (
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => handleEditReview(review)}
+                        className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        title="Edit review"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteReview(review.review_id!)}
+                        className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        title="Delete review"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
               {review.comment && (
                 <p className="text-foreground mt-3 leading-relaxed">
@@ -394,13 +522,16 @@ const SalonDetailReview: React.FC<SalonReviewsSectionProps> = ({
           <div className="bg-background border border-border rounded-2xl shadow-lg max-w-md w-full p-6 font-inter">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-2xl font-bold text-foreground">
-                Write a Review
+                {editingReview ? "Edit Review" : "Write a Review"}
               </h3>
               <button
                 onClick={() => {
                   setShowReviewModal(false);
                   setReviewError("");
                   setReviewSuccess(false);
+                  setEditingReview(null);
+                  setReviewComment("");
+                  setReviewRating(0);
                 }}
                 className="text-muted-foreground hover:text-foreground transition-colors"
                 aria-label="Close modal"

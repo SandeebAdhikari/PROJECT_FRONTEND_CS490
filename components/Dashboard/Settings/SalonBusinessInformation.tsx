@@ -43,22 +43,28 @@ const SalonBusinessInformation = forwardRef<
     const fetchSalonData = async () => {
       try {
         const result = await checkOwnerSalon();
+        console.log("checkOwnerSalon result:", result);
         if (result.hasSalon && result.salon) {
-          setSalonId(result.salon.salon_id || null);
+          console.log("Salon data found:", result.salon);
+          const salonData = result.salon;
+          setSalonId(salonData.salon_id || null);
           setIsNewSalon(false);
-          setFormData({
-            name: result.salon.name || "",
-            address: result.salon.address || "",
-            phone: result.salon.phone || "",
-            city: result.salon.city || "",
-            email: result.salon.email || "",
-            website: result.salon.website || "",
-            description: result.salon.description || "",
-          });
-          if (result.salon.profile_picture) {
-            setProfilePreview(`${API_BASE_URL}${result.salon.profile_picture}`);
+          const newFormData = {
+            name: salonData.name || "",
+            address: salonData.address || "",
+            phone: salonData.phone || "",
+            city: salonData.city || "",
+            email: salonData.email || "",
+            website: salonData.website || "",
+            description: salonData.description || "",
+          };
+          console.log("Setting form data:", newFormData);
+          setFormData(newFormData);
+          if (salonData.profile_picture) {
+            setProfilePreview(`${API_BASE_URL}${salonData.profile_picture}`);
           }
         } else {
+          console.log("No salon found, isNewSalon = true", result);
           setIsNewSalon(true);
         }
       } catch (error) {

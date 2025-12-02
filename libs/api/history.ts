@@ -48,3 +48,44 @@ export async function getAppointmentHistory(): Promise<{ appointments?: Appointm
   }
 }
 
+/**
+ * Export appointment history as CSV
+ */
+export async function exportAppointmentHistory(): Promise<{ success?: boolean; error?: string }> {
+  try {
+    const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+    if (!token) {
+      return { error: 'Not authenticated. Please login.' };
+    }
+
+    const response = await fetch(API_ENDPOINTS.HISTORY.EXPORT, {
+      ...fetchConfig,
+      headers: {
+        ...fetchConfig.headers,
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const result = await response.json();
+      return { error: result.error || 'Failed to export history' };
+    }
+
+    // Get the CSV blob
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `visit-history-${Date.now()}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+
+    return { success: true };
+  } catch (error) {
+    console.error('Export history error:', error);
+    return { error: 'Network error. Please try again.' };
+  }
+}
+

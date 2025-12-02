@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Calendar, Clock } from "lucide-react";
-import { getAppointmentHistory, AppointmentHistory as AppointmentHistoryType } from "@/libs/api/history";
+import { Calendar, Clock, Download } from "lucide-react";
+import { getAppointmentHistory, exportAppointmentHistory, AppointmentHistory as AppointmentHistoryType } from "@/libs/api/history";
 
 interface AppointmentHistoryProps {
   filter?: "upcoming" | "past";
@@ -12,6 +12,7 @@ const AppointmentHistory: React.FC<AppointmentHistoryProps> = ({ filter = "past"
   const [appointments, setAppointments] = useState<AppointmentHistoryType[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     loadHistory();
@@ -50,6 +51,23 @@ const AppointmentHistory: React.FC<AppointmentHistoryProps> = ({ filter = "past"
       ? appointmentDate >= now 
       : appointmentDate < now;
   });
+
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      const result = await exportAppointmentHistory();
+      if (result.error) {
+        alert(`Failed to export: ${result.error}`);
+      } else {
+        alert("History exported successfully!");
+      }
+    } catch (err) {
+      console.error("Export error:", err);
+      alert("Failed to export history");
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -90,6 +108,18 @@ const AppointmentHistory: React.FC<AppointmentHistoryProps> = ({ filter = "past"
 
   return (
     <div className="space-y-4">
+      {displayedAppointments.length > 0 && (
+        <div className="flex justify-end mb-4">
+          <button
+            onClick={handleExport}
+            disabled={exporting}
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            <Download className="w-4 h-4" />
+            {exporting ? "Exporting..." : "Export to CSV"}
+          </button>
+        </div>
+      )}
       {displayedAppointments.length === 0 ? (
         <div className="text-center py-12 bg-gray-50 rounded-lg">
           <Calendar className="w-16 h-16 text-gray-400 mx-auto mb-4" />

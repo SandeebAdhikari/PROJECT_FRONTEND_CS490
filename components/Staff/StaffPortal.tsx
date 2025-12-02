@@ -15,6 +15,19 @@ import {
   StaffPortalCustomer,
   StaffPortalProduct,
 } from "./staffPortalTypes";
+import {
+  getStaffProfile,
+  getStaffDashboard,
+  listStaffAppointments,
+  listStaffCustomers,
+  listStaffRetail,
+  listStaffTeam,
+  updateAppointmentStatus,
+  StaffPortalAppointmentBackend,
+  StaffPortalCustomerBackend,
+  StaffPortalProductBackend,
+  StaffProfile as BackendStaffProfile,
+} from "@/libs/api/staffPortal";
 
 const isoForDay = (dayOffset: number, hour: number, minute: number) => {
   const d = new Date();
@@ -143,7 +156,7 @@ const demoProducts: StaffPortalProduct[] = [
   },
 ];
 
-type TabKey = "overview" | "appointments" | "customers" | "products";
+type TabKey = "overview" | "appointments" | "customers" | "products" | "availability";
 
 interface StaffProfile {
   fullName: string;
@@ -170,9 +183,12 @@ const StaffPortal = () => {
     focus: "Attach a treatment to 3 color guests",
   });
 
-  const [appointments] = useState<StaffPortalAppointment[]>(demoAppointments);
-  const [customers] = useState<StaffPortalCustomer[]>(demoCustomers);
-  const [products] = useState<StaffPortalProduct[]>(demoProducts);
+  const [appointments, setAppointments] = useState<StaffPortalAppointment[]>([]);
+  const [customers, setCustomers] = useState<StaffPortalCustomer[]>([]);
+  const [products, setProducts] = useState<StaffPortalProduct[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [dashboard, setDashboard] = useState<any>(null);
 
   const [showNewAppointment, setShowNewAppointment] = useState(false);
   const [editingAppointmentId, setEditingAppointmentId] = useState<
@@ -181,29 +197,164 @@ const StaffPortal = () => {
   const [showAddStaff, setShowAddStaff] = useState(false);
   const [editingStaff, setEditingStaff] = useState<StaffMember | null>(null);
 
+  // Map backend appointment to frontend type
+  const mapAppointment = (
+    appt: StaffPortalAppointmentBackend
+  ): StaffPortalAppointment => {
+    // Map status: backend uses 'pending', 'confirmed', 'completed', 'cancelled'
+    // Frontend uses 'confirmed', 'checked-in', 'completed', 'cancelled'
+    let status: StaffPortalAppointment["status"] = "confirmed";
+    if (appt.status === "completed") status = "completed";
+    else if (appt.status === "cancelled") status = "cancelled";
+    else if (appt.status === "confirmed") status = "confirmed";
+    // Note: 'checked-in' is not a backend status, so we'll use 'confirmed' for now
+
+    return {
+      id: appt.appointment_id,
+      client: appt.customer_name || "Guest",
+      service: appt.services || "Service",
+      status,
+      time: appt.scheduled_time,
+      duration: appt.duration_minutes || 30,
+      price: parseFloat(String(appt.price)) || 0,
+      notes: appt.notes,
+    };
+  };
+
+  // Map backend customer to frontend type
+  const mapCustomer = (
+    customer: StaffPortalCustomerBackend
+  ): StaffPortalCustomer => {
+    return {
+      id: customer.user_id,
+      name: customer.full_name || "Guest",
+      favoriteService: customer.favorite_service || "Service",
+      visits: customer.total_visits || 0,
+      lastVisit: customer.last_visit || new Date().toISOString(),
+      lifetimeValue: customer.lifetime_value || 0,
+      phone: customer.phone,
+      notes: customer.notes,
+    };
+  };
+
+  // Map backend product to frontend type
+  const mapProduct = (product: StaffPortalProductBackend): StaffPortalProduct => {
+    return {
+      id: product.product_id,
+      name: product.name,
+      brand: product.brand || "StyGo",
+      retailPrice: parseFloat(String(product.price)) || 0,
+      stock: product.stock || 0,
+      attachRate: product.attach_rate || 0,
+      hero: false,
+    };
+  };
+
+  // Fetch all data
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    const stored =
-      window.localStorage.getItem("staffUser") ||
-      window.localStorage.getItem("user");
-    if (!stored) return;
-    try {
-      const parsed = JSON.parse(stored);
-      setStaffProfile((prev) => ({
-        ...prev,
-        fullName: parsed.full_name || parsed.name || prev.fullName,
-        role: parsed.staff_role || parsed.role || prev.role,
-        salonName:
-          parsed.salon_name || parsed.businessName || prev.salonName,
-        salonSlug: parsed.salon_slug || prev.salonSlug,
-        salonId: parsed.salon_id || prev.salonId,
-        email: parsed.email || prev.email,
-        phone: parsed.phone || prev.phone,
-      }));
-    } catch (error) {
-      console.warn("Unable to hydrate staff profile:", error);
-    }
-  }, []);
+    const fetchData = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        // Check if staff token exists - wait a bit if just logged in
+        let staffToken =
+          typeof window !== "undefined"
+            ? localStorage.getItem("staffToken")
+            : null;
+
+        // If no token, wait a moment and check again (in case of redirect timing)
+        if (!staffToken && typeof window !== "undefined") {
+          await new Promise((resolve) => setTimeout(resolve, 100));
+          staffToken = localStorage.getItem("staffToken");
+        }
+
+        if (!staffToken) {
+          // Check if there's a regular token (might be logged in as owner)
+          const regularToken =
+            typeof window !== "undefined"
+              ? localStorage.getItem("token")
+              : null;
+          
+          if (!regularToken) {
+            setError("Not authenticated. Please log in.");
+            setLoading(false);
+            return;
+          }
+          
+          // If there's a regular token but no staff token, redirect to login
+          setError("Staff authentication required. Please log in with your staff code and PIN.");
+          setLoading(false);
+          return;
+        }
+
+        // Fetch profile
+        const profile = await getStaffProfile();
+        setStaffProfile({
+          fullName: profile.full_name || "Guest Stylist",
+          role: profile.staff_role || "Stylist",
+          salonName: profile.salon_name || "StyGo Salon",
+          salonSlug: ownerSalonSlug || undefined,
+          salonId: profile.salon_id,
+          email: profile.email,
+          phone: profile.phone,
+          shiftWindow: "9:00 AM – 5:00 PM", // Will be updated from dashboard
+          focus: "Check your appointments",
+        });
+
+        // Fetch dashboard
+        const dashboardData = await getStaffDashboard();
+        setDashboard(dashboardData);
+
+        // Update shift window and focus from dashboard
+        if (dashboardData.shift) {
+          const start = dashboardData.shift.start
+            ? new Date(dashboardData.shift.start).toLocaleTimeString("en-US", {
+                hour: "numeric",
+                minute: "2-digit",
+              })
+            : "9:00 AM";
+          const end = dashboardData.shift.end
+            ? new Date(dashboardData.shift.end).toLocaleTimeString("en-US", {
+                hour: "numeric",
+                minute: "2-digit",
+              })
+            : "5:00 PM";
+          setStaffProfile((prev) => ({
+            ...prev,
+            shiftWindow: `${start} – ${end}`,
+            focus: dashboardData.shift.focus || prev.focus,
+          }));
+        }
+
+        // Fetch appointments
+        const appointmentsData = await listStaffAppointments({
+          limit: 50,
+        });
+        setAppointments(appointmentsData.data.map(mapAppointment));
+
+        // Fetch customers
+        const customersData = await listStaffCustomers({
+          scope: "staff",
+          limit: 20,
+        });
+        setCustomers(customersData.customers.map(mapCustomer));
+
+        // Fetch products
+        const productsData = await listStaffRetail({ limit: 20 });
+        setProducts(productsData.products.map(mapProduct));
+      } catch (err) {
+        console.error("Error fetching staff portal data:", err);
+        setError(
+          err instanceof Error ? err.message : "Failed to load data"
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [ownerSalonSlug]);
 
   const derivedSalonName =
     staffProfile.salonName || ownerSalonName || "Your Salon";
@@ -242,13 +393,26 @@ const StaffPortal = () => {
   ).length;
 
   const nextAppointment = useMemo(() => {
+    if (dashboard?.upcoming) {
+      return mapAppointment({
+        appointment_id: dashboard.upcoming.appointment_id,
+        scheduled_time: dashboard.upcoming.scheduled_time,
+        status: dashboard.upcoming.status,
+        price: dashboard.upcoming.price,
+        customer_name: dashboard.upcoming.customer_name,
+        customer_phone: dashboard.upcoming.customer_phone,
+        customer_email: dashboard.upcoming.customer_email,
+        services: dashboard.upcoming.services,
+        duration_minutes: dashboard.upcoming.duration_minutes,
+      });
+    }
     const upcoming = [...appointments].filter(
       (appt) => new Date(appt.time) >= new Date()
     );
     return upcoming.sort(
       (a, b) => new Date(a.time).getTime() - new Date(b.time).getTime()
     )[0];
-  }, [appointments]);
+  }, [appointments, dashboard]);
 
   const newClientsThisMonth = customers.filter((c) => c.visits <= 3).length;
 
@@ -256,26 +420,26 @@ const StaffPortal = () => {
     () => [
       {
         label: "Guests today",
-        value: todaysAppointments.length.toString(),
-        change: "+2 vs last Thursday",
+        value: dashboard?.totals?.total?.toString() || todaysAppointments.length.toString(),
+        change: dashboard?.shift?.focus || "+2 vs last Thursday",
         positive: true,
       },
       {
-        label: "Checked-in",
-        value: checkedInAppointments.toString(),
+        label: "Confirmed",
+        value: dashboard?.totals?.confirmed?.toString() || checkedInAppointments.toString(),
         change: "Keep under 10 min wait",
         positive: true,
       },
       {
         label: "Completed",
-        value: completedAppointments.toString(),
-        change: "3 left to close",
+        value: dashboard?.totals?.completed?.toString() || completedAppointments.toString(),
+        change: `${(dashboard?.totals?.pending || 0) + (dashboard?.totals?.confirmed || 0)} left to close`,
         positive: false,
       },
       {
-        label: "New clients",
-        value: newClientsThisMonth.toString(),
-        change: "Greet + track referrals",
+        label: "Revenue today",
+        value: `$${dashboard?.totals?.revenue_today?.toFixed(0) || "0"}`,
+        change: `$${dashboard?.recent_performance?.revenue?.toFixed(0) || "0"} this week`,
         positive: true,
       },
     ],
@@ -284,6 +448,7 @@ const StaffPortal = () => {
       completedAppointments,
       newClientsThisMonth,
       todaysAppointments.length,
+      dashboard,
     ]
   );
 
@@ -376,6 +541,50 @@ const StaffPortal = () => {
     },
   ];
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-muted/30 py-8 md:py-10 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading staff portal...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-muted/30 py-8 md:py-10 flex items-center justify-center">
+        <div className="text-center max-w-md">
+          <p className="text-red-600 mb-4">{error}</p>
+          <div className="flex gap-3 justify-center">
+            <button
+              onClick={() => {
+                // Try to fetch data again
+                const staffToken =
+                  typeof window !== "undefined"
+                    ? localStorage.getItem("staffToken")
+                    : null;
+                if (staffToken) {
+                  window.location.reload();
+                } else {
+                  // Redirect to login if no token
+                  const salonSlug = window.location.pathname.split("/")[2];
+                  window.location.href = `/salon/${salonSlug}/staff/login`;
+                }
+              }}
+              className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
+            >
+              {typeof window !== "undefined" && localStorage.getItem("staffToken")
+                ? "Retry"
+                : "Go to Login"}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="min-h-screen bg-muted/30 py-8 md:py-10">
@@ -399,7 +608,7 @@ const StaffPortal = () => {
 
           <StaffPortalTabs
             activeTab={activeTab}
-            onTabChange={setActiveTab}
+            onTabChange={(tab: TabKey) => setActiveTab(tab)}
             appointments={appointments}
             customers={customers}
             products={products}
@@ -409,6 +618,22 @@ const StaffPortal = () => {
             onAddStaff={() => setShowAddStaff(true)}
             onEditStaff={(member) => setEditingStaff(member)}
             nextAppointment={nextAppointment}
+            onUpdateAppointmentStatus={async (id, status) => {
+              try {
+                await updateAppointmentStatus(id, status);
+                // Refresh appointments
+                const appointmentsData = await listStaffAppointments({
+                  limit: 50,
+                });
+                setAppointments(appointmentsData.data.map(mapAppointment));
+                // Refresh dashboard
+                const dashboardData = await getStaffDashboard();
+                setDashboard(dashboardData);
+              } catch (err) {
+                console.error("Error updating appointment status:", err);
+                alert("Failed to update appointment status");
+              }
+            }}
           />
         </div>
       </div>

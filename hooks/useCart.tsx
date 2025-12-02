@@ -26,6 +26,7 @@ export interface CartProduct {
   image_url?: string;
   salon_id?: number;
   salon_name?: string;
+  stock?: number;
 }
 
 export type CartItem = CartService | CartProduct;
@@ -71,6 +72,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
   };
 
   const addProduct = (product: Omit<CartProduct, "type">) => {
+    // Check stock before adding
+    const stock = product.stock || Infinity;
+    if (stock <= 0) {
+      console.warn("Cannot add product: out of stock");
+      return;
+    }
+
     setItems((prev) => {
       // Check if product already exists in cart
       const existingProductIndex = prev.findIndex(
@@ -78,18 +86,26 @@ export function CartProvider({ children }: { children: ReactNode }) {
       );
 
       if (existingProductIndex > -1) {
-        // Update quantity if product exists
+        // Update quantity if product exists, but respect stock limit
         const newItems = [...prev];
         const existingProduct = newItems[existingProductIndex] as CartProduct;
+        const newQuantity = existingProduct.quantity + product.quantity;
+        const maxQuantity = Math.min(newQuantity, stock);
+        
+        if (maxQuantity < newQuantity) {
+          console.warn(`Cannot add more than ${stock} items. Stock limit reached.`);
+        }
+        
         newItems[existingProductIndex] = {
           ...existingProduct,
-          quantity: existingProduct.quantity + product.quantity,
+          quantity: maxQuantity,
         };
         return newItems;
       }
 
-      // Add new product
-      return [...prev, { ...product, type: "product" }];
+      // Add new product, but ensure quantity doesn't exceed stock
+      const quantity = Math.min(product.quantity, stock);
+      return [...prev, { ...product, quantity, type: "product" }];
     });
   };
 
@@ -114,7 +130,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setItems((prev) =>
       prev.map((item) => {
         if (item.type === "product" && item.product_id === productId) {
-          return { ...item, quantity };
+          // Check stock limit
+          const maxStock = item.stock || Infinity;
+          const newQuantity = Math.min(quantity, maxStock);
+          if (newQuantity < quantity) {
+            console.warn(`Cannot add more than ${maxStock} items. Stock limit reached.`);
+          }
+          return { ...item, quantity: newQuantity };
         }
         return item;
       })

@@ -72,10 +72,34 @@ const AddStaffModal: React.FC<AddStaffModalProps> = ({
         console.error("Error loading roles:", err);
       }
     };
-    if (isOpen) loadRoles();
+    if (isOpen && salonId && salonId !== 0) loadRoles();
   }, [isOpen, salonId]);
 
   if (!isOpen) return null;
+
+  // Show error message if salonId is missing
+  if (!salonId || salonId === 0) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm font-inter">
+        <div className="bg-white w-full max-w-md rounded-xl shadow-lg p-6 relative">
+          <button
+            onClick={onClose}
+            className="absolute top-3 right-3 text-gray-500 hover:text-black"
+            aria-label="Close modal"
+          >
+            <X className="h-5 w-5" />
+          </button>
+          <h2 className="text-xl font-bold mb-4">Add New Staff Member</h2>
+          <div className="text-red-600 bg-red-50 px-3 py-2 rounded-lg">
+            <p className="font-medium">Salon ID is missing</p>
+            <p className="text-sm mt-1">
+              Please ensure you are logged in as a salon owner and have a salon associated with your account.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -128,6 +152,13 @@ const AddStaffModal: React.FC<AddStaffModalProps> = ({
     e.preventDefault();
     setLoading(true);
     setMessage("");
+
+    // Validate salonId before submitting
+    if (!salonId || salonId === 0) {
+      setMessage("Error: Salon ID is missing. Please refresh the page and try again.");
+      setLoading(false);
+      return;
+    }
 
     const full_name =
       `${form.first_name.trim()} ${form.last_name.trim()}`.trim();

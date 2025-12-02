@@ -1,42 +1,39 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Plus, Edit2, Trash2, Scissors } from "lucide-react";
+import { Plus, Edit2, Trash2, Package } from "lucide-react";
 import { API_ENDPOINTS, fetchConfig } from "@/libs/api/config";
 import { checkOwnerSalon } from "@/libs/api/salons";
 
-interface Service {
-  service_id: number;
-  custom_name: string;
-  category_name: string;
-  duration: number;
+interface Product {
+  product_id: number;
+  name: string;
+  category: string;
+  description: string;
   price: number;
+  stock: number;
+  reorder_level?: number;
+  sku?: string;
+  supplier_name?: string;
   is_active: boolean;
 }
 
-const SalonServicesManagement = () => {
-  const [services, setServices] = useState<Service[]>([]);
+const SalonProductsManagement = () => {
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [editingService, setEditingService] = useState<Service | null>(null);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [salonId, setSalonId] = useState<number | string | null>(null);
 
   const [formData, setFormData] = useState({
     name: "",
-    category: "Haircuts",
-    duration: "",
+    category: "Hair",
+    description: "",
     price: "",
+    stock: "",
   });
 
-  const categories = [
-    "Haircuts",
-    "Hair Coloring",
-    "Nails",
-    "Skincare",
-    "Makeup",
-    "Spa",
-    "Eyebrows",
-  ];
+  const categories = ["Hair", "Skin", "Nails", "Other"];
 
   useEffect(() => {
     const fetchSalonId = async () => {
@@ -58,21 +55,21 @@ const SalonServicesManagement = () => {
 
   useEffect(() => {
     if (salonId) {
-      fetchServices(salonId);
+      fetchProducts(salonId);
     } else {
       setLoading(false);
     }
   }, [salonId]);
 
   // ----------------------------
-  // FETCH SERVICES
+  // FETCH PRODUCTS
   // ----------------------------
-  const fetchServices = async (currentSalonId: number | string) => {
+  const fetchProducts = async (currentSalonId: number | string) => {
     try {
       const token = localStorage.getItem("token");
 
       const response = await fetch(
-        API_ENDPOINTS.SALONS.SERVICES(currentSalonId),
+        API_ENDPOINTS.SALONS.PRODUCTS(currentSalonId),
         {
           ...fetchConfig,
           headers: {
@@ -84,22 +81,22 @@ const SalonServicesManagement = () => {
 
       if (response.ok) {
         const data = await response.json();
-        setServices(data || []);
+        setProducts(data || []);
       } else {
         const errorData = await response.json().catch(() => ({ error: response.statusText }));
-        console.error("Error fetching services:", errorData.error || response.statusText);
-        setServices([]);
+        console.error("Error fetching products:", errorData.error || response.statusText);
+        setProducts([]);
       }
     } catch (error) {
-      console.error("Error fetching services:", error);
-      setServices([]);
+      console.error("Error fetching products:", error);
+      setProducts([]);
     } finally {
       setLoading(false);
     }
   };
 
   // ----------------------------
-  // ADD/UPDATE SERVICE
+  // ADD/UPDATE PRODUCT
   // ----------------------------
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -108,84 +105,94 @@ const SalonServicesManagement = () => {
     try {
       const token = localStorage.getItem("token");
 
-      const url = editingService
-        ? API_ENDPOINTS.SALONS.UPDATE_SERVICE(editingService.service_id)
-        : API_ENDPOINTS.SALONS.CREATE_SERVICE;
+      const url = API_ENDPOINTS.SHOP.ADD;
+      const method = editingProduct ? "PUT" : "POST";
 
-      const method = editingService ? "PUT" : "POST";
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          salon_id: salonId,
-          custom_name: formData.name,
-          category: formData.category,
-          duration: Number(formData.duration),
-          price: Number(formData.price),
-        }),
-      });
+      const response = await fetch(
+        editingProduct ? API_ENDPOINTS.SHOP.UPDATE(editingProduct.product_id) : url,
+        {
+          method,
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            salon_id: salonId,
+            name: formData.name,
+            category: formData.category,
+            description: formData.description,
+            price: Number(formData.price),
+            stock: Number(formData.stock),
+            is_active: true,
+          }),
+        }
+      );
 
       if (!response.ok) {
         const err = await response.json();
         const errorMessage =
-          err.error || err.message || "Failed to save service";
-        console.error("Service creation error:", err);
+          err.error || err.message || "Failed to save product";
+        console.error("Product creation error:", err);
         alert(errorMessage);
         return;
       }
 
       setShowModal(false);
-      setEditingService(null);
-      setFormData({ name: "", category: "Haircuts", duration: "", price: "" });
-      fetchServices(salonId);
+      setEditingProduct(null);
+      setFormData({
+        name: "",
+        category: "Hair",
+        description: "",
+        price: "",
+        stock: "",
+      });
+      fetchProducts(salonId);
     } catch (error) {
-      console.error("Error saving service:", error);
-      alert("Failed to save service.");
+      console.error("Error saving product:", error);
+      alert("Failed to save product.");
     }
   };
 
   // ----------------------------
-  // EDIT SERVICE
+  // EDIT PRODUCT
   // ----------------------------
-  const handleEdit = (service: Service) => {
-    setEditingService(service);
-    setFormData({
-      name: service.custom_name,
-      category: service.category_name,
-      duration: service.duration.toString(),
-      price: service.price.toString(),
-    });
+  const handleEdit = (product: Product) => {
+    setEditingProduct(product);
+      setFormData({
+        name: product.name,
+        category: product.category,
+        description: product.description || "",
+        price: product.price.toString(),
+        stock: product.stock.toString(),
+      });
     setShowModal(true);
   };
 
   // ----------------------------
-  // DELETE SERVICE
+  // DELETE PRODUCT
   // ----------------------------
-  const handleDelete = async (serviceId: number) => {
-    if (!confirm("Are you sure you want to delete this service?")) return;
+  const handleDelete = async (productId: number) => {
+    if (!confirm("Are you sure you want to delete this product?")) return;
 
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(
-        API_ENDPOINTS.SALONS.DELETE_SERVICE(serviceId),
-        {
-          method: "DELETE",
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const response = await fetch(API_ENDPOINTS.SHOP.UPDATE(productId), {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ is_active: false }),
+      });
 
       if (response.ok && salonId) {
-        fetchServices(salonId);
+        fetchProducts(salonId);
       } else {
-        alert("Failed to delete service.");
+        alert("Failed to delete product.");
       }
     } catch (error) {
-      console.error("Error deleting service:", error);
-      alert("Failed to delete service.");
+      console.error("Error deleting product:", error);
+      alert("Failed to delete product.");
     }
   };
 
@@ -193,13 +200,19 @@ const SalonServicesManagement = () => {
   // OPEN ADD MODAL
   // ----------------------------
   const openAddModal = () => {
-    setEditingService(null);
-    setFormData({ name: "", category: "Haircuts", duration: "", price: "" });
+    setEditingProduct(null);
+    setFormData({
+      name: "",
+      category: "Hair",
+      description: "",
+      price: "",
+      stock: "",
+    });
     setShowModal(true);
   };
 
   if (loading) {
-    return <div className="text-sm text-gray-500">Loading services...</div>;
+    return <div className="text-sm text-gray-500">Loading products...</div>;
   }
 
   // ----------------------------
@@ -209,8 +222,8 @@ const SalonServicesManagement = () => {
     <div className="bg-card border border-border rounded-2xl p-6 col-span-2">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <Scissors className="w-5 h-5" />
-          <h2 className="text-lg font-bold">Services</h2>
+          <Package className="w-5 h-5" />
+          <h2 className="text-lg font-bold">Products</h2>
         </div>
 
         <button
@@ -218,42 +231,40 @@ const SalonServicesManagement = () => {
           className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary-dark transition-smooth text-sm font-medium"
         >
           <Plus className="w-4 h-4" />
-          Add Service
+          Add Product
         </button>
       </div>
 
-      {services.length === 0 ? (
+      {products.length === 0 ? (
         <p className="text-sm text-muted-foreground text-center py-8">
-          No services yet. Add your first service to get started.
+          No products yet. Add your first product to get started.
         </p>
       ) : (
         <div className="space-y-2">
-          {services.map((service) => (
+          {products.map((product) => (
             <div
-              key={service.service_id}
+              key={product.product_id}
               className="flex items-center justify-between p-3 border border-border rounded-lg hover:bg-muted transition-smooth"
             >
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <h3 className="font-semibold text-sm">
-                    {service.custom_name}
-                  </h3>
+                  <h3 className="font-semibold text-sm">{product.name}</h3>
                   <span className="text-xs text-muted-foreground bg-secondary px-2 py-0.5 rounded-full">
-                    {service.category_name}
+                    {product.category}
                   </span>
                 </div>
 
                 <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
-                  <span>{service.duration} min</span>
                   <span className="font-semibold text-primary">
-                    ${service.price}
+                    ${product.price}
                   </span>
+                  <span>Stock: {product.stock}</span>
                 </div>
               </div>
 
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => handleEdit(service)}
+                  onClick={() => handleEdit(product)}
                   className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
                   title="Edit"
                 >
@@ -261,7 +272,7 @@ const SalonServicesManagement = () => {
                 </button>
 
                 <button
-                  onClick={() => handleDelete(service.service_id)}
+                  onClick={() => handleDelete(product.product_id)}
                   className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
                   title="Delete"
                 >
@@ -274,22 +285,21 @@ const SalonServicesManagement = () => {
       )}
 
       {/* ----------------------------
-          MODAL FOR ADD/EDIT SERVICE
+          MODAL FOR ADD/EDIT PRODUCT
         ----------------------------- */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-card border border-border rounded-2xl p-6 max-w-md w-full">
+          <div className="bg-card border border-border rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
             <h2 className="text-xl font-bold mb-4">
-              {editingService ? "Edit Service" : "Add New Service"}
+              {editingProduct ? "Edit Product" : "Add New Product"}
             </h2>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Service Name */}
+              {/* Product Name */}
               <div>
                 <label className="block text-sm font-medium mb-1">
-                  Service Name *
+                  Product Name *
                 </label>
-
                 <input
                   type="text"
                   required
@@ -298,7 +308,7 @@ const SalonServicesManagement = () => {
                     setFormData({ ...formData, name: e.target.value })
                   }
                   className="w-full mt-1 rounded-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                  placeholder="e.g., Haircut"
+                  placeholder="e.g., Shampoo"
                 />
               </div>
 
@@ -307,14 +317,12 @@ const SalonServicesManagement = () => {
                 <label className="block text-sm font-medium mb-1">
                   Category *
                 </label>
-
                 <select
                   value={formData.category}
                   onChange={(e) =>
                     setFormData({ ...formData, category: e.target.value })
                   }
                   className="w-full mt-1 rounded-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                  title="Service Category"
                 >
                   {categories.map((cat) => (
                     <option key={cat}>{cat}</option>
@@ -322,26 +330,19 @@ const SalonServicesManagement = () => {
                 </select>
               </div>
 
-              {/* Duration */}
+              {/* Description */}
               <div>
                 <label className="block text-sm font-medium mb-1">
-                  Duration (minutes) *
+                  Description
                 </label>
-
-                <input
-                  type="number"
-                  min="5"
-                  step="5"
-                  required
-                  value={formData.duration}
+                <textarea
+                  value={formData.description}
                   onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      duration: e.target.value,
-                    })
+                    setFormData({ ...formData, description: e.target.value })
                   }
                   className="w-full mt-1 rounded-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                  placeholder="30"
+                  placeholder="Product description"
+                  rows={3}
                 />
               </div>
 
@@ -350,7 +351,6 @@ const SalonServicesManagement = () => {
                 <label className="block text-sm font-medium mb-1">
                   Price ($) *
                 </label>
-
                 <input
                   type="number"
                   min="0"
@@ -358,13 +358,28 @@ const SalonServicesManagement = () => {
                   required
                   value={formData.price}
                   onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      price: e.target.value,
-                    })
+                    setFormData({ ...formData, price: e.target.value })
                   }
                   className="w-full mt-1 rounded-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
                   placeholder="0.00"
+                />
+              </div>
+
+              {/* Stock */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Stock *
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  required
+                  value={formData.stock}
+                  onChange={(e) =>
+                    setFormData({ ...formData, stock: e.target.value })
+                  }
+                  className="w-full mt-1 rounded-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                  placeholder="0"
                 />
               </div>
 
@@ -374,7 +389,7 @@ const SalonServicesManagement = () => {
                   type="button"
                   onClick={() => {
                     setShowModal(false);
-                    setEditingService(null);
+                    setEditingProduct(null);
                   }}
                   className="flex-1 px-4 py-2 border border-border rounded-lg hover:bg-muted transition-smooth"
                 >
@@ -385,7 +400,7 @@ const SalonServicesManagement = () => {
                   type="submit"
                   className="flex-1 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary-dark transition-smooth"
                 >
-                  {editingService ? "Update" : "Add"} Service
+                  {editingProduct ? "Update" : "Add"} Product
                 </button>
               </div>
             </form>
@@ -396,4 +411,5 @@ const SalonServicesManagement = () => {
   );
 };
 
-export default SalonServicesManagement;
+export default SalonProductsManagement;
+

@@ -11,8 +11,9 @@ import StaffPortalTabsOverview from "./StaffPortalTabsOverview";
 import StaffPortalTabsCustomer from "./StaffPortalTabsCustomer";
 import StaffPortalTabsProduct from "./StaffPortalTabsProduct";
 import StaffPortalTabsAppointment from "./StaffPortalTabsAppointment";
+import StaffPortalTabsAvailability from "./StaffPortalTabsAvailability";
 
-type TabKey = "overview" | "appointments" | "customers" | "products";
+type TabKey = "overview" | "appointments" | "customers" | "products" | "availability";
 
 const tabConfig: { id: TabKey; label: string; description: string }[] = [
   { id: "overview", label: "Overview", description: "Shift briefing" },
@@ -23,6 +24,7 @@ const tabConfig: { id: TabKey; label: string; description: string }[] = [
   },
   { id: "customers", label: "Customers", description: "Relationships" },
   { id: "products", label: "Retail", description: "Attach & inventory" },
+  { id: "availability", label: "Availability", description: "Set your hours" },
 ];
 
 interface StaffPortalTabsProps {
@@ -37,6 +39,7 @@ interface StaffPortalTabsProps {
   onEditAppointment: (appointmentId: number) => void;
   onAddStaff: () => void;
   onEditStaff: (staff: StaffMember) => void;
+  onUpdateAppointmentStatus?: (appointmentId: number, status: string) => Promise<void>;
 }
 
 const StaffPortalTabs: React.FC<StaffPortalTabsProps> = ({
@@ -51,6 +54,7 @@ const StaffPortalTabs: React.FC<StaffPortalTabsProps> = ({
   onEditAppointment,
   onAddStaff,
   onEditStaff,
+  onUpdateAppointmentStatus,
 }) => {
   return (
     <section className="rounded-3xl border border-border bg-card p-4 sm:p-6 shadow-soft-br">
@@ -95,6 +99,7 @@ const StaffPortalTabs: React.FC<StaffPortalTabsProps> = ({
             appointments={appointments}
             onCreateAppointment={onCreateAppointment}
             onEditAppointment={onEditAppointment}
+            onUpdateStatus={onUpdateAppointmentStatus}
           />
         )}
 
@@ -104,6 +109,10 @@ const StaffPortalTabs: React.FC<StaffPortalTabsProps> = ({
 
         {activeTab === "products" && (
           <StaffPortalTabsProduct products={products} />
+        )}
+
+        {activeTab === "availability" && (
+          <StaffPortalTabsAvailability />
         )}
       </div>
     </section>

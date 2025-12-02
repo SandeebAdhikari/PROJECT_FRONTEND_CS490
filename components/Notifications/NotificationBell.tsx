@@ -14,9 +14,13 @@ const NotificationBell: React.FC = () => {
     : 0;
 
   useEffect(() => {
-    loadNotifications();
-    const interval = setInterval(loadNotifications, 30000); // Refresh every 30s
-    return () => clearInterval(interval);
+    // Only set up notifications if user is authenticated
+    const token = localStorage.getItem("token");
+    if (token) {
+      loadNotifications();
+      const interval = setInterval(loadNotifications, 30000); // Refresh every 30s
+      return () => clearInterval(interval);
+    }
   }, []);
 
   // Reload when dropdown opens
@@ -28,9 +32,20 @@ const NotificationBell: React.FC = () => {
 
   const loadNotifications = async () => {
     try {
+      // Check if user is authenticated before trying to load notifications
+      const token = localStorage.getItem("token");
+      if (!token) {
+        // User not logged in, silently return empty notifications
+        setNotifications([]);
+        return;
+      }
+
       const result = await getNotifications();
       if (result.error) {
-        console.error("Error loading notifications:", result.error);
+        // Only log non-authentication errors
+        if (result.error !== "Not authenticated" && result.error !== "Network error. Please try again.") {
+          console.error("Error loading notifications:", result.error);
+        }
         setNotifications([]);
         return;
       }
@@ -40,7 +55,7 @@ const NotificationBell: React.FC = () => {
         setNotifications([]);
       }
     } catch (error) {
-      console.error("Error in loadNotifications:", error);
+      // Silently handle errors - don't spam console if user isn't authenticated
       setNotifications([]);
     }
   };

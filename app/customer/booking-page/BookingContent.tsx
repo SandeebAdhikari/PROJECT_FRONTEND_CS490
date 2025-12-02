@@ -86,11 +86,11 @@ const BookingContent = () => {
         const token =
           typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
-        const staffUrl = API_ENDPOINTS.SALONS.STAFF(salonId);
-        const servicesUrl = API_ENDPOINTS.SALONS.SERVICES(salonId);
+              const staffUrl = API_ENDPOINTS.SALONS.STAFF(salonId);
+              const servicesUrl = API_ENDPOINTS.SALONS.SERVICES(salonId);
 
-        console.log("Fetching staff from:", staffUrl);
-        console.log("Fetching services from:", servicesUrl);
+              console.log("Fetching staff from:", staffUrl);
+              console.log("Fetching services from:", servicesUrl);
 
         // Use Promise.allSettled to handle individual failures gracefully
         const [staffResult, servicesResult] = await Promise.allSettled([
@@ -234,33 +234,53 @@ const BookingContent = () => {
   }, [salonId, preSelectedService]);
 
   // -------------------------
-  // GENERATE TIME SLOTS
+  // FETCH AVAILABLE TIME SLOTS
   // -------------------------
   useEffect(() => {
-    if (formData.date && formData.staffId) {
-      setAvailableSlots([
-        "09:00",
-        "09:30",
-        "10:00",
-        "10:30",
-        "11:00",
-        "11:30",
-        "12:00",
-        "12:30",
-        "13:00",
-        "13:30",
-        "14:00",
-        "14:30",
-        "15:00",
-        "15:30",
-        "16:00",
-        "16:30",
-        "17:00",
-      ]);
-    } else {
-      setAvailableSlots([]);
-    }
-  }, [formData.date, formData.staffId]);
+    const fetchAvailableSlots = async () => {
+      if (!formData.date || !formData.staffId || !salonId) {
+        setAvailableSlots([]);
+        return;
+      }
+
+      try {
+        const token =
+          typeof window !== "undefined" ? localStorage.getItem("token") : null;
+
+        const serviceId = formData.serviceId || undefined;
+        const url = API_ENDPOINTS.BOOKINGS.AVAILABLE_SLOTS(
+          salonId,
+          formData.staffId,
+          formData.date,
+          serviceId
+        );
+
+        console.log("Fetching available slots from:", url);
+        const response = await fetch(url, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log("Available slots response:", data);
+          setAvailableSlots(data.slots || []);
+        } else {
+          const errorData = await response.json().catch(() => ({ error: response.statusText }));
+          console.error("Failed to fetch available slots:", errorData);
+          setAvailableSlots([]);
+        }
+      } catch (error) {
+        console.error("Error fetching available slots:", error);
+        setAvailableSlots([]);
+      }
+    };
+
+    fetchAvailableSlots();
+  }, [formData.date, formData.staffId, formData.serviceId, salonId]);
 
   // -------------------------
   // SUBMIT BOOKING
@@ -464,6 +484,10 @@ const BookingContent = () => {
             {!formData.date || !formData.staffId ? (
               <p className="text-sm text-muted-foreground py-4">
                 Please select a stylist and date first
+              </p>
+            ) : availableSlots.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-4">
+                No available time slots for this date. Please try another date.
               </p>
             ) : (
               <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">

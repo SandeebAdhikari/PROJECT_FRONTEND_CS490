@@ -15,6 +15,7 @@ interface SalonCardProps {
   priceFrom: number;
   imageUrl?: string;
   isFavorite?: boolean;
+  status?: string;
   onViewDetails?: (id: string) => void;
   onToggleFavorite?: (id: string) => void;
 }
@@ -30,8 +31,10 @@ const SalonCard: React.FC<SalonCardProps> = ({
   priceFrom,
   imageUrl,
   isFavorite = false,
+  status,
   onToggleFavorite,
 }) => {
+  const isPending = status === "pending";
   const toggleLabel = isFavorite
     ? `Remove ${name} from favorites`
     : `Add ${name} to favorites`;
@@ -46,8 +49,15 @@ const SalonCard: React.FC<SalonCardProps> = ({
           height={300}
           className="w-full h-44 sm:h-48 object-cover group-hover:scale-105 transition-transform duration-300"
         />
-        <div className="absolute top-3 left-3 sm:top-4 sm:left-4 bg-primary text-white text-xs font-semibold px-2.5 py-1 sm:px-3 rounded-full shadow-sm">
-          <span>{category}</span>
+        <div className="absolute top-3 left-3 sm:top-4 sm:left-4 flex gap-2">
+          <div className="bg-primary text-white text-xs font-semibold px-2.5 py-1 sm:px-3 rounded-full shadow-sm">
+            <span>{category}</span>
+          </div>
+          {isPending && (
+            <div className="bg-yellow-500 text-white text-xs font-semibold px-2.5 py-1 sm:px-3 rounded-full shadow-sm">
+              <span>Coming Soon</span>
+            </div>
+          )}
         </div>
 
         <button
@@ -99,9 +109,13 @@ const SalonCard: React.FC<SalonCardProps> = ({
 
         <Link
           href={`/customer/salon-details/${id}`}
-          className="w-full bg-primary-light hover:bg-primary text-white py-2 sm:py-2.5 rounded-lg font-semibold cursor-pointer transition-smooth flex justify-center text-sm sm:text-base active:scale-95"
+          className={`w-full py-2 sm:py-2.5 rounded-lg font-semibold cursor-pointer transition-smooth flex justify-center text-sm sm:text-base active:scale-95 ${
+            isPending
+              ? "bg-yellow-100 hover:bg-yellow-200 text-yellow-800"
+              : "bg-primary-light hover:bg-primary text-white"
+          }`}
         >
-          View Details
+          {isPending ? "Coming Soon" : "View Details"}
         </Link>
       </div>
     </div>

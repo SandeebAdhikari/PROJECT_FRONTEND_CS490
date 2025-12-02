@@ -12,8 +12,10 @@ import {
   MapPin,
   Mail,
   CreditCard,
+  Package,
 } from "lucide-react";
 import { API_ENDPOINTS, fetchConfig } from "@/libs/api/config";
+import { useCart } from "@/hooks/useCart";
 
 interface AppointmentDetails {
   appointment_id: number;
@@ -33,6 +35,7 @@ const CheckoutPageContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const appointmentId = searchParams.get("appointmentId");
+  const cart = useCart();
 
   const [appointment, setAppointment] = useState<AppointmentDetails | null>(
     null
@@ -40,6 +43,9 @@ const CheckoutPageContent = () => {
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState("");
+
+  // Get products from cart
+  const cartProducts = cart.getProducts();
 
   const fetchAppointmentDetails = useCallback(async () => {
     try {
@@ -95,9 +101,15 @@ const CheckoutPageContent = () => {
         throw new Error("Appointment details not found");
       }
 
-      // Calculate total amount (price + tax)
-      const taxAmount = appointment.price * 0.08;
-      const totalAmount = appointment.price + taxAmount;
+      // Calculate total amount (appointment price + products + tax)
+      const serviceTotal = appointment.price;
+      const productTotal = cartProducts.reduce(
+        (total, product) => total + product.price * product.quantity,
+        0
+      );
+      const subtotal = serviceTotal + productTotal;
+      const taxAmount = subtotal * 0.08;
+      const totalAmount = subtotal + taxAmount;
 
       // Call backend to create checkout session and send email
       const response = await fetch(API_ENDPOINTS.PAYMENTS.CHECKOUT, {
@@ -110,6 +122,11 @@ const CheckoutPageContent = () => {
         body: JSON.stringify({
           amount: totalAmount,
           appointment_id: appointmentId,
+          products: cartProducts.map((p) => ({
+            product_id: p.product_id,
+            quantity: p.quantity,
+            price: p.price,
+          })),
         }),
       });
 
@@ -119,6 +136,9 @@ const CheckoutPageContent = () => {
       }
 
       const data = await response.json();
+
+      // Clear products from cart after successful checkout initiation
+      cartProducts.forEach((p) => cart.removeItem(p.product_id, "product"));
 
       // Redirect to Stripe payment page
       window.location.href = data.payment_link;
@@ -178,8 +198,14 @@ const CheckoutPageContent = () => {
   if (!appointment) return null;
 
   const appointmentDate = new Date(appointment.scheduled_time);
-  const taxAmount = appointment.price * 0.08; // 8% tax
-  const totalAmount = appointment.price + taxAmount;
+  const serviceTotal = appointment.price;
+  const productTotal = cartProducts.reduce(
+    (total, product) => total + product.price * product.quantity,
+    0
+  );
+  const subtotal = serviceTotal + productTotal;
+  const taxAmount = subtotal * 0.08; // 8% tax
+  const totalAmount = subtotal + taxAmount;
 
   return (
     <div className="min-h-screen bg-muted p-4 sm:p-8">
@@ -276,6 +302,38 @@ const CheckoutPageContent = () => {
                     </p>
                   </div>
                 )}
+
+                {/* Products Section */}
+                {cartProducts.length > 0 && (
+                  <div className="mt-6 pt-6 border-t border-border">
+                    <h3 className="text-lg font-semibold mb-4">Products</h3>
+                    <div className="space-y-3">
+                      {cartProducts.map((product) => (
+                        <div
+                          key={product.product_id}
+                          className="flex items-center justify-between p-3 bg-muted rounded-lg"
+                        >
+                          <div className="flex items-center gap-3 flex-1">
+                            <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                              <Package className="w-5 h-5 text-primary" />
+                            </div>
+                            <div className="flex-1">
+                              <p className="font-semibold">{product.name}</p>
+                              <p className="text-sm text-muted-foreground">
+                                Quantity: {product.quantity}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-semibold">
+                              ${(product.price * product.quantity).toFixed(2)}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -308,7 +366,21 @@ const CheckoutPageContent = () => {
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Service Price</span>
                   <span className="font-semibold">
-                    ${appointment.price.toFixed(2)}
+                    ${serviceTotal.toFixed(2)}
+                  </span>
+                </div>
+                {cartProducts.length > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Products</span>
+                    <span className="font-semibold">
+                      ${productTotal.toFixed(2)}
+                    </span>
+                  </div>
+                )}
+                <div className="flex justify-between pt-2 border-t border-border">
+                  <span className="text-muted-foreground">Subtotal</span>
+                  <span className="font-semibold">
+                    ${subtotal.toFixed(2)}
                   </span>
                 </div>
                 <div className="flex justify-between">

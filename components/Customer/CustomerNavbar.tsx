@@ -1,13 +1,25 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import NextImage from "next/image";
 import Icon9 from "@/public/icons/9.png";
-import { User } from "lucide-react";
+import { User, ShoppingCart } from "lucide-react";
 import NotificationBell from "@/components/Notifications/NotificationBell";
+import { useCart } from "@/hooks/useCart";
 
 const CustomerNavbar = () => {
+  const cart = useCart();
+  const [cartItemCount, setCartItemCount] = useState(0);
+
+  useEffect(() => {
+    // Calculate total items in cart (services + products with quantities)
+    const services = cart.getServices();
+    const products = cart.getProducts();
+    const totalItems = services.length + products.reduce((sum, p) => sum + p.quantity, 0);
+    setCartItemCount(totalItems);
+  }, [cart.items]);
+
   return (
     <div className="p-3 sm:p-4 lg:px-8 flex justify-between items-center w-full border border-b border-border bg-primary-foreground sticky top-0 z-40">
       <Link href="/customer" className="flex items-center gap-1 sm:gap-2 group">
@@ -16,6 +28,21 @@ const CustomerNavbar = () => {
       </Link>
       <div className="flex gap-1 sm:gap-2 items-center">
         <NotificationBell />
+        
+        {/* Cart Icon with Badge */}
+        <Link
+          href="/customer/cart"
+          className="relative p-2 hover:bg-accent rounded-lg transition-bounce"
+          aria-label="Shopping Cart"
+        >
+          <ShoppingCart className="w-5 h-5 text-foreground" />
+          {cartItemCount > 0 && (
+            <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+              {cartItemCount > 99 ? '99+' : cartItemCount}
+            </span>
+          )}
+        </Link>
+
         <div className="relative hidden sm:block">
           <User className="absolute w-4 h-4 top-1/2 left-3 -translate-y-1/2 text-foreground" />
           <Link

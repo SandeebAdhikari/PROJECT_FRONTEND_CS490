@@ -79,7 +79,11 @@ export async function createSalon(
 }
 
 // Get all salons for browsing
-export async function getAllSalons(): Promise<{
+export async function getAllSalons(
+  category?: string,
+  gender?: string | null,
+  barbershop?: boolean
+): Promise<{
   salons?: Salon[];
   error?: string;
 }> {
@@ -89,7 +93,21 @@ export async function getAllSalons(): Promise<{
       return { error: "Not authenticated" };
     }
 
-    const response = await fetch(API_ENDPOINTS.SALONS.LIST, {
+    // Build query string with filters if provided
+    const queryParams = new URLSearchParams();
+    if (category && category !== 'all') {
+      queryParams.append('category', category);
+    }
+    if (gender) {
+      queryParams.append('gender', gender);
+    }
+    if (barbershop) {
+      queryParams.append('barbershop', 'true');
+    }
+    const queryString = queryParams.toString();
+    const url = queryString ? `${API_ENDPOINTS.SALONS.LIST}?${queryString}` : API_ENDPOINTS.SALONS.LIST;
+
+    const response = await fetch(url, {
       ...fetchConfig,
       headers: {
         ...fetchConfig.headers,

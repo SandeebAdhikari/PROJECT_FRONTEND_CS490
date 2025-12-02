@@ -7,11 +7,9 @@ import SalonBusinessInformation from "@/components/Dashboard/Settings/SalonBusin
 import SalonBusinessHours from "@/components/Dashboard/Settings/SalonBusinessHours";
 import SalonNotificationSettings from "@/components/Dashboard/Settings/SalonNotificationSetting";
 import SalonServicesManagement from "@/components/Dashboard/Settings/SalonServicesManagement";
+import SalonProductsManagement from "@/components/Dashboard/Settings/SalonProductsManagement";
 import SalonAmenitiesManagement from "@/components/Dashboard/Settings/SalonAmenitiesManagement";
 import SalonLoyaltySettings from "@/components/Dashboard/Settings/SalonLoyaltySettings";
-import SalonSlotSettings from "@/components/Dashboard/Settings/SalonSlotSettings";
-import SalonReviewSettings from "@/components/Dashboard/Settings/SalonReviewSettings";
-import SalonOperatingPolicies from "@/components/Dashboard/Settings/SalonOperatingPolicies";
 import SaveButton from "@/components/Dashboard/Settings/SaveButton";
 
 const SalonSettingsPage = () => {
@@ -21,9 +19,6 @@ const SalonSettingsPage = () => {
   const bookingRef = useRef<{ save: () => Promise<void> }>(null);
   const notificationsRef = useRef<{ save: () => Promise<void> }>(null);
   const loyaltyRef = useRef<{ save: () => Promise<void> }>(null);
-  const slotRef = useRef<{ save: () => Promise<void> }>(null);
-  const reviewRef = useRef<{ save: () => Promise<void> }>(null);
-  const policiesRef = useRef<{ save: () => Promise<void> }>(null);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
@@ -39,9 +34,6 @@ const SalonSettingsPage = () => {
         { name: "Booking Settings", promise: bookingRef.current?.save() },
         { name: "Notification Settings", promise: notificationsRef.current?.save() },
         { name: "Loyalty Settings", promise: loyaltyRef.current?.save() },
-        { name: "Slot Settings", promise: slotRef.current?.save() },
-        { name: "Review Settings", promise: reviewRef.current?.save() },
-        { name: "Operating Policies", promise: policiesRef.current?.save() },
       ].filter(item => item.promise !== undefined && item.promise !== null);
 
       const results = await Promise.allSettled(
@@ -117,13 +109,11 @@ const SalonSettingsPage = () => {
         <SalonBusinessInformation ref={businessInfoRef} suppressMessages={true} />
         <SalonBusinessHours ref={businessHoursRef} suppressMessages={true} />
         <SalonServicesManagement />
+        <SalonProductsManagement />
         <SalonAmenitiesManagement ref={amenitiesRef} suppressMessages={true} />
         <SalonBookingSettings ref={bookingRef} suppressMessages={true} />
         <SalonNotificationSettings ref={notificationsRef} suppressMessages={true} />
         <SalonLoyaltySettings ref={loyaltyRef} suppressMessages={true} />
-        <SalonSlotSettings ref={slotRef} suppressMessages={true} />
-        <SalonReviewSettings ref={reviewRef} suppressMessages={true} />
-        <SalonOperatingPolicies ref={policiesRef} suppressMessages={true} />
       </div>
 
       <div className="flex justify-end mt-6">

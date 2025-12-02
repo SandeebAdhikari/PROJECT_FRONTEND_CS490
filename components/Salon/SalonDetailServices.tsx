@@ -36,7 +36,7 @@ export default function SalonDetailServices({ salonId }: { salonId: string }) {
         return;
       }
       try {
-        const response = await fetch(API_ENDPOINTS.SALONS.SERVICES(salonId));
+        const response = await fetch(API_ENDPOINTS.SALONS.SERVICES_PUBLIC(salonId));
         if (response.ok) {
           const data = await response.json();
           const normalizedServices = Array.isArray(data)

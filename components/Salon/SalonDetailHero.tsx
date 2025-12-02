@@ -35,6 +35,7 @@ interface SalonDetailHeroProps {
     profile_picture?: string;
     owner_id?: number;
     category?: string;
+    status?: string;
   };
 }
 
@@ -56,6 +57,7 @@ const SalonDetailHero: React.FC<SalonDetailHeroProps> = ({ salon }) => {
   const [rating, setRating] = useState<number>(0);
   const [totalReviews, setTotalReviews] = useState<number>(0);
   const salonId = salon.salon_id || salon.id;
+  const isPending = salon.status === "pending";
 
   // Use the shared favorites hook for consistency
   const { isFavorite, toggleFavorite } = useFavorites();
@@ -279,13 +281,20 @@ const SalonDetailHero: React.FC<SalonDetailHeroProps> = ({ salon }) => {
 
         {/* TITLE + ACTIONS */}
         <div className="mt-4 flex justify-between">
-          <div className="flex gap-4 items-center">
+          <div className="flex gap-4 items-center flex-wrap">
             <h1 className="text-3xl sm:text-4xl font-extrabold">
               {salon.name}
             </h1>
-            <div className="flex items-center gap-1 rounded-full bg-muted/50 px-2 py-[2px] text-[11px] font-semibold text-foreground font-inter">
-              <Verified className="w-3 h-3 text-green-600" />
-              <span>Verified</span>
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 rounded-full bg-muted/50 px-2 py-[2px] text-[11px] font-semibold text-foreground font-inter">
+                <Verified className="w-3 h-3 text-green-600" />
+                <span>Verified</span>
+              </div>
+              {salon.status === "pending" && (
+                <div className="flex items-center gap-1 rounded-full bg-yellow-100 px-2 py-[2px] text-[11px] font-semibold text-yellow-800 font-inter">
+                  <span>Coming Soon</span>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -357,14 +366,23 @@ const SalonDetailHero: React.FC<SalonDetailHeroProps> = ({ salon }) => {
 
         {/* CTA BUTTONS */}
         <div className="mt-3 flex gap-2">
-          <Link
-            href={`/customer/booking-page?salonId=${
-              salon.salon_id || salon.id || "1"
-            }`}
-            className="border border-border py-2 px-4 rounded-xl bg-primary-light font-inter font-semibold text-primary-foreground hover:scale-105 transition"
-          >
-            Book Appointment Now
-          </Link>
+          {isPending ? (
+            <button
+              disabled
+              className="border border-border py-2 px-4 rounded-xl bg-yellow-100 font-inter font-semibold text-yellow-800 cursor-not-allowed opacity-75"
+            >
+              Coming Soon
+            </button>
+          ) : (
+            <Link
+              href={`/customer/booking-page?salonId=${
+                salon.salon_id || salon.id || "1"
+              }`}
+              className="border border-border py-2 px-4 rounded-xl bg-primary-light font-inter font-semibold text-primary-foreground hover:scale-105 transition"
+            >
+              Book Appointment Now
+            </Link>
+          )}
           <button
             onClick={() => {
               const token =

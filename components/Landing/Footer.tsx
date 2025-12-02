@@ -181,6 +181,13 @@ const Footer: React.FC = () => {
               >
                 Cookies
               </Link>
+              <Link
+                href="/setup-admin"
+                className="text-secondary-foreground/50 hover:text-primary transition-colors text-xs"
+                title="Admin Portal Setup"
+              >
+                Admin
+              </Link>
             </div>
           </div>
         </div>

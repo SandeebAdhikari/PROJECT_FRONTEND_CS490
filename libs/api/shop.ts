@@ -25,8 +25,10 @@ export async function getProducts(
 ): Promise<{ products?: Product[]; error?: string }> {
   try {
     const url = salonId
-      ? `${API_ENDPOINTS.SHOP.PRODUCTS}?salon_id=${salonId}`
-      : API_ENDPOINTS.SHOP.PRODUCTS;
+      ? `${API_ENDPOINTS.SHOP.PRODUCTS(salonId)}?salon_id=${salonId}`
+      : typeof API_ENDPOINTS.SHOP.PRODUCTS === 'string' 
+        ? API_ENDPOINTS.SHOP.PRODUCTS 
+        : API_ENDPOINTS.SHOP.PRODUCTS('');
 
     const response = await fetch(url, {
       ...fetchConfig,

@@ -9,7 +9,7 @@ import Setup2FAModal from "@/components/Auth/Setup2FAModal";
 import { getAllSalons, type Salon as ApiSalon } from "@/libs/api/salons";
 import data from "@/data/data.json"; // Import mock data
 
-import { Scissors, Palette, Sparkles, Hand, Eye, Brush } from "lucide-react";
+import { Scissors, Palette, Sparkles, Hand, Eye, Brush, User, Users } from "lucide-react";
 import CustomerTopSalon from "@/components/Customer/CustomerTopSalon";
 
 type CustomerSalon = Omit<ApiSalon, "address" | "phone"> & {
@@ -31,6 +31,8 @@ const MOCK_SALONS: CustomerSalon[] = Array.isArray(data.salons)
 
 const Page = () => {
   const [selectedService, setSelectedService] = useState("all");
+  const [selectedGender, setSelectedGender] = useState<string | null>(null);
+  const [showBarbershops, setShowBarbershops] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const { toggleFavorite, isFavorite } = useFavorites();
   const [show2FAModal, setShow2FAModal] = useState(false);
@@ -48,18 +50,59 @@ const Page = () => {
     { id: "makeup", label: "Makeup", icon: Brush },
   ];
 
+  const genderFilters = [
+    { id: "men", label: "Men", icon: User },
+    { id: "women", label: "Women", icon: Users },
+  ];
+
   useEffect(() => {
     const fetchSalons = async () => {
       try {
-        // Fetch real salons from backend
-        const result = await getAllSalons();
+        // Fetch real salons from backend with filters
+        const result = await getAllSalons(selectedService, selectedGender, showBarbershops);
         const realSalons = (result.salons ?? []) as CustomerSalon[];
         
         // Get mock salons from data.json
         const mockSalons = MOCK_SALONS;
         
-        // Combine both: real salons first, then mock salons
-        const combinedSalons = [...realSalons, ...mockSalons];
+        // Filter mock salons by category if not "all"
+        let filteredMockSalons = mockSalons;
+        if (selectedService !== "all") {
+          filteredMockSalons = mockSalons.filter((salon) => {
+            const categoryMatch = {
+              haircut: salon.category?.toLowerCase().includes("hair") || false,
+              coloring: salon.category?.toLowerCase().includes("color") || false,
+              nails: salon.category?.toLowerCase().includes("nail") || false,
+              eyebrows: salon.category?.toLowerCase().includes("eyebrow") || false,
+              makeup: salon.category?.toLowerCase().includes("makeup") || false,
+            };
+            return categoryMatch[selectedService as keyof typeof categoryMatch] || false;
+          });
+        }
+        
+        // Filter by gender if selected
+        if (selectedGender) {
+          filteredMockSalons = filteredMockSalons.filter((salon) => {
+            if (selectedGender === "men") {
+              return salon.name?.toLowerCase().includes("barber") || 
+                     salon.category?.toLowerCase().includes("men") || false;
+            } else if (selectedGender === "women") {
+              return salon.category?.toLowerCase().includes("women") || 
+                     salon.category?.toLowerCase().includes("beauty") || false;
+            }
+            return true;
+          });
+        }
+        
+        // Filter barbershops if selected
+        if (showBarbershops) {
+          filteredMockSalons = filteredMockSalons.filter((salon) => {
+            return salon.name?.toLowerCase().includes("barber") || false;
+          });
+        }
+        
+        // Combine both: real salons first, then filtered mock salons
+        const combinedSalons = [...realSalons, ...filteredMockSalons];
         
         setSalons(combinedSalons);
       } catch (error) {
@@ -72,7 +115,7 @@ const Page = () => {
     };
 
     fetchSalons();
-  }, []);
+  }, [selectedService, selectedGender, showBarbershops]);
 
   useEffect(() => {
     const checkFirstLogin = () => {
@@ -116,17 +159,35 @@ const Page = () => {
           onSearchChange={setSearchQuery}
         />
 
-        <div className="flex flex-wrap justify-center gap-2 sm:gap-3 mt-6 sm:mt-8 px-4 pb-8 sm:pb-16">
-        {services.map((service) => (
+        <div className="flex flex-wrap justify-center gap-2 sm:gap-3 mt-6 sm:mt-8 px-4">
+          {services.map((service) => (
+            <ServiceButton
+              key={service.id}
+              label={service.label}
+              icon={service.icon}
+              active={selectedService === service.id}
+              onClick={() => setSelectedService(service.id)}
+            />
+          ))}
+        </div>
+
+        <div className="flex flex-wrap justify-center gap-2 sm:gap-3 mt-4 px-4 pb-8 sm:pb-16">
+          {genderFilters.map((filter) => (
+            <ServiceButton
+              key={filter.id}
+              label={filter.label}
+              icon={filter.icon}
+              active={selectedGender === filter.id}
+              onClick={() => setSelectedGender(selectedGender === filter.id ? null : filter.id)}
+            />
+          ))}
           <ServiceButton
-            key={service.id}
-            label={service.label}
-            icon={service.icon}
-            active={selectedService === service.id}
-            onClick={() => setSelectedService(service.id)}
+            label="Barbershops"
+            icon={Scissors}
+            active={showBarbershops}
+            onClick={() => setShowBarbershops(!showBarbershops)}
           />
-        ))}
-      </div>
+        </div>
         <CustomerTopSalon 
           salons={salons}
           selectedService={selectedService}

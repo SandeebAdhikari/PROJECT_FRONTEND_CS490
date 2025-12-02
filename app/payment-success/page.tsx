@@ -36,8 +36,12 @@ interface PaymentDetails {
   amount: number;
   payment_method: string;
   payment_status: string;
-  created_at: string;
-  stripe_checkout_session_id: string;
+  payment_date: string;
+  appointment_id: number;
+  salon_name: string;
+  service_name: string;
+  stylist_name: string;
+  scheduled_time: string;
 }
 
 const PaymentSuccessContent = () => {
@@ -55,41 +59,58 @@ const PaymentSuccessContent = () => {
   const fetchPaymentDetails = useCallback(async () => {
     try {
       setLoading(true);
-      const token =
-        localStorage.getItem("token") || localStorage.getItem("authToken");
+      
+      if (!sessionId) {
+        throw new Error("No payment session found");
+      }
 
-      // In a real implementation, you would call an endpoint that verifies the session
-      // and returns both payment and appointment details
-      // For now, we'll fetch from appointment history
-      const response = await fetch(API_ENDPOINTS.HISTORY.APPOINTMENTS, {
-        ...fetchConfig,
-        headers: {
-          ...fetchConfig.headers,
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-      });
+      // Fetch payment details by session ID
+      const response = await fetch(
+        `${API_ENDPOINTS.PAYMENTS.GET_BY_SESSION}?session_id=${sessionId}`,
+        {
+          ...fetchConfig,
+        }
+      );
 
       if (!response.ok) {
-        throw new Error("Failed to fetch payment details");
+        const errorData = await response.json().catch(() => ({ error: response.statusText }));
+        throw new Error(errorData.error || "Failed to fetch payment details");
       }
 
-      const appointments = await response.json();
+      const data = await response.json();
+      const paymentData = data.payment;
 
-      // Get the most recent appointment (assuming it's the one just paid for)
-      if (appointments && appointments.length > 0) {
-        const recentAppointment = appointments[0];
-        setAppointment(recentAppointment);
-
-        // Mock payment details based on appointment
-        setPayment({
-          payment_id: 1,
-          amount: recentAppointment.price || 0,
-          payment_method: "stripe",
-          payment_status: "completed",
-          created_at: new Date().toISOString(),
-          stripe_checkout_session_id: sessionId || "",
-        });
+      if (!paymentData) {
+        throw new Error("Payment not found");
       }
+
+      // Set payment details
+      setPayment({
+        payment_id: paymentData.payment_id,
+        amount: Number(paymentData.amount) || 0,
+        payment_method: paymentData.payment_method || "stripe",
+        payment_status: paymentData.payment_status || "completed",
+        payment_date: paymentData.payment_date || new Date().toISOString(),
+        appointment_id: paymentData.appointment_id,
+        salon_name: paymentData.salon_name,
+        service_name: paymentData.service_name,
+        stylist_name: paymentData.stylist_name,
+        scheduled_time: paymentData.scheduled_time,
+      });
+
+      // Set appointment details from payment data
+      setAppointment({
+        appointment_id: paymentData.appointment_id,
+        salon_id: 0, // Not needed for display
+        salon_name: paymentData.salon_name,
+        staff_id: 0, // Not needed for display
+        staff_name: paymentData.stylist_name || "Not assigned",
+        service_id: 0, // Not needed for display
+        service_name: paymentData.service_name,
+        scheduled_time: paymentData.scheduled_time,
+        status: "confirmed",
+        price: Number(paymentData.amount) || 0,
+      });
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Failed to load payment details"
@@ -186,9 +207,10 @@ const PaymentSuccessContent = () => {
   }
 
   const appointmentDate = new Date(appointment.scheduled_time);
-  const paymentDate = new Date(payment.created_at);
-  const taxAmount = (payment.amount * 0.08) / 1.08; // Calculate tax from total
-  const subtotal = payment.amount - taxAmount;
+  const paymentDate = new Date(payment.payment_date);
+  // Calculate tax (8% of subtotal, so total = subtotal * 1.08)
+  const subtotal = payment.amount / 1.08;
+  const taxAmount = payment.amount - subtotal;
 
   return (
     <div className="min-h-screen bg-muted p-4 sm:p-8">

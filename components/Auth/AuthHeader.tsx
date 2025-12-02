@@ -64,10 +64,14 @@ const AuthHeader: React.FC<AuthHeaderProps> = ({ title, subtitle }) => {
 
       if (data.existingUser && data.token && data.role) {
         setAuthCookie(data.token);
-        window.location.href =
-          data.role === "owner"
-            ? "/admin/salon-dashboard/overview"
-            : "/customer";
+        const role = data.role.toLowerCase();
+        if (role === "admin") {
+          window.location.href = "/sidra/overview";
+        } else if (role === "owner") {
+          window.location.href = "/admin/salon-dashboard/overview";
+        } else {
+          window.location.href = "/customer";
+        }
       } else if (data.newUser && data.firebaseUid && data.email) {
         const current = auth.currentUser;
         setPendingUser({
@@ -105,7 +109,7 @@ const AuthHeader: React.FC<AuthHeaderProps> = ({ title, subtitle }) => {
     setShowRoleModal(false);
 
     try {
-      const res = await fetch(
+      const res: Response = await fetch(
         API_ENDPOINTS.AUTH.SET_ROLE,
         {
           method: "POST",
@@ -122,12 +126,18 @@ const AuthHeader: React.FC<AuthHeaderProps> = ({ title, subtitle }) => {
         }
       );
 
-      const data = await res.json();
+      const data: { token?: string; role?: string; error?: string } = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to set role");
 
-      setAuthCookie(data.token);
-      window.location.href =
-        data.role === "owner" ? "/admin/salon-dashboard/overview" : "/customer";
+      setAuthCookie(data.token || "");
+      const userRole = data.role?.toLowerCase();
+      if (userRole === "admin") {
+        window.location.href = "/sidra/overview";
+      } else if (userRole === "owner") {
+        window.location.href = "/admin/salon-dashboard/overview";
+      } else {
+        window.location.href = "/customer";
+      }
     } catch (err) {
       console.error(err);
       alert("Failed to assign role");
