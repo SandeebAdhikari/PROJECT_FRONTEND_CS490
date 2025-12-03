@@ -28,7 +28,7 @@ export default function ReportsPage() {
         Download analytics and performance summaries for your team.
       </p>
 
-      {/* EXPORT BUTTONS */}
+     
       <div className="flex gap-4 mb-10">
         <button className="px-6 py-2 rounded-xl bg-primary text-primary-foreground shadow-soft transition-smooth hover:opacity-90">
           Export PDF
