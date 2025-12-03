@@ -18,8 +18,8 @@ export default function AdminSettingsPage() {
         </h2>
 
         <div className="space-y-2 text-muted-foreground">
-          <p><strong className="text-foreground">Name:</strong> Sami Dakhel</p>
-          <p><strong className="text-foreground">Email:</strong> sami@example.com</p>
+          <p><strong className="text-foreground">Name:</strong> Sara Smith</p>
+          <p><strong className="text-foreground">Email:</strong> sara@example.com</p>
           <p><strong className="text-foreground">Role:</strong> Platform Administrator</p>
         </div>
 
