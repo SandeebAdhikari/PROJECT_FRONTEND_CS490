@@ -27,16 +27,16 @@ export default function AdminHeader({ adminName, notificationCount = 3 }: AdminH
         shadow-sm
       "
     >
-      {/* LEFT: LOGO + STYGO */}
+      {/* stygo logo */}
       <div className="flex items-center gap-3">
         <NextImage src={Icon9} alt="logo" width={40} height={40} />
         <h1 className="text-2xl font-bold text-primary">StyGo Admin</h1>
       </div>
 
-      {/* RIGHT: BELL + PROFILE + LOGOUT */}
+     
       <div className="flex items-center gap-5">
 
-        {/* NOTIFICATION BELL */}
+        {/* notif bell */}
         <Link href="/sidra/overview/pending-approvals" className="relative">
           <Bell size={22} className="hover:text-primary transition" />
 
@@ -56,7 +56,7 @@ export default function AdminHeader({ adminName, notificationCount = 3 }: AdminH
           )}
         </Link>
 
-        {/* ADMIN PROFILE */}
+        {/* admin prof */}
         <Link
           href="/sidra/overview/admin"
           className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-base font-semibold hover:bg-accent transition shadow-sm"
@@ -65,7 +65,7 @@ export default function AdminHeader({ adminName, notificationCount = 3 }: AdminH
           Admin Profile 
         </Link>
 
-        {/* LOGOUT BUTTON */}
+        {/* logout */}
         <button
           onClick={handleLogout}
           className="px-5 py-2.5 rounded-lg border border-border text-base font-semibold hover:bg-accent transition shadow-sm"
