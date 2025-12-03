@@ -30,7 +30,7 @@ export default function CustomersPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
-        {/* RETENTION */}
+      
         <ChartCard title="Customer Retention (%)">
           <BarChart width={400} height={250} data={retentionData}>
             <XAxis dataKey="month" stroke="#999" />
@@ -40,7 +40,7 @@ export default function CustomersPage() {
           </BarChart>
         </ChartCard>
 
-        {/* REPEAT VISIT FREQUENCY */}
+       
         <ChartCard title="Repeat Visit Frequency">
           <PieChart width={400} height={250}>
             <Pie
@@ -66,7 +66,7 @@ export default function CustomersPage() {
           </PieChart>
         </ChartCard>
 
-        {/* CUSTOMER LIFETIME VALUE */}
+       
         <ChartCard title="Customer Lifetime Value (CLV)">
           <LineChart width={400} height={250} data={lifetimeValueData}>
             <XAxis dataKey="month" stroke="#999" />
