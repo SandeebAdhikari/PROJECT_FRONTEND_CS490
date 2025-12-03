@@ -36,7 +36,7 @@ export default function Sidebar() {
     const pathname = usePathname();
 
     return (
-        <aside className="w-64 bg-card border-r border-border p-5 shadow-soft">
+        <aside className="w-64 bg-[#f3f4f6] border-r border-border p-5 shadow-soft text-foreground">
             <Link href="/" className="flex items-center gap-3 mb-10">
                 <NextImage
                     src="/icons/9.png"
