@@ -83,7 +83,7 @@ export const API_ENDPOINTS = {
       `${API_BASE_URL}/api/salons/public/${salonId}`,
     CHECK_OWNER: `${API_BASE_URL}/api/salons/check-owner`,
     STAFF: (salonId: number | string) =>
-      `${API_BASE_URL}/api/staff/salon/${salonId}/staff`,
+      `${API_BASE_URL}/api/staff/public/salon/${salonId}`,
     SERVICES: (salonId: number | string) =>
       `${API_BASE_URL}/api/salons/${salonId}/services`,
     PRODUCTS: (salonId: number | string) =>
@@ -185,6 +185,31 @@ export const API_ENDPOINTS = {
     CHECKOUT: `${API_BASE_URL}/api/subscriptions/checkout`,
     HISTORY: `${API_BASE_URL}/api/subscriptions/history`,
     STATUS: `${API_BASE_URL}/api/subscriptions/status`,
+  },
+  LOYALTY: {
+    MY_SUMMARY: `${API_BASE_URL}/api/loyalty/my-summary`,
+    MY_POINTS: (salonId: number | string) =>
+      `${API_BASE_URL}/api/loyalty/my-points/${salonId}`,
+    REDEEM: `${API_BASE_URL}/api/loyalty/redeem`,
+    CALCULATE_DISCOUNT: `${API_BASE_URL}/api/loyalty/calculate-discount`,
+    CONFIG: `${API_BASE_URL}/api/loyalty/config`,
+    GET_CONFIG: (salonId: number | string) =>
+      `${API_BASE_URL}/api/loyalty/config/${salonId}`,
+  },
+  PUBLIC: {
+    BOOKINGS: `${API_BASE_URL}/api/public/bookings`,
+    PRODUCTS: (salonId: number | string) =>
+      `${API_BASE_URL}/api/public/products/${salonId}`,
+    CART_ADD: `${API_BASE_URL}/api/public/cart/add`,
+    CART_GET: (email: string, salonId: number | string) =>
+      `${API_BASE_URL}/api/public/cart?email=${email}&salon_id=${salonId}`,
+    CART_REMOVE: (itemId: number | string) =>
+      `${API_BASE_URL}/api/public/cart/${itemId}`,
+    CHECKOUT: `${API_BASE_URL}/api/public/checkout`,
+    LOYALTY_CONFIG: (salonId: number | string) =>
+      `${API_BASE_URL}/api/public/loyalty/${salonId}/config`,
+    LOYALTY_POINTS: (salonId: number | string, email: string) =>
+      `${API_BASE_URL}/api/public/loyalty/${salonId}/points?email=${email}`,
   },
   HEALTH: `${API_BASE_URL}/health`,
   ADMINS: {
