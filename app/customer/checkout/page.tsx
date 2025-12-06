@@ -13,9 +13,12 @@ import {
   Mail,
   CreditCard,
   Package,
+  Gift,
 } from "lucide-react";
 import { API_ENDPOINTS, fetchConfig } from "@/libs/api/config";
 import { useCart } from "@/hooks/useCart";
+import { getMyPoints } from "@/libs/api/loyalty";
+import type { LoyaltyPointsDetail } from "@/libs/api/loyalty";
 
 interface AppointmentDetails {
   appointment_id: number;
@@ -43,6 +46,8 @@ const CheckoutPageContent = () => {
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState("");
+  const [loyaltyPoints, setLoyaltyPoints] = useState<LoyaltyPointsDetail | null>(null);
+  const [pointsToRedeem, setPointsToRedeem] = useState(0);
 
   // Get products from cart
   const cartProducts = cart.getProducts();
@@ -85,6 +90,20 @@ const CheckoutPageContent = () => {
     }
   }, [appointmentId, fetchAppointmentDetails]);
 
+  // Fetch loyalty points when appointment is loaded
+  useEffect(() => {
+    const fetchLoyaltyPoints = async () => {
+      if (!appointment?.salon_id) return;
+
+      const result = await getMyPoints(appointment.salon_id);
+      if (result.points) {
+        setLoyaltyPoints(result.points);
+      }
+    };
+
+    fetchLoyaltyPoints();
+  }, [appointment]);
+
   const handleProceedToPayment = async () => {
     setProcessing(true);
     setError("");
@@ -101,15 +120,22 @@ const CheckoutPageContent = () => {
         throw new Error("Appointment details not found");
       }
 
-      // Calculate total amount (appointment price + products + tax)
+      // Calculate total amount (appointment price + products + loyalty discount + tax)
       const serviceTotal = appointment.price;
       const productTotal = cartProducts.reduce(
         (total, product) => total + product.price * product.quantity,
         0
       );
       const subtotal = serviceTotal + productTotal;
-      const taxAmount = subtotal * 0.08;
-      const totalAmount = subtotal + taxAmount;
+
+      // Calculate loyalty discount
+      const loyaltyDiscount = loyaltyPoints && pointsToRedeem > 0
+        ? Math.min(pointsToRedeem * loyaltyPoints.redeem_rate, subtotal)
+        : 0;
+
+      const afterDiscount = subtotal - loyaltyDiscount;
+      const taxAmount = afterDiscount * 0.08;
+      const totalAmount = afterDiscount + taxAmount;
 
       // Call backend to create checkout session and send email
       const response = await fetch(API_ENDPOINTS.PAYMENTS.CHECKOUT, {
@@ -127,6 +153,8 @@ const CheckoutPageContent = () => {
             quantity: p.quantity,
             price: p.price,
           })),
+          points_to_redeem: pointsToRedeem,
+          salon_id: appointment.salon_id,
         }),
       });
 
@@ -204,8 +232,15 @@ const CheckoutPageContent = () => {
     0
   );
   const subtotal = serviceTotal + productTotal;
-  const taxAmount = subtotal * 0.08; // 8% tax
-  const totalAmount = subtotal + taxAmount;
+
+  // Calculate loyalty discount
+  const loyaltyDiscount = loyaltyPoints && pointsToRedeem > 0
+    ? Math.min(pointsToRedeem * loyaltyPoints.redeem_rate, subtotal)
+    : 0;
+
+  const afterDiscount = subtotal - loyaltyDiscount;
+  const taxAmount = afterDiscount * 0.08; // 8% tax
+  const totalAmount = afterDiscount + taxAmount;
 
   return (
     <div className="min-h-screen bg-muted p-4 sm:p-8">
@@ -361,6 +396,70 @@ const CheckoutPageContent = () => {
             <div className="bg-card border border-border rounded-2xl p-6 shadow-soft-br sticky top-8">
               <h2 className="text-xl font-bold mb-4">Price Summary</h2>
 
+              {/* Loyalty Points Section */}
+              {loyaltyPoints && loyaltyPoints.points > 0 && (
+                <div className="mb-6 pb-6 border-b border-border">
+                  <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl p-4 text-white mb-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <Gift className="w-5 h-5" />
+                        <span className="font-semibold">Loyalty Points</span>
+                      </div>
+                      <span className="text-2xl font-bold">{loyaltyPoints.points}</span>
+                    </div>
+                    {loyaltyPoints.can_redeem && (
+                      <p className="text-xs opacity-90">
+                        Worth up to ${loyaltyPoints.estimated_discount}
+                      </p>
+                    )}
+                  </div>
+
+                  {loyaltyPoints.can_redeem ? (
+                    <div>
+                      <label className="block text-sm font-semibold mb-2">
+                        Redeem Points
+                      </label>
+                      <div className="flex items-center gap-2 mb-2">
+                        <input
+                          type="number"
+                          min="0"
+                          max={Math.min(loyaltyPoints.points, Math.ceil(subtotal / loyaltyPoints.redeem_rate))}
+                          value={pointsToRedeem}
+                          onChange={(e) => {
+                            const value = parseInt(e.target.value) || 0;
+                            const maxPoints = Math.min(
+                              loyaltyPoints.points,
+                              Math.ceil(subtotal / loyaltyPoints.redeem_rate)
+                            );
+                            setPointsToRedeem(Math.min(value, maxPoints));
+                          }}
+                          className="flex-1 px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                        />
+                        <button
+                          onClick={() => {
+                            const maxPoints = Math.min(
+                              loyaltyPoints.points,
+                              Math.ceil(subtotal / loyaltyPoints.redeem_rate)
+                            );
+                            setPointsToRedeem(maxPoints);
+                          }}
+                          className="px-4 py-2 bg-primary text-white rounded-lg font-semibold text-sm hover:bg-primary/90"
+                        >
+                          Max
+                        </button>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Each point = ${loyaltyPoints.redeem_rate.toFixed(2)} discount
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      Need {loyaltyPoints.min_points_redeem} points to redeem
+                    </p>
+                  )}
+                </div>
+              )}
+
               {/* Price Breakdown */}
               <div className="space-y-3 mb-6 pb-4 border-b border-border">
                 <div className="flex justify-between">
@@ -383,6 +482,17 @@ const CheckoutPageContent = () => {
                     ${subtotal.toFixed(2)}
                   </span>
                 </div>
+                {loyaltyDiscount > 0 && (
+                  <div className="flex justify-between text-green-600">
+                    <span className="flex items-center gap-1">
+                      <Gift className="w-4 h-4" />
+                      Loyalty Discount ({pointsToRedeem} pts)
+                    </span>
+                    <span className="font-semibold">
+                      -${loyaltyDiscount.toFixed(2)}
+                    </span>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Tax (8%)</span>
                   <span className="font-semibold">${taxAmount.toFixed(2)}</span>

@@ -267,7 +267,13 @@ const BookingContent = () => {
         if (response.ok) {
           const data = await response.json();
           console.log("Available slots response:", data);
-          setAvailableSlots(data.slots || []);
+          // Map slots to use start_time property
+          const slots = Array.isArray(data.slots)
+            ? data.slots.map((slot: any) =>
+                typeof slot === 'string' ? slot : slot.start_time
+              )
+            : [];
+          setAvailableSlots(slots);
         } else {
           const errorData = await response.json().catch(() => ({ error: response.statusText }));
           console.error("Failed to fetch available slots:", errorData);

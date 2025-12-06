@@ -39,15 +39,11 @@ export const bookAppointment = async (data: BookAppointmentData) => {
   const token =
     localStorage.getItem("token") || localStorage.getItem("authToken");
 
-  if (!token) {
-    throw new Error("Please login to book an appointment");
-  }
-
   // Get user info from token or localStorage
   let userEmail = data.email;
   let userPhone = data.phone;
 
-  if (!userEmail || !userPhone) {
+  if (token && (!userEmail || !userPhone)) {
     try {
       // Try to decode JWT to get user info
       const tokenParts = token.split(".");
@@ -63,6 +59,11 @@ export const bookAppointment = async (data: BookAppointmentData) => {
     }
   }
 
+  // Public endpoint requires email or phone
+  if (!userEmail && !userPhone) {
+    throw new Error("Email or phone number is required to book an appointment");
+  }
+
   // Transform field names to match backend expectations
   const requestBody: {
     salonId: number;
@@ -73,6 +74,8 @@ export const bookAppointment = async (data: BookAppointmentData) => {
     notes?: string;
     email?: string;
     phone?: string;
+    firstName?: string;
+    lastName?: string;
   } = {
     salonId: data.salon_id,
     staffId: data.staff_id,
@@ -86,12 +89,13 @@ export const bookAppointment = async (data: BookAppointmentData) => {
   if (userEmail) requestBody.email = userEmail;
   if (userPhone) requestBody.phone = userPhone;
 
+  // Use booking endpoint
   const response = await fetch(API_ENDPOINTS.APPOINTMENTS.BOOK, {
     ...fetchConfig,
     method: "POST",
     headers: {
       ...fetchConfig.headers,
-      Authorization: `Bearer ${token}`,
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
     body: JSON.stringify(requestBody),
   });
