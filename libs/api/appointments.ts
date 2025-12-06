@@ -89,8 +89,8 @@ export const bookAppointment = async (data: BookAppointmentData) => {
   if (userEmail) requestBody.email = userEmail;
   if (userPhone) requestBody.phone = userPhone;
 
-  // Use public booking endpoint
-  const response = await fetch(API_ENDPOINTS.PUBLIC.BOOKINGS, {
+  // Use booking endpoint
+  const response = await fetch(API_ENDPOINTS.APPOINTMENTS.BOOK, {
     ...fetchConfig,
     method: "POST",
     headers: {

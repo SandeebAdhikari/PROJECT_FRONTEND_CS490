@@ -196,21 +196,22 @@ export const API_ENDPOINTS = {
     GET_CONFIG: (salonId: number | string) =>
       `${API_BASE_URL}/api/loyalty/config/${salonId}`,
   },
-  PUBLIC: {
-    BOOKINGS: `${API_BASE_URL}/api/public/bookings`,
-    PRODUCTS: (salonId: number | string) =>
-      `${API_BASE_URL}/api/public/products/${salonId}`,
-    CART_ADD: `${API_BASE_URL}/api/public/cart/add`,
-    CART_GET: (email: string, salonId: number | string) =>
-      `${API_BASE_URL}/api/public/cart?email=${email}&salon_id=${salonId}`,
-    CART_REMOVE: (itemId: number | string) =>
-      `${API_BASE_URL}/api/public/cart/${itemId}`,
-    CHECKOUT: `${API_BASE_URL}/api/public/checkout`,
-    LOYALTY_CONFIG: (salonId: number | string) =>
-      `${API_BASE_URL}/api/public/loyalty/${salonId}/config`,
-    LOYALTY_POINTS: (salonId: number | string, email: string) =>
-      `${API_BASE_URL}/api/public/loyalty/${salonId}/points?email=${email}`,
-  },
+  // NOTE: These public endpoints don't exist in backend yet - using authenticated endpoints instead
+  // PUBLIC: {
+  //   BOOKINGS: `${API_BASE_URL}/api/public/bookings`,
+  //   PRODUCTS: (salonId: number | string) =>
+  //     `${API_BASE_URL}/api/public/products/${salonId}`,
+  //   CART_ADD: `${API_BASE_URL}/api/public/cart/add`,
+  //   CART_GET: (email: string, salonId: number | string) =>
+  //     `${API_BASE_URL}/api/public/cart?email=${email}&salon_id=${salonId}`,
+  //   CART_REMOVE: (itemId: number | string) =>
+  //     `${API_BASE_URL}/api/public/cart/${itemId}`,
+  //   CHECKOUT: `${API_BASE_URL}/api/public/checkout`,
+  //   LOYALTY_CONFIG: (salonId: number | string) =>
+  //     `${API_BASE_URL}/api/public/loyalty/${salonId}/config`,
+  //   LOYALTY_POINTS: (salonId: number | string, email: string) =>
+  //     `${API_BASE_URL}/api/public/loyalty/${salonId}/points?email=${email}`,
+  // },
   HEALTH: `${API_BASE_URL}/health`,
   ADMINS: {
     USER_ENGAGEMENT: `${API_BASE_URL}/api/admins/user-engagement`,

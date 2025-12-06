@@ -138,6 +138,8 @@ const CheckoutPageContent = () => {
       const totalAmount = afterDiscount + taxAmount;
 
       // Call backend to create checkout session and send email
+      // NOTE: Backend needs to be updated to handle points_to_redeem and salon_id
+      // in /api/payments/checkout endpoint (currently only /api/payments/unified-checkout supports it)
       const response = await fetch(API_ENDPOINTS.PAYMENTS.CHECKOUT, {
         ...fetchConfig,
         method: "POST",
