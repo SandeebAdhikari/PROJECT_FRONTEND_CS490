@@ -55,12 +55,17 @@ export async function addReview(
 
 export async function respondToReview(
   reviewId: number,
-  response: string
+  response: string,
+  salonId: number
 ): Promise<{ message?: string; error?: string }> {
   try {
     const token = localStorage.getItem("token");
     if (!token) {
       return { error: "Not authenticated" };
+    }
+
+    if (!salonId) {
+      return { error: "Salon ID is required" };
     }
 
     const res = await fetch(API_ENDPOINTS.REVIEWS.RESPOND(reviewId), {
@@ -70,7 +75,7 @@ export async function respondToReview(
         ...fetchConfig.headers,
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ response }),
+      body: JSON.stringify({ response, salon_id: salonId }),
     });
 
     const result = await res.json();

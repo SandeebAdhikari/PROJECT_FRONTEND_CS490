@@ -97,12 +97,18 @@
     },
     {
       "id": 7,
+      "label": "Reviews",
+      "shortLabel": "Reviews",
+      "icon": "Star"
+    },
+    {
+      "id": 8,
       "label": "Salon Settings",
       "shortLabel": "Salon",
       "icon": "Building2"
     },
     {
-      "id": 8,
+      "id": 9,
       "label": "Account Settings",
       "shortLabel": "Account",
       "icon": "Settings"

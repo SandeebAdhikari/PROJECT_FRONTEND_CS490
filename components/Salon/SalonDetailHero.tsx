@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -56,6 +56,7 @@ const SalonDetailHero: React.FC<SalonDetailHeroProps> = ({ salon }) => {
   const [salonOwnerId, setSalonOwnerId] = useState<number | null>(null);
   const [rating, setRating] = useState<number>(0);
   const [totalReviews, setTotalReviews] = useState<number>(0);
+  const [imageError, setImageError] = useState(false);
   const salonId = salon.salon_id || salon.id;
   const isPending = salon.status === "pending";
 
@@ -68,30 +69,36 @@ const SalonDetailHero: React.FC<SalonDetailHeroProps> = ({ salon }) => {
     toggleFavorite(String(salonId));
   };
 
-  // Build carousel images
-  const carouselImages: string[] = [];
+  // Build carousel images - use useMemo to rebuild when galleryPhotos changes
+  const carouselImages = useMemo(() => {
+    const images: string[] = [];
 
-  // Salon profile picture (use API_BASE_URL)
-  if (salon.profile_picture) {
-    carouselImages.push(`${API_BASE_URL}${salon.profile_picture}`);
-  }
-  // Fallback image (Unsplash or provided URL)
-  else if (salon.imageUrl) {
-    const imageSrc = salon.imageUrl.includes("unsplash")
-      ? `${salon.imageUrl}&w=1200&h=600&fit=crop`
-      : salon.imageUrl;
-    carouselImages.push(imageSrc);
-  }
+    // Salon profile picture (use API_BASE_URL)
+    if (salon.profile_picture) {
+      const profilePicUrl = `${API_BASE_URL}${salon.profile_picture}`;
+      images.push(profilePicUrl);
+    }
+    // Fallback image (Unsplash or provided URL)
+    else if (salon.imageUrl) {
+      const imageSrc = salon.imageUrl.includes("unsplash")
+        ? `${salon.imageUrl}&w=1200&h=600&fit=crop`
+        : salon.imageUrl;
+      images.push(imageSrc);
+    }
 
-  // Gallery photos (backend)
-  galleryPhotos.forEach((photo) => {
-    carouselImages.push(`${API_BASE_URL}${photo.photo_url}`);
-  });
+    // Gallery photos (backend) - these are fetched in useEffect
+    galleryPhotos.forEach((photo) => {
+      const galleryUrl = `${API_BASE_URL}${photo.photo_url}`;
+      images.push(galleryUrl);
+    });
 
-  // Fallback if empty
-  if (carouselImages.length === 0) {
-    carouselImages.push("/images/default.jpg");
-  }
+    // Fallback if empty - use a placeholder from Unsplash
+    if (images.length === 0) {
+      images.push("https://images.unsplash.com/photo-1562322140-8baeececf3df?w=1200&h=600&fit=crop&auto=format");
+    }
+
+    return images;
+  }, [salon.profile_picture, salon.imageUrl, galleryPhotos, API_BASE_URL]);
 
   // Fetch gallery photos
   useEffect(() => {
@@ -168,12 +175,14 @@ const SalonDetailHero: React.FC<SalonDetailHeroProps> = ({ salon }) => {
   // Slide navigation
   const nextSlide = useCallback(() => {
     setCurrentSlide((prev) => (prev + 1) % carouselImages.length);
+    setImageError(false); // Reset error when changing slides
   }, [carouselImages.length]);
 
   const prevSlide = useCallback(() => {
     setCurrentSlide(
       (prev) => (prev - 1 + carouselImages.length) % carouselImages.length
     );
+    setImageError(false); // Reset error when changing slides
   }, [carouselImages.length]);
 
   const goToSlide = (index: number) => {
@@ -226,13 +235,16 @@ const SalonDetailHero: React.FC<SalonDetailHeroProps> = ({ salon }) => {
           onTouchEnd={handleTouchEnd}
         >
           <Image
-            src={carouselImages[currentSlide]}
+            src={imageError || !carouselImages[currentSlide] 
+              ? "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=1200&h=600&fit=crop&auto=format"
+              : carouselImages[currentSlide]}
             alt={`${salon.name} - Photo ${currentSlide + 1}`}
             fill
             quality={95}
             priority={currentSlide === 0}
             className="object-cover object-center transition-all duration-500"
             sizes="100vw"
+            unoptimized={imageError || carouselImages[currentSlide]?.includes('unsplash.com')}
           />
 
           {/* Arrows */}

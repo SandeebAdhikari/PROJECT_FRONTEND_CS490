@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { Star, X, Edit2, Trash2 } from "lucide-react";
 import { API_BASE_URL, API_ENDPOINTS } from "@/libs/api/config";
-import { addReview, updateReview, deleteReview } from "@/libs/api/reviews";
+import { addReview, updateReview, deleteReview, respondToReview } from "@/libs/api/reviews";
 
 interface RatingStats {
   average: number;
@@ -15,6 +15,7 @@ interface Review {
   review_id?: number;
   rating: number;
   comment: string;
+  response?: string;
   created_at: string;
   customer_name: string;
   user_id?: number;
@@ -22,11 +23,13 @@ interface Review {
 
 interface SalonReviewsSectionProps {
   salonId?: string | number;
+  salonOwnerId?: number;
   onWriteReview?: () => void;
 }
 
 const SalonDetailReview: React.FC<SalonReviewsSectionProps> = ({
   salonId,
+  salonOwnerId,
   onWriteReview,
 }) => {
   const [stats, setStats] = useState<RatingStats | null>(null);
@@ -41,6 +44,10 @@ const SalonDetailReview: React.FC<SalonReviewsSectionProps> = ({
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
   const [editingReview, setEditingReview] = useState<Review | null>(null);
   const [deletingReviewId, setDeletingReviewId] = useState<number | null>(null);
+  const [respondingToReviewId, setRespondingToReviewId] = useState<number | null>(null);
+  const [responseText, setResponseText] = useState("");
+  const [submittingResponse, setSubmittingResponse] = useState(false);
+  const isSalonOwner = currentUserId && salonOwnerId && currentUserId === salonOwnerId;
 
   useEffect(() => {
     // Get current user ID from token
@@ -267,7 +274,7 @@ const SalonDetailReview: React.FC<SalonReviewsSectionProps> = ({
         <h2 className="text-2xl font-extrabold text-foreground mb-4">
           Reviews & Ratings
         </h2>
-        <div className="bg-card border border-border rounded-2xl shadow-sm p-6 text-center text-muted-foreground">
+        <div className="bg-card border border-border rounded-2xl shadow-soft-br p-6 text-center text-muted-foreground">
           Loading reviews...
         </div>
       </section>
@@ -283,18 +290,18 @@ const SalonDetailReview: React.FC<SalonReviewsSectionProps> = ({
           </h2>
           <button
             onClick={handleOpenReviewModal}
-            className="bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-medium px-4 py-2 rounded-lg transition-shadow shadow-sm font-inter cursor-pointer"
+            className="bg-primary hover:bg-primary-dark text-primary-foreground text-sm font-medium px-4 py-2 rounded-lg transition-smooth shadow-soft-br font-inter cursor-pointer"
           >
             Write a Review
           </button>
         </div>
-        <div className="bg-card border border-border rounded-2xl shadow-sm p-6 text-center">
+        <div className="bg-card border border-border rounded-2xl shadow-soft-br p-6 text-center">
           <p className="text-muted-foreground mb-4">
             No reviews yet. Be the first to review this salon!
           </p>
           <button
             onClick={handleOpenReviewModal}
-            className="bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-medium px-6 py-2 rounded-lg transition-shadow shadow-sm font-inter cursor-pointer"
+            className="bg-primary hover:bg-primary-dark text-primary-foreground text-sm font-medium px-6 py-2 rounded-lg transition-smooth shadow-soft-br font-inter cursor-pointer"
           >
             Write the First Review
           </button>
@@ -317,7 +324,7 @@ const SalonDetailReview: React.FC<SalonReviewsSectionProps> = ({
                     setReviewComment("");
                     setReviewRating(0);
                   }}
-                  className="text-muted-foreground hover:text-foreground transition-colors"
+                  className="text-muted-foreground hover:text-foreground transition-smooth"
                   aria-label="Close modal"
                 >
                   <X className="w-5 h-5" />
@@ -348,7 +355,7 @@ const SalonDetailReview: React.FC<SalonReviewsSectionProps> = ({
                           key={star}
                           type="button"
                           onClick={() => setReviewRating(star)}
-                          className={`transition-colors ${
+                          className={`transition-smooth ${
                             star <= reviewRating
                               ? "text-accent fill-accent"
                               : "text-muted-foreground"
@@ -379,7 +386,7 @@ const SalonDetailReview: React.FC<SalonReviewsSectionProps> = ({
                   </div>
 
                   {reviewError && (
-                    <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+                    <div className="mb-4 p-3 bg-destructive/10 border border-destructive/20 text-destructive rounded-lg text-sm">
                       {reviewError}
                     </div>
                   )}
@@ -393,7 +400,7 @@ const SalonDetailReview: React.FC<SalonReviewsSectionProps> = ({
                         setReviewComment("");
                         setReviewRating(0);
                       }}
-                      className="flex-1 px-4 py-2 border border-border rounded-lg text-foreground hover:bg-muted transition-colors font-medium"
+                      className="flex-1 px-4 py-2 border border-border rounded-lg text-foreground hover:bg-muted transition-smooth font-medium"
                       disabled={submitting}
                     >
                       Cancel
@@ -405,7 +412,7 @@ const SalonDetailReview: React.FC<SalonReviewsSectionProps> = ({
                         reviewRating === 0 ||
                         !reviewComment.trim()
                       }
-                      className="flex-1 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex-1 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary-dark transition-smooth font-medium disabled:opacity-50 disabled:cursor-not-allowed shadow-soft-br"
                     >
                       {submitting ? (editingReview ? "Updating..." : "Submitting...") : (editingReview ? "Update Review" : "Submit Review")}
                     </button>
@@ -430,7 +437,7 @@ const SalonDetailReview: React.FC<SalonReviewsSectionProps> = ({
         </h2>
         <button
           onClick={handleOpenReviewModal}
-          className="bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-medium px-4 py-2 rounded-lg transition-shadow shadow-sm font-inter cursor-pointer"
+          className="bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-medium px-4 py-2 rounded-lg transition-shadow shadow-soft-br font-inter cursor-pointer"
         >
           Write a Review
         </button>
@@ -445,7 +452,7 @@ const SalonDetailReview: React.FC<SalonReviewsSectionProps> = ({
           {reviews.map((review, index) => (
             <div
               key={index}
-              className="bg-card border border-border rounded-2xl shadow-sm p-6 font-inter"
+              className="bg-card border border-border rounded-2xl shadow-soft-br p-6 font-inter"
             >
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-3">
@@ -484,14 +491,14 @@ const SalonDetailReview: React.FC<SalonReviewsSectionProps> = ({
                     <div className="flex items-center gap-1">
                       <button
                         onClick={() => handleEditReview(review)}
-                        className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        className="p-1.5 text-primary hover:bg-primary/10 rounded-lg transition-smooth"
                         title="Edit review"
                       >
                         <Edit2 className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleDeleteReview(review.review_id!)}
-                        className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        className="p-1.5 text-destructive hover:bg-destructive/10 rounded-lg transition-smooth"
                         title="Delete review"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -505,13 +512,176 @@ const SalonDetailReview: React.FC<SalonReviewsSectionProps> = ({
                   {review.comment}
                 </p>
               )}
+              
+              {/* Owner Response Section */}
+              {review.response && (
+                <div className="mt-4 pl-4 border-l-4 border-primary/20 bg-muted/30 rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-sm font-semibold text-primary">Salon Response</span>
+                  </div>
+                  <p className="text-foreground leading-relaxed">{review.response}</p>
+                  {isSalonOwner && (
+                    <button
+                      onClick={() => {
+                        setRespondingToReviewId(review.review_id!);
+                        setResponseText(review.response || "");
+                      }}
+                      className="mt-2 text-sm text-primary hover:underline"
+                    >
+                      Edit Response
+                    </button>
+                  )}
+                </div>
+              )}
+              
+              {/* Response Form for Salon Owner */}
+              {isSalonOwner && !review.response && (
+                <div className="mt-4">
+                  {respondingToReviewId === review.review_id ? (
+                    <div className="space-y-2">
+                      <textarea
+                        value={responseText}
+                        onChange={(e) => setResponseText(e.target.value)}
+                        placeholder="Write a response to this review..."
+                        className="w-full p-3 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none font-inter"
+                        rows={3}
+                      />
+                      <div className="flex gap-2">
+                        <button
+                          onClick={async () => {
+                            if (!responseText.trim() || !salonId) return;
+                            setSubmittingResponse(true);
+                            try {
+                              const token = localStorage.getItem("token") || localStorage.getItem("authToken");
+                              const result = await respondToReview(
+                                review.review_id!,
+                                responseText.trim(),
+                                Number(salonId)
+                              );
+                              if (result.error) {
+                                alert(result.error);
+                              } else {
+                                setRespondingToReviewId(null);
+                                setResponseText("");
+                                // Refresh reviews
+                                const response = await fetch(
+                                  `${API_BASE_URL}/api/reviews/salon/${salonId}`,
+                                  {
+                                    headers: token ? { Authorization: `Bearer ${token}` } : {},
+                                  }
+                                );
+                                if (response.ok) {
+                                  const data = await response.json();
+                                  setReviews(data.reviews || []);
+                                }
+                              }
+                            } catch (err) {
+                              console.error("Error submitting response:", err);
+                              alert("Failed to submit response");
+                            } finally {
+                              setSubmittingResponse(false);
+                            }
+                          }}
+                          disabled={!responseText.trim() || submittingResponse}
+                          className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary-dark transition-smooth disabled:opacity-50 disabled:cursor-not-allowed text-sm font-inter shadow-soft-br"
+                        >
+                          {submittingResponse ? "Submitting..." : "Submit Response"}
+                        </button>
+                        <button
+                          onClick={() => {
+                            setRespondingToReviewId(null);
+                            setResponseText("");
+                          }}
+                          className="px-4 py-2 border border-border rounded-lg hover:bg-muted transition-smooth text-sm font-inter"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        setRespondingToReviewId(review.review_id!);
+                        setResponseText("");
+                      }}
+                      className="text-sm text-primary hover:underline font-inter"
+                    >
+                      Respond to this review
+                    </button>
+                  )}
+                </div>
+              )}
+              
+              {/* Edit Response for Salon Owner */}
+              {isSalonOwner && review.response && respondingToReviewId === review.review_id && (
+                <div className="mt-4 space-y-2">
+                  <textarea
+                    value={responseText}
+                    onChange={(e) => setResponseText(e.target.value)}
+                    placeholder="Edit your response..."
+                    className="w-full p-3 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none font-inter"
+                    rows={3}
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      onClick={async () => {
+                        if (!responseText.trim() || !salonId) return;
+                        setSubmittingResponse(true);
+                        try {
+                          const token = localStorage.getItem("token") || localStorage.getItem("authToken");
+                          const result = await respondToReview(
+                            review.review_id!,
+                            responseText.trim(),
+                            Number(salonId)
+                          );
+                          if (result.error) {
+                            alert(result.error);
+                          } else {
+                            setRespondingToReviewId(null);
+                            setResponseText("");
+                            // Refresh reviews
+                            const response = await fetch(
+                              `${API_BASE_URL}/api/reviews/salon/${salonId}`,
+                              {
+                                headers: token ? { Authorization: `Bearer ${token}` } : {},
+                              }
+                            );
+                            if (response.ok) {
+                              const data = await response.json();
+                              setReviews(data.reviews || []);
+                            }
+                          }
+                        } catch (err) {
+                          console.error("Error updating response:", err);
+                          alert("Failed to update response");
+                        } finally {
+                          setSubmittingResponse(false);
+                        }
+                      }}
+                      disabled={!responseText.trim() || submittingResponse}
+                      className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary-dark transition-smooth disabled:opacity-50 disabled:cursor-not-allowed text-sm font-inter shadow-soft-br"
+                    >
+                      {submittingResponse ? "Updating..." : "Update Response"}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setRespondingToReviewId(null);
+                        setResponseText(review.response || "");
+                      }}
+                      className="px-4 py-2 border border-border rounded-lg hover:bg-muted transition-smooth text-sm font-inter"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           ))}
         </div>
       )}
 
       {!hasReviews && (
-        <div className="mt-6 bg-card border border-border rounded-2xl shadow-sm p-6 text-center text-sm text-muted-foreground">
+        <div className="mt-6 bg-card border border-border rounded-2xl shadow-soft-br p-6 text-center text-sm text-muted-foreground">
           No reviews yet. Be the first to review this salon!
         </div>
       )}
@@ -564,7 +734,7 @@ const SalonDetailReview: React.FC<SalonReviewsSectionProps> = ({
                         key={star}
                         type="button"
                         onClick={() => setReviewRating(star)}
-                        className={`transition-colors ${
+                        className={`transition-smooth ${
                           star <= reviewRating
                             ? "text-accent fill-accent"
                             : "text-muted-foreground"
@@ -606,7 +776,7 @@ const SalonDetailReview: React.FC<SalonReviewsSectionProps> = ({
                       setShowReviewModal(false);
                       setReviewError("");
                     }}
-                    className="flex-1 px-4 py-2 border border-border rounded-lg text-foreground hover:bg-muted transition-colors font-medium"
+                    className="flex-1 px-4 py-2 border border-border rounded-lg text-foreground hover:bg-muted transition-smooth font-medium"
                     disabled={submitting}
                   >
                     Cancel
@@ -616,7 +786,7 @@ const SalonDetailReview: React.FC<SalonReviewsSectionProps> = ({
                     disabled={
                       submitting || reviewRating === 0 || !reviewComment.trim()
                     }
-                    className="flex-1 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary-dark transition-smooth font-medium disabled:opacity-50 disabled:cursor-not-allowed shadow-soft-br"
                   >
                     {submitting ? "Submitting..." : "Submit Review"}
                   </button>

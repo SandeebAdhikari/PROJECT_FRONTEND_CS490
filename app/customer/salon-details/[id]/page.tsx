@@ -39,6 +39,7 @@ interface Salon {
   website?: string;
   amenities?: string[];
   status?: string;
+  owner_id?: number;
 }
 
 const SalonDetailsPage: React.FC<{ params: Promise<{ id: string }> }> = ({
@@ -208,7 +209,7 @@ const SalonDetailsPage: React.FC<{ params: Promise<{ id: string }> }> = ({
           <SalonDetailProducts salonId={displayId} />
           <SalonDetailStaffProfile salonId={displayId} />
 
-          <SalonDetailReview salonId={displayId} />
+          <SalonDetailReview salonId={displayId} salonOwnerId={salon.owner_id} />
 
           <div className="block sm:hidden mt-8">
             <SalonSidebar salon={salon} businessHours={sidebarBusinessHours} />
