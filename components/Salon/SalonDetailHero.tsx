@@ -98,7 +98,8 @@ const SalonDetailHero: React.FC<SalonDetailHeroProps> = ({ salon }) => {
     }
 
     return images;
-  }, [salon.profile_picture, salon.imageUrl, galleryPhotos, API_BASE_URL]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [salon.profile_picture, salon.imageUrl, galleryPhotos]);
 
   // Fetch gallery photos
   useEffect(() => {

@@ -26,7 +26,7 @@ export default function AdminLayout({
         }
 
         // Decode JWT to check role
-        const decoded: any = jwtDecode(token);
+        const decoded = jwtDecode(token) as { role?: string; user_role?: string };
         const userRole = decoded.role || decoded.user_role;
 
         if (userRole !== "admin") {

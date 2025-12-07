@@ -23,7 +23,7 @@ const statusClassMap: Record<
 
 const StaffPortalTabsAppointment: React.FC<
   StaffPortalTabsAppointmentProps
-> = ({ appointments, onCreateAppointment, onEditAppointment, onUpdateStatus }) => {
+> = ({ appointments, onCreateAppointment, onEditAppointment, onUpdateStatus: _onUpdateStatus }) => {
   const sortedAppointments = [...appointments].sort(
     (a, b) => new Date(a.time).getTime() - new Date(b.time).getTime()
   );

@@ -21,12 +21,10 @@ import {
   listStaffAppointments,
   listStaffCustomers,
   listStaffRetail,
-  listStaffTeam,
   updateAppointmentStatus,
   StaffPortalAppointmentBackend,
   StaffPortalCustomerBackend,
   StaffPortalProductBackend,
-  StaffProfile as BackendStaffProfile,
 } from "@/libs/api/staffPortal";
 
 const isoForDay = (dayOffset: number, hour: number, minute: number) => {
@@ -36,7 +34,7 @@ const isoForDay = (dayOffset: number, hour: number, minute: number) => {
   return d.toISOString();
 };
 
-const demoAppointments: StaffPortalAppointment[] = [
+const _demoAppointments: StaffPortalAppointment[] = [
   {
     id: 4312,
     client: "Hazel Spencer",
@@ -79,7 +77,7 @@ const demoAppointments: StaffPortalAppointment[] = [
   },
 ];
 
-const demoCustomers: StaffPortalCustomer[] = [
+const _demoCustomers: StaffPortalCustomer[] = [
   {
     id: 91,
     name: "Hazel Spencer",
@@ -120,7 +118,7 @@ const demoCustomers: StaffPortalCustomer[] = [
   },
 ];
 
-const demoProducts: StaffPortalProduct[] = [
+const _demoProducts: StaffPortalProduct[] = [
   {
     id: 2001,
     name: "Luna Repair Oil",
@@ -446,7 +444,6 @@ const StaffPortal = () => {
     [
       checkedInAppointments,
       completedAppointments,
-      newClientsThisMonth,
       todaysAppointments.length,
       dashboard,
     ]

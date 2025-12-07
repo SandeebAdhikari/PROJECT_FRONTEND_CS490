@@ -128,7 +128,7 @@ const SalonDetailsPage: React.FC<{ params: Promise<{ id: string }> }> = ({
         </h1>
         <p className="text-muted-foreground mb-4">
           {errorMessage ||
-            "The salon you're looking for doesn't exist or is not available."}
+            "The salon you&apos;re looking for doesn&apos;t exist or is not available."}
         </p>
         <a
           href="/customer"

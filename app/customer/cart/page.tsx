@@ -31,7 +31,7 @@ const CartPage = () => {
   const router = useRouter();
   const cart = useCart();
   const [suggestions, setSuggestions] = useState<ProductSuggestion[]>([]);
-  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+  const [_loadingSuggestions, setLoadingSuggestions] = useState(false);
 
   const services = cart.getServices();
   const products = cart.getProducts();

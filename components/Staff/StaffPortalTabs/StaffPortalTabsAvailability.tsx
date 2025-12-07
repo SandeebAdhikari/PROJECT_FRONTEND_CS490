@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Clock, Save, X } from "lucide-react";
+import { Clock, Save } from "lucide-react";
 import { getStaffAvailability, updateStaffAvailability, StaffAvailability } from "@/libs/api/staffPortal";
 
 const daysOfWeek = [
@@ -186,7 +186,7 @@ const StaffPortalTabsAvailability: React.FC = () => {
         <p className="font-semibold mb-1">💡 Tip</p>
         <p>
           Your availability determines when customers can book appointments with you.
-          If you don't set availability for a day, the system will use the salon's business hours.
+          If you don&apos;t set availability for a day, the system will use the salon&apos;s business hours.
         </p>
       </div>
     </div>

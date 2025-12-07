@@ -12,7 +12,7 @@ type AdminHeaderProps = {
   notificationCount?: number;
 };
 
-export default function AdminHeader({ adminName, notificationCount: propNotificationCount }: AdminHeaderProps) {
+export default function AdminHeader({ adminName: _adminName, notificationCount: propNotificationCount }: AdminHeaderProps) {
   const [notificationCount, setNotificationCount] = useState(propNotificationCount || 0);
 
   useEffect(() => {

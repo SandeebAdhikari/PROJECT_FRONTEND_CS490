@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Package, ShoppingCart, Plus } from "lucide-react";
+import { Package, Plus } from "lucide-react";
 import { API_ENDPOINTS } from "@/libs/api/config";
 import { useCart } from "@/hooks/useCart";
 

@@ -30,10 +30,6 @@ export default function ReportsPage() {
   const [endDate, setEndDate] = useState<string>("");
   const [exporting, setExporting] = useState(false);
 
-  useEffect(() => {
-    loadReports();
-  }, [startDate, endDate]);
-
   const loadReports = async () => {
     setLoading(true);
     setError(null);
@@ -62,6 +58,11 @@ export default function ReportsPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadReports();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [startDate, endDate]);
 
   const handleExport = async () => {
     setExporting(true);

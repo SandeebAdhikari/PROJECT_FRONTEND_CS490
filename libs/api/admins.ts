@@ -341,7 +341,7 @@ export async function getPendingSalons(): Promise<{ salons?: PendingSalon[]; cou
 export async function verifySalon(
   salonId: number | string,
   approved: "approved" | "rejected" | "pending"
-): Promise<{ success?: boolean; salon?: any; message?: string; error?: string }> {
+): Promise<{ success?: boolean; salon?: Record<string, unknown>; message?: string; error?: string }> {
   try {
     const token = localStorage.getItem("token");
     if (!token) {
