@@ -455,3 +455,54 @@ export async function deleteAccount(
     return { error: "Network error" };
   }
 }
+
+/**
+ * Request password reset email
+ */
+export async function forgotPassword(
+  email: string
+): Promise<{ message?: string; error?: string }> {
+  try {
+    const response = await fetch(API_ENDPOINTS.AUTH.FORGOT_PASSWORD, {
+      ...fetchConfig,
+      method: "POST",
+      body: JSON.stringify({ email }),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      return { error: result.error || "Failed to send password reset email" };
+    }
+
+    return { message: result.message || "If an account with that email exists, a password reset link has been sent." };
+  } catch {
+    return { error: "Network error. Please try again." };
+  }
+}
+
+/**
+ * Reset password using token from email
+ */
+export async function resetPassword(
+  token: string,
+  password: string
+): Promise<{ message?: string; error?: string }> {
+  try {
+    const response = await fetch(API_ENDPOINTS.AUTH.RESET_PASSWORD, {
+      ...fetchConfig,
+      method: "POST",
+      body: JSON.stringify({ token, password }),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      return { error: result.error || "Failed to reset password" };
+    }
+
+    return { message: result.message || "Password reset successfully" };
+  } catch {
+    return { error: "Network error. Please try again." };
+  }
+}

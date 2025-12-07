@@ -8,6 +8,7 @@ import { setAuthCookie } from "@/libs/auth/cookies";
 import { Eye, EyeOff, Lock, Mail } from "lucide-react";
 import { login, verify2FA, User } from "@/libs/api/auth";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import AuthHeader from "@/components/Auth/AuthHeader";
 
 type ExtendedUser = User & {
@@ -294,6 +295,14 @@ const SignInForm = () => {
       >
         {loading ? "Signing in..." : "Sign In"}
       </button>
+      <div className="text-center">
+        <Link
+          href="/forgot-password"
+          className="text-sm text-muted-foreground hover:text-primary font-inter"
+        >
+          Forgot your password?
+        </Link>
+      </div>
     </form>
   );
 };
