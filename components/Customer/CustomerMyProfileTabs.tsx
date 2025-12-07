@@ -13,9 +13,8 @@ import AppointmentHistory from "@/components/History/AppointmentHistory";
 import { useFavorites } from "@/hooks/useFavorites";
 import SalonCard from "@/components/Salon/SalonCard";
 import { API_ENDPOINTS, fetchConfig } from "@/libs/api/config";
-import LoyaltyPointsSummary from "@/components/Loyalty/LoyaltyPointsSummary";
 
-type TabType = "upcoming" | "past" | "favorites" | "rewards" | "settings";
+type TabType = "upcoming" | "past" | "favorites" | "settings";
 
 const ProfileTabs = () => {
   const [activeTab, setActiveTab] = useState<TabType>("upcoming");
@@ -25,7 +24,6 @@ const ProfileTabs = () => {
     { id: "upcoming", label: "Upcoming" },
     { id: "past", label: "Past Bookings" },
     { id: "favorites", label: "Favorites" },
-    { id: "rewards", label: "Rewards" },
     { id: "settings", label: "Settings" },
   ];
 
@@ -57,7 +55,6 @@ const ProfileTabs = () => {
             isFavorite={isFavorite}
           />
         )}
-        {activeTab === "rewards" && <RewardsContent />}
         {activeTab === "settings" && <SettingsContent />}
       </div>
     </div>
@@ -70,10 +67,6 @@ const UpcomingContent = () => {
 
 const PastBookingsContent = () => {
   return <AppointmentHistory filter="past" />;
-};
-
-const RewardsContent = () => {
-  return <LoyaltyPointsSummary />;
 };
 
 interface FavoritesContentProps {
