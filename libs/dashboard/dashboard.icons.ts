@@ -21,6 +21,7 @@ import {
   User,
   Image,
   Building2,
+  Tag,
 } from "lucide-react";
 
 export const icons = {
@@ -46,4 +47,5 @@ export const icons = {
   User,
   Image,
   Building2,
+  Tag,
 };

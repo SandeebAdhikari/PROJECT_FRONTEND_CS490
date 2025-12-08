@@ -19,6 +19,7 @@ import { useFavorites } from "@/hooks/useFavorites";
 
 import { API_BASE_URL, API_ENDPOINTS } from "@/libs/api/config";
 import { sendMessage } from "@/libs/api/messages";
+import { getImageUrl } from "@/libs/utils/imageUrl";
 
 interface SalonDetailHeroProps {
   salon: {
@@ -73,24 +74,24 @@ const SalonDetailHero: React.FC<SalonDetailHeroProps> = ({ salon }) => {
   const carouselImages = useMemo(() => {
     const images: string[] = [];
 
-    // Salon profile picture (use API_BASE_URL)
-    if (salon.profile_picture) {
-      const profilePicUrl = `${API_BASE_URL}${salon.profile_picture}`;
+  // Salon profile picture (use getImageUrl utility)
+  if (salon.profile_picture) {
+      const profilePicUrl = getImageUrl(salon.profile_picture);
       images.push(profilePicUrl);
-    }
-    // Fallback image (Unsplash or provided URL)
-    else if (salon.imageUrl) {
-      const imageSrc = salon.imageUrl.includes("unsplash")
-        ? `${salon.imageUrl}&w=1200&h=600&fit=crop`
-        : salon.imageUrl;
+  }
+  // Fallback image (Unsplash or provided URL)
+  else if (salon.imageUrl) {
+    const imageSrc = salon.imageUrl.includes("unsplash")
+      ? `${salon.imageUrl}&w=1200&h=600&fit=crop`
+      : getImageUrl(salon.imageUrl);
       images.push(imageSrc);
-    }
+  }
 
     // Gallery photos (backend) - these are fetched in useEffect
-    galleryPhotos.forEach((photo) => {
-      const galleryUrl = `${API_BASE_URL}${photo.photo_url}`;
+  galleryPhotos.forEach((photo) => {
+      const galleryUrl = getImageUrl(photo.photo_url);
       images.push(galleryUrl);
-    });
+  });
 
     // Fallback if empty - use a placeholder from Unsplash
     if (images.length === 0) {

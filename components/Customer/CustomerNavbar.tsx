@@ -4,13 +4,15 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import NextImage from "next/image";
 import Icon9 from "@/public/icons/9.png";
-import { User, ShoppingCart } from "lucide-react";
+import { User, ShoppingCart, Gift } from "lucide-react";
 import NotificationBell from "@/components/Notifications/NotificationBell";
 import { useCart } from "@/hooks/useCart";
+import { getMyLoyaltySummary } from "@/libs/api/loyalty";
 
 const CustomerNavbar = () => {
   const cart = useCart();
   const [cartItemCount, setCartItemCount] = useState(0);
+  const [totalLoyaltyPoints, setTotalLoyaltyPoints] = useState(0);
 
   useEffect(() => {
     // Calculate total items in cart (services + products with quantities)
@@ -20,6 +22,26 @@ const CustomerNavbar = () => {
     setCartItemCount(totalItems);
   }, [cart.items]);
 
+  useEffect(() => {
+    const fetchLoyaltyPoints = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        const result = await getMyLoyaltySummary();
+        if (!result.error && result.summary) {
+          const total = result.summary.reduce((sum, item) => sum + (item.points || 0), 0);
+          setTotalLoyaltyPoints(total);
+        }
+      } catch (err) {
+        // Silently fail - don't show error in navbar
+        console.error("Failed to fetch loyalty points:", err);
+      }
+    };
+
+    fetchLoyaltyPoints();
+  }, []);
+
   return (
     <div className="p-3 sm:p-4 lg:px-8 flex justify-between items-center w-full border border-b border-border bg-primary-foreground sticky top-0 z-40">
       <Link href="/customer" className="flex items-center gap-1 sm:gap-2 group">
@@ -28,6 +50,19 @@ const CustomerNavbar = () => {
       </Link>
       <div className="flex gap-1 sm:gap-2 items-center">
         <NotificationBell />
+        
+        {/* Loyalty Points Display */}
+        {totalLoyaltyPoints > 0 && (
+          <Link
+            href="/customer/my-profile?tab=loyalty"
+            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors group"
+            title="View Loyalty Points"
+          >
+            <Gift className="w-4 h-4 text-primary" />
+            <span className="text-sm font-semibold text-primary">{totalLoyaltyPoints}</span>
+            <span className="text-xs text-muted-foreground">pts</span>
+          </Link>
+        )}
         
         {/* Cart Icon with Badge */}
         <Link

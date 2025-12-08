@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 //import { Calendar } from "lucide-react";
 import {
   enable2FA,
@@ -13,17 +14,28 @@ import AppointmentHistory from "@/components/History/AppointmentHistory";
 import { useFavorites } from "@/hooks/useFavorites";
 import SalonCard from "@/components/Salon/SalonCard";
 import { API_ENDPOINTS, fetchConfig } from "@/libs/api/config";
+import { Star } from "lucide-react";
+import LoyaltyPointsSummary from "@/components/Loyalty/LoyaltyPointsSummary";
 
-type TabType = "upcoming" | "past" | "favorites" | "settings";
+type TabType = "upcoming" | "past" | "favorites" | "loyalty" | "settings";
 
 const ProfileTabs = () => {
-  const [activeTab, setActiveTab] = useState<TabType>("upcoming");
+  const searchParams = useSearchParams();
+  const tabFromUrl = searchParams.get("tab") as TabType | null;
+  const [activeTab, setActiveTab] = useState<TabType>(tabFromUrl || "upcoming");
   const { toggleFavorite, isFavorite, favorites } = useFavorites();
+
+  useEffect(() => {
+    if (tabFromUrl && ["upcoming", "past", "favorites", "loyalty", "settings"].includes(tabFromUrl)) {
+      setActiveTab(tabFromUrl);
+    }
+  }, [tabFromUrl]);
 
   const tabs = [
     { id: "upcoming", label: "Upcoming" },
     { id: "past", label: "Past Bookings" },
     { id: "favorites", label: "Favorites" },
+    { id: "loyalty", label: "Loyalty Points" },
     { id: "settings", label: "Settings" },
   ];
 
@@ -55,6 +67,7 @@ const ProfileTabs = () => {
             isFavorite={isFavorite}
           />
         )}
+        {activeTab === "loyalty" && <LoyaltyContent />}
         {activeTab === "settings" && <SettingsContent />}
       </div>
     </div>
@@ -67,6 +80,10 @@ const UpcomingContent = () => {
 
 const PastBookingsContent = () => {
   return <AppointmentHistory filter="past" />;
+};
+
+const LoyaltyContent = () => {
+  return <LoyaltyPointsSummary />;
 };
 
 interface FavoritesContentProps {

@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import SalonCard from "../Salon/SalonCard";
-import { API_BASE_URL } from "@/libs/api/config";
+import { getImageUrl } from "@/libs/utils/imageUrl";
 
 interface Salon {
   salon_id?: number;
@@ -84,8 +84,8 @@ const CustomerTopSalon: React.FC<CustomerTopSalonProps> = ({
           const uniqueKey = `${salonId}-${index}`;
 
           const imageUrl = salon.profile_picture
-            ? `${API_BASE_URL}${salon.profile_picture}`
-            : salon.imageUrl ||
+            ? getImageUrl(salon.profile_picture)
+            : getImageUrl(salon.imageUrl) ||
               "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=400&h=300&fit=crop";
 
           return (

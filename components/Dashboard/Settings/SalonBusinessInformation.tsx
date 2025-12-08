@@ -10,6 +10,7 @@ import { MapPin, Upload, Camera } from "lucide-react";
 import Image from "next/image";
 import { checkOwnerSalon, createSalon, updateSalon } from "@/libs/api/salons";
 import { API_BASE_URL } from "@/libs/api/config";
+import { getImageUrl } from "@/libs/utils/imageUrl";
 
 interface SalonBusinessInformationProps {
   suppressMessages?: boolean;
@@ -61,7 +62,7 @@ const SalonBusinessInformation = forwardRef<
           console.log("Setting form data:", newFormData);
           setFormData(newFormData);
           if (salonData.profile_picture) {
-            setProfilePreview(`${API_BASE_URL}${salonData.profile_picture}`);
+            setProfilePreview(getImageUrl(salonData.profile_picture));
           }
         } else {
           console.log("No salon found, isNewSalon = true", result);

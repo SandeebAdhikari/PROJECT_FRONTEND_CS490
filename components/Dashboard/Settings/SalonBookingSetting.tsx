@@ -7,7 +7,6 @@ import React, {
   useImperativeHandle,
 } from "react";
 import { Calendar } from "lucide-react";
-import ToggleButton from "../ToggleButton";
 import { checkOwnerSalon } from "@/libs/api/salons";
 import { API_ENDPOINTS } from "@/libs/api/config";
 
@@ -20,10 +19,9 @@ const SalonBookingSettings = forwardRef<
   SalonBookingSettingsProps
 >(({ suppressMessages = false }, ref) => {
   const [salonId, setSalonId] = useState<number | null>(null);
-  const [enabled, setEnabled] = useState(true);
   const [cancellationPolicy, setCancellationPolicy] = useState("");
   const [advanceBookingDays, setAdvanceBookingDays] = useState(30);
-  const [depositAmount, setDepositAmount] = useState(25);
+  const [depositPercentage, setDepositPercentage] = useState(0);
   const [loading, setLoading] = useState(true);
   const [_saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{
@@ -53,8 +51,7 @@ const SalonBookingSettings = forwardRef<
             const data = await response.json();
             setCancellationPolicy(data.cancellationPolicy || "");
             setAdvanceBookingDays(data.advanceBookingDays || 30);
-            setDepositAmount(data.depositAmount || 25);
-            setEnabled(data.requireDeposit || false);
+            setDepositPercentage(data.depositPercentage || 0);
           }
         }
       } catch (error) {
@@ -89,8 +86,7 @@ const SalonBookingSettings = forwardRef<
           body: JSON.stringify({
             cancellationPolicy,
             advanceBookingDays,
-            requireDeposit: enabled,
-            depositAmount,
+            depositPercentage: depositPercentage,
           }),
         }
       );
@@ -183,34 +179,38 @@ const SalonBookingSettings = forwardRef<
           />
         </div>
 
-        <div className="flex justify-between items-center">
-          <div>
-            <p id="require-deposit-label" className="font-medium">
-              Require Deposit
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            Deposit Percentage (%)
+          </label>
+          <p className="text-sm text-muted-foreground mb-2">
+            Percentage of total amount required as deposit for "pay in store" appointments (0-100%)
+          </p>
+          <input
+            type="number"
+            min="0"
+            max="100"
+            step="0.1"
+            value={depositPercentage}
+            onChange={(e) => {
+              const value = Math.max(0, Math.min(100, Number(e.target.value) || 0));
+              setDepositPercentage(value);
+            }}
+            className="w-full mt-1 rounded-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+            placeholder="0"
+            title="Deposit Percentage"
+          />
+          {depositPercentage > 0 && (
+            <p className="text-xs text-muted-foreground mt-1">
+              Customers will pay {depositPercentage}% of the total as a deposit online, then pay the remaining balance at the salon.
             </p>
-            <p className="text-sm text-muted-foreground">
-              Require customers to pay a deposit
+          )}
+          {depositPercentage === 0 && (
+            <p className="text-xs text-muted-foreground mt-1">
+              No deposit required. Customers can pay the full amount when they arrive.
             </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <ToggleButton checked={enabled} onChange={setEnabled} />
-          </div>
+          )}
         </div>
-        {enabled && (
-          <div className="mt-6">
-            <label className="block text-sm font-medium">
-              Deposit Amount ($)
-            </label>
-            <input
-              type="number"
-              value={depositAmount}
-              onChange={(e) => setDepositAmount(Number(e.target.value))}
-              className="w-full mt-1 rounded-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-              placeholder="Enter deposit amount"
-              title="Deposit Amount"
-            />
-          </div>
-        )}
       </div>
     </div>
   );

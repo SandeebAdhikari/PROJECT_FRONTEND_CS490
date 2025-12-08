@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { MapPin, Star, Heart } from "lucide-react";
 import data from "@/data/data.json";
+import { getImageUrl } from "@/libs/utils/imageUrl";
 
 interface SalonCardProps {
   id: string;
@@ -43,7 +44,7 @@ const SalonCard: React.FC<SalonCardProps> = ({
     <div className="border border-border rounded-xl sm:rounded-2xl overflow-hidden shadow-soft-br hover:shadow-premium transition-smooth bg-card group cursor-pointer relative font-inter h-full flex flex-col">
       <div className="relative">
         <Image
-          src={imageUrl || data.salonImages.default}
+          src={getImageUrl(imageUrl) || data.salonImages.default}
           alt={name || "Salon image"}
           width={400}
           height={300}

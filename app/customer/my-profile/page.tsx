@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import { ArrowLeft, User } from "lucide-react";
 import ProfileTabs from "@/components/Customer/CustomerMyProfileTabs";
 
@@ -54,7 +54,9 @@ const ProfilePage = () => {
         </div>
       </div>
 
-      <ProfileTabs />
+      <Suspense fallback={<div className="p-8">Loading profile...</div>}>
+        <ProfileTabs />
+      </Suspense>
     </div>
   );
 };

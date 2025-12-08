@@ -3,6 +3,7 @@
 import React from "react";
 import Image from "next/image";
 import { MapPin, Star } from "lucide-react";
+import { getImageUrl } from "@/libs/utils/imageUrl";
 
 interface SalonDetailExploreOtherCardProps {
   name: string;
@@ -20,7 +21,7 @@ const SalonDetailExploreOtherCard: React.FC<
     <div className="bg-card border border-border rounded-2xl shadow-sm overflow-hidden hover:shadow-md transition font-inter">
       <div className="relative">
         <Image
-          src={imageUrl}
+          src={getImageUrl(imageUrl)}
           alt={name}
           className="w-full h-48 object-cover"
           width={600}

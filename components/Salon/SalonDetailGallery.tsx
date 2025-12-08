@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { X } from "lucide-react";
 import { API_BASE_URL, API_ENDPOINTS } from "@/libs/api/config";
+import { getImageUrl } from "@/libs/utils/imageUrl";
 
 interface Photo {
   photo_id: number;
@@ -63,7 +64,7 @@ const SalonDetailGallery: React.FC<SalonDetailGalleryProps> = ({ salonId }) => {
             onClick={() => setSelectedPhoto(photo)}
           >
             <Image
-              src={`${API_BASE_URL}${photo.photo_url}`}
+              src={getImageUrl(photo.photo_url)}
               alt={photo.caption || "Salon photo"}
               fill
               className="object-cover"
@@ -89,7 +90,7 @@ const SalonDetailGallery: React.FC<SalonDetailGalleryProps> = ({ salonId }) => {
           </button>
           <div className="relative max-w-4xl max-h-[90vh] w-full h-full">
             <Image
-              src={`${API_BASE_URL}${selectedPhoto.photo_url}`}
+              src={getImageUrl(selectedPhoto.photo_url)}
               alt={selectedPhoto.caption || "Salon photo"}
               fill
               className="object-contain"

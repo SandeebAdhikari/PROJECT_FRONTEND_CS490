@@ -10,8 +10,11 @@ import {
   Scissors,
   Loader2,
   DollarSign,
+  Calendar,
+  X,
 } from "lucide-react";
 import { Appointment, getAppointmentById } from "@/libs/api/appointments";
+import { rescheduleAppointment, cancelAppointment } from "@/libs/api/bookings";
 
 export default function AppointmentDetailsPage() {
   const router = useRouter();
@@ -21,6 +24,11 @@ export default function AppointmentDetailsPage() {
   const [appointment, setAppointment] = useState<Appointment | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showRescheduleModal, setShowRescheduleModal] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [newDateTime, setNewDateTime] = useState("");
+  const [processing, setProcessing] = useState(false);
+  const [success, setSuccess] = useState<string | null>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -187,9 +195,27 @@ export default function AppointmentDetailsPage() {
           )}
 
           <div className="flex flex-wrap gap-2">
+            {appointment.status !== "cancelled" && appointment.status !== "completed" && (
+              <>
+                <button
+                  onClick={() => setShowRescheduleModal(true)}
+                  className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors flex items-center gap-2"
+                >
+                  <Calendar className="w-4 h-4" />
+                  Reschedule
+                </button>
+                <button
+                  onClick={() => setShowCancelModal(true)}
+                  className="px-4 py-2 bg-destructive text-white rounded-lg hover:bg-destructive/90 transition-colors flex items-center gap-2"
+                >
+                  <X className="w-4 h-4" />
+                  Cancel
+                </button>
+              </>
+            )}
             <button
               onClick={() => router.push("/customer")}
-              className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors"
+              className="px-4 py-2 bg-muted text-foreground rounded-lg border border-border hover:bg-background transition-colors"
             >
               Go to Customer Home
             </button>
@@ -200,6 +226,116 @@ export default function AppointmentDetailsPage() {
               View Profile
             </button>
           </div>
+
+          {/* Reschedule Modal */}
+          {showRescheduleModal && (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+              <div className="bg-card border border-border rounded-xl shadow-lg p-6 max-w-md w-full space-y-4">
+                <h2 className="text-xl font-bold text-foreground">Reschedule Appointment</h2>
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2">
+                    New Date & Time
+                  </label>
+                  <input
+                    type="datetime-local"
+                    value={newDateTime}
+                    onChange={(e) => setNewDateTime(e.target.value)}
+                    className="w-full p-3 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                    min={new Date().toISOString().slice(0, 16)}
+                  />
+                </div>
+                {error && <p className="text-sm text-destructive">{error}</p>}
+                {success && <p className="text-sm text-green-600">{success}</p>}
+                <div className="flex gap-2">
+                  <button
+                    onClick={async () => {
+                      if (!newDateTime) {
+                        setError("Please select a new date and time");
+                        return;
+                      }
+                      setProcessing(true);
+                      setError(null);
+                      setSuccess(null);
+                      const result = await rescheduleAppointment(appointmentId, newDateTime);
+                      if (result.error) {
+                        setError(result.error);
+                      } else {
+                        setSuccess(result.message || "Appointment rescheduled successfully");
+                        setTimeout(() => {
+                          setShowRescheduleModal(false);
+                          router.refresh();
+                        }, 1500);
+                      }
+                      setProcessing(false);
+                    }}
+                    disabled={processing || !newDateTime}
+                    className="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors disabled:opacity-50"
+                  >
+                    {processing ? "Processing..." : "Confirm Reschedule"}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowRescheduleModal(false);
+                      setNewDateTime("");
+                      setError(null);
+                      setSuccess(null);
+                    }}
+                    className="px-4 py-2 bg-muted text-foreground rounded-lg border border-border hover:bg-background transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Cancel Modal */}
+          {showCancelModal && (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+              <div className="bg-card border border-border rounded-xl shadow-lg p-6 max-w-md w-full space-y-4">
+                <h2 className="text-xl font-bold text-foreground">Cancel Appointment</h2>
+                <p className="text-muted-foreground">
+                  Are you sure you want to cancel this appointment? This action cannot be undone.
+                </p>
+                {error && <p className="text-sm text-destructive">{error}</p>}
+                {success && <p className="text-sm text-green-600">{success}</p>}
+                <div className="flex gap-2">
+                  <button
+                    onClick={async () => {
+                      setProcessing(true);
+                      setError(null);
+                      setSuccess(null);
+                      const result = await cancelAppointment(appointmentId);
+                      if (result.error) {
+                        setError(result.error);
+                      } else {
+                        setSuccess(result.message || "Appointment cancelled successfully");
+                        setTimeout(() => {
+                          setShowCancelModal(false);
+                          router.refresh();
+                        }, 1500);
+                      }
+                      setProcessing(false);
+                    }}
+                    disabled={processing}
+                    className="flex-1 px-4 py-2 bg-destructive text-white rounded-lg hover:bg-destructive/90 transition-colors disabled:opacity-50"
+                  >
+                    {processing ? "Processing..." : "Confirm Cancel"}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowCancelModal(false);
+                      setError(null);
+                      setSuccess(null);
+                    }}
+                    className="px-4 py-2 bg-muted text-foreground rounded-lg border border-border hover:bg-background transition-colors"
+                  >
+                    Keep Appointment
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

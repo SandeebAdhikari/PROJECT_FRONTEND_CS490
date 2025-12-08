@@ -102,6 +102,12 @@
       "icon": "Star"
     },
     {
+      "id": 10,
+      "label": "Promotions",
+      "shortLabel": "Promos",
+      "icon": "Tag"
+    },
+    {
       "id": 8,
       "label": "Salon Settings",
       "shortLabel": "Salon",
