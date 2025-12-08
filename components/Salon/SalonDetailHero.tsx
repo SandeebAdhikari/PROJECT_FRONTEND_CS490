@@ -17,7 +17,7 @@ import {
 import SalonRatingStar from "./SalonRatingStar";
 import { useFavorites } from "@/hooks/useFavorites";
 
-import { API_BASE_URL, API_ENDPOINTS } from "@/libs/api/config";
+import { API_ENDPOINTS } from "@/libs/api/config";
 import { sendMessage } from "@/libs/api/messages";
 import { getImageUrl } from "@/libs/utils/imageUrl";
 
@@ -99,7 +99,6 @@ const SalonDetailHero: React.FC<SalonDetailHeroProps> = ({ salon }) => {
     }
 
     return images;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [salon.profile_picture, salon.imageUrl, galleryPhotos]);
 
   // Fetch gallery photos

@@ -34,12 +34,12 @@ interface StaffPortalTabsProps {
   appointments: StaffPortalAppointment[];
   customers: StaffPortalCustomer[];
   products: StaffPortalProduct[];
-  featuredStaff: any[];
+  featuredStaff: never[];
   nextAppointment?: StaffPortalAppointment;
   onCreateAppointment: () => void;
   onEditAppointment: (appointmentId: number) => void;
   onAddStaff: () => void;
-  onEditStaff: (staff: any) => void;
+  onEditStaff: (staff: never) => void;
   onUpdateAppointmentStatus?: (appointmentId: number, status: string) => Promise<void>;
 }
 

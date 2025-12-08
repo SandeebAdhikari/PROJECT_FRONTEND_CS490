@@ -22,6 +22,7 @@ import {
   StaffPortalAppointmentBackend,
   StaffPortalCustomerBackend,
   StaffPortalProductBackend,
+  StaffPortalDashboard,
 } from "@/libs/api/staffPortal";
 
 
@@ -57,7 +58,7 @@ const StaffPortal = () => {
   const [products, setProducts] = useState<StaffPortalProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [dashboard, setDashboard] = useState<any>(null);
+  const [dashboard, setDashboard] = useState<StaffPortalDashboard | null>(null);
 
   const [showNewAppointment, setShowNewAppointment] = useState(false);
   const [editingAppointmentId, setEditingAppointmentId] = useState<
@@ -260,17 +261,18 @@ const StaffPortal = () => {
   const derivedSalonName =
     staffProfile.salonName || ownerSalonName || "Your Salon";
 
-  const derivedSalonSlug = useMemo(() => {
-    const rawSlug =
-      staffProfile.salonSlug ||
-      ownerSalonSlug ||
-      derivedSalonName.toLowerCase();
-    return rawSlug
-      .trim()
-      .toLowerCase()
-      .replace(/\s+/g, "-")
-      .replace(/[^a-z0-9-]/g, "");
-  }, [derivedSalonName, ownerSalonSlug, staffProfile.salonSlug]);
+  // Removed unused derivedSalonSlug - keeping for potential future use
+  // const _derivedSalonSlug = useMemo(() => {
+  //   const rawSlug =
+  //     staffProfile.salonSlug ||
+  //     ownerSalonSlug ||
+  //     derivedSalonName.toLowerCase();
+  //   return rawSlug
+  //     .trim()
+  //     .toLowerCase()
+  //     .replace(/\s+/g, "-")
+  //     .replace(/[^a-z0-9-]/g, "");
+  // }, [derivedSalonName, ownerSalonSlug, staffProfile.salonSlug]);
 
   const effectiveSalonId = salonId || staffProfile.salonId || 0;
 
@@ -364,10 +366,10 @@ const StaffPortal = () => {
     ]
   );
 
-  const analyticsInsights = dashboard?.insights || [];
+  const analyticsInsights = (dashboard as StaffPortalDashboard & { insights?: unknown[] })?.insights || [];
 
   // Team members feature removed - staff can't manage other staff
-  const featuredStaff: any[] = [];
+  const featuredStaff: never[] = [];
 
   const heroStats = [
     {

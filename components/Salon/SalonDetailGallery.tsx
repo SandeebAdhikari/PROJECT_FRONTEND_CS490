@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { X } from "lucide-react";
-import { API_BASE_URL, API_ENDPOINTS } from "@/libs/api/config";
+import { API_ENDPOINTS } from "@/libs/api/config";
 import { getImageUrl } from "@/libs/utils/imageUrl";
 
 interface Photo {

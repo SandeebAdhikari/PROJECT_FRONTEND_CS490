@@ -93,6 +93,9 @@ export const API_ENDPOINTS = {
       if (serviceId) params.append('service_id', String(serviceId));
       return `${API_BASE_URL}/api/bookings/slots?${params.toString()}`;
     },
+    AVAILABLE_BARBERS: `${API_BASE_URL}/api/bookings/available`,
+    RESCHEDULE: (id: number | string) => `${API_BASE_URL}/api/bookings/reschedule/${id}`,
+    CANCEL: (id: number | string) => `${API_BASE_URL}/api/bookings/cancel/${id}`,
   },
   SALONS: {
     CREATE: `${API_BASE_URL}/api/salons`,

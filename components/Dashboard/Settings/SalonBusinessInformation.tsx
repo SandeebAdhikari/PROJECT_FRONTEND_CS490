@@ -9,7 +9,6 @@ import React, {
 import { MapPin, Upload, Camera } from "lucide-react";
 import Image from "next/image";
 import { checkOwnerSalon, createSalon, updateSalon } from "@/libs/api/salons";
-import { API_BASE_URL } from "@/libs/api/config";
 import { getImageUrl } from "@/libs/utils/imageUrl";
 
 interface SalonBusinessInformationProps {

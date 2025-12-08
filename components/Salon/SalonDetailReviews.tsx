@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import { Star, X, Edit2, Trash2 } from "lucide-react";
-import { API_BASE_URL, API_ENDPOINTS } from "@/libs/api/config";
 import { addReview, updateReview, deleteReview, respondToReview } from "@/libs/api/reviews";
 
 interface RatingStats {

@@ -54,7 +54,7 @@ const NotificationBell: React.FC = () => {
       } else {
         setNotifications([]);
       }
-    } catch (error) {
+    } catch (_error) {
       // Silently handle errors - don't spam console if user isn't authenticated
       setNotifications([]);
     }

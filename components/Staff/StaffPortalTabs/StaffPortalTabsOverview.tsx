@@ -11,10 +11,10 @@ interface StaffPortalTabsOverviewProps {
   appointments: StaffPortalAppointment[];
   nextAppointment?: StaffPortalAppointment;
   customers: StaffPortalCustomer[];
-  teamMembers: any[];
+  teamMembers: never[];
   onCreateAppointment: () => void;
   onAddStaff: () => void;
-  onEditStaff: (staff: any) => void;
+  onEditStaff: (staff: never) => void;
 }
 
 const formatTime = (value?: string) => {
