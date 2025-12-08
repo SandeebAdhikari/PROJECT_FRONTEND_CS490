@@ -1,8 +1,7 @@
 "use client";
 
 import React from "react";
-import { CalendarClock, Sparkles, Users } from "lucide-react";
-import { StaffMember } from "@/components/Dashboard/Staff/Staffcard";
+import { CalendarClock, Sparkles } from "lucide-react";
 import {
   StaffPortalAppointment,
   StaffPortalCustomer,
@@ -12,10 +11,10 @@ interface StaffPortalTabsOverviewProps {
   appointments: StaffPortalAppointment[];
   nextAppointment?: StaffPortalAppointment;
   customers: StaffPortalCustomer[];
-  teamMembers: StaffMember[];
+  teamMembers: any[];
   onCreateAppointment: () => void;
   onAddStaff: () => void;
-  onEditStaff: (staff: StaffMember) => void;
+  onEditStaff: (staff: any) => void;
 }
 
 const formatTime = (value?: string) => {
@@ -30,13 +29,23 @@ const StaffPortalTabsOverview: React.FC<StaffPortalTabsOverviewProps> = ({
   appointments,
   nextAppointment,
   customers,
-  teamMembers,
+  teamMembers: _teamMembers,
   onCreateAppointment,
-  onAddStaff,
-  onEditStaff,
+  onAddStaff: _onAddStaff,
+  onEditStaff: _onEditStaff,
 }) => {
-  const favoriteGuests = customers.slice(0, 3);
+  // Filter out customers with no name or invalid data
+  const favoriteGuests = customers
+    .filter((c) => c.name && c.name !== "Guest" && c.id)
+    .slice(0, 3);
+  
+  // Filter upcoming appointments (future appointments only, not cancelled/completed)
   const upcoming = [...appointments]
+    .filter((appt) => {
+      const apptDate = new Date(appt.time);
+      const now = new Date();
+      return apptDate >= now && appt.status !== "cancelled" && appt.status !== "completed";
+    })
     .sort(
       (a, b) => new Date(a.time).getTime() - new Date(b.time).getTime()
     )
@@ -57,18 +66,24 @@ const StaffPortalTabsOverview: React.FC<StaffPortalTabsOverviewProps> = ({
               </p>
             </div>
           </div>
-          <dl className="mt-4 space-y-2 text-sm">
-            <div className="flex items-center justify-between">
-              <dt className="text-muted-foreground">Time</dt>
-              <dd className="font-semibold">{formatTime(nextAppointment?.time)}</dd>
-            </div>
-            <div className="flex items-center justify-between">
-              <dt className="text-muted-foreground">Service</dt>
-              <dd className="font-semibold">
-                {nextAppointment?.service ?? "Review tomorrow's list"}
-              </dd>
-            </div>
-          </dl>
+          {nextAppointment && nextAppointment.client && nextAppointment.client !== "Guest" ? (
+            <dl className="mt-4 space-y-2 text-sm">
+              <div className="flex items-center justify-between">
+                <dt className="text-muted-foreground">Time</dt>
+                <dd className="font-semibold">{formatTime(nextAppointment.time)}</dd>
+              </div>
+              <div className="flex items-center justify-between">
+                <dt className="text-muted-foreground">Service</dt>
+                <dd className="font-semibold">
+                  {nextAppointment.service || "Service"}
+                </dd>
+              </div>
+            </dl>
+          ) : (
+            <p className="mt-4 text-sm text-muted-foreground">
+              No upcoming appointments scheduled
+            </p>
+          )}
           <button
             type="button"
             onClick={onCreateAppointment}
@@ -89,123 +104,68 @@ const StaffPortalTabsOverview: React.FC<StaffPortalTabsOverviewProps> = ({
             </div>
           </div>
           <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
-            <li>• Offer hydration add-on to color guests</li>
-            <li>• Capture before / after for Tessa&apos;s refresh</li>
-            <li>• Rebook Marina + send calm skin routine</li>
+            <li>• Review today&apos;s appointments</li>
+            <li>• Check customer notes and preferences</li>
+            <li>• Prepare for upcoming services</li>
           </ul>
-          <button
-            type="button"
-            onClick={onAddStaff}
-            className="mt-5 inline-flex items-center gap-2 rounded-xl border border-border px-4 py-2 text-sm font-semibold text-foreground hover:bg-white transition-smooth"
-          >
-            <Users className="h-4 w-4" />
-            Loop in support stylist
-          </button>
         </article>
 
         <article className="rounded-2xl border border-border bg-white p-5 shadow-soft-br">
           <p className="text-sm text-muted-foreground">Favorite guests</p>
-          <div className="mt-4 space-y-3">
-            {favoriteGuests.map((guest) => (
-              <div
-                key={guest.id}
-                className="flex items-center justify-between rounded-2xl border border-border px-4 py-3"
-              >
-                <div>
-                  <p className="font-semibold">{guest.name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {guest.favoriteService}
-                  </p>
+          {favoriteGuests.length === 0 ? (
+            <div className="mt-4 text-center py-8">
+              <p className="text-sm text-muted-foreground">No customers yet</p>
+            </div>
+          ) : (
+            <div className="mt-4 space-y-3">
+              {favoriteGuests.map((guest) => (
+                <div
+                  key={guest.id}
+                  className="flex items-center justify-between rounded-2xl border border-border px-4 py-3"
+                >
+                  <div>
+                    <p className="font-semibold">{guest.name || "Guest"}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {guest.favoriteService || "No service"}
+                    </p>
+                  </div>
+                  <span className="text-xs font-semibold text-primary">
+                    {Number(guest.visits) || 0} {Number(guest.visits) === 1 ? "visit" : "visits"}
+                  </span>
                 </div>
-                <span className="text-xs font-semibold text-primary">
-                  {guest.visits} visits
-                </span>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </article>
       </div>
 
-      <div className="rounded-2xl border border-border bg-white p-5 shadow-soft-br">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <p className="text-sm text-muted-foreground">Team roster</p>
-            <h3 className="text-xl font-semibold">
-              Support ready to jump in
-            </h3>
-          </div>
-          <button
-            type="button"
-            onClick={onAddStaff}
-            className="rounded-full border border-border px-4 py-2 text-sm font-semibold hover:bg-muted/40 transition-smooth"
-          >
-            Add teammate
-          </button>
-        </div>
-        <div className="mt-4 grid gap-4 md:grid-cols-2">
-          {teamMembers.map((member) => (
-            <div
-              key={member.staff_id}
-              className="rounded-2xl border border-border px-4 py-3"
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-semibold">{member.full_name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {member.staff_role}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => onEditStaff(member)}
-                  className="text-sm font-semibold text-primary hover:text-primary/80"
-                >
-                  edit
-                </button>
-              </div>
-              <div className="mt-3 flex items-center gap-4 text-sm">
-                <p className="text-muted-foreground">
-                  Eff.{" "}
-                  <span className="font-semibold text-foreground">
-                    {member.efficiency_percentage || 0}%
-                  </span>
-                </p>
-                <p className="text-muted-foreground">
-                  Reviews{" "}
-                  <span className="font-semibold text-foreground">
-                    {member.review_count || 0}
-                  </span>
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
 
-      <div className="rounded-2xl border border-border bg-muted/30 p-5">
-        <p className="text-sm text-muted-foreground">Upcoming</p>
-        <div className="mt-4 grid gap-4 md:grid-cols-3">
-          {upcoming.map((item) => (
-            <div
-              key={item.id}
-              className="rounded-2xl border border-border bg-white/90 p-4"
-            >
-              <p className="text-xs uppercase text-muted-foreground">
-                {new Date(item.time).toLocaleDateString(undefined, {
-                  weekday: "short",
-                  month: "short",
-                  day: "numeric",
-                })}
-              </p>
-              <p className="mt-1 text-lg font-semibold">{item.client}</p>
-              <p className="text-sm text-muted-foreground">{item.service}</p>
-              <p className="mt-2 text-sm font-semibold text-primary">
-                {formatTime(item.time)}
-              </p>
-            </div>
-          ))}
+      {upcoming.length > 0 && (
+        <div className="rounded-2xl border border-border bg-muted/30 p-5">
+          <p className="text-sm text-muted-foreground">Upcoming</p>
+          <div className="mt-4 grid gap-4 md:grid-cols-3">
+            {upcoming.map((item) => (
+              <div
+                key={item.id}
+                className="rounded-2xl border border-border bg-white/90 p-4"
+              >
+                <p className="text-xs uppercase text-muted-foreground">
+                  {new Date(item.time).toLocaleDateString(undefined, {
+                    weekday: "short",
+                    month: "short",
+                    day: "numeric",
+                  })}
+                </p>
+                <p className="mt-1 text-lg font-semibold">{item.client || "Guest"}</p>
+                <p className="text-sm text-muted-foreground">{item.service || "Service"}</p>
+                <p className="mt-2 text-sm font-semibold text-primary">
+                  {formatTime(item.time)}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

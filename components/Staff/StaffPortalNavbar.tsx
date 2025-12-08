@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Clock8, Sparkles, Users } from "lucide-react";
+import { Clock8, Sparkles } from "lucide-react";
 
 interface StaffPortalNavbarProps {
   staffName: string;
@@ -12,7 +12,6 @@ interface StaffPortalNavbarProps {
   stats: { label: string; value: string }[];
   onBookAppointment: () => void;
   onOpenSchedule: () => void;
-  onOpenTeam: () => void;
 }
 
 const StaffPortalNavbar: React.FC<StaffPortalNavbarProps> = ({
@@ -24,7 +23,6 @@ const StaffPortalNavbar: React.FC<StaffPortalNavbarProps> = ({
   stats,
   onBookAppointment,
   onOpenSchedule,
-  onOpenTeam,
 }) => {
   return (
     <section className="rounded-3xl bg-gradient-to-r from-primary via-primary/90 to-emerald-500 text-white shadow-soft-br">
@@ -80,14 +78,6 @@ const StaffPortalNavbar: React.FC<StaffPortalNavbarProps> = ({
               </div>
             ))}
           </div>
-          <button
-            type="button"
-            onClick={onOpenTeam}
-            className="mt-5 inline-flex items-center gap-2 rounded-xl bg-white/15 px-4 py-2 text-sm font-semibold text-white hover:bg-white/25 transition-smooth"
-          >
-            <Users className="h-4 w-4" />
-            Manage team roster
-          </button>
         </div>
       </div>
     </section>

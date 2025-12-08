@@ -256,6 +256,8 @@ const BookingContent = () => {
         );
 
         console.log("Fetching available slots from:", url);
+        console.log("Request params:", { salonId, staffId: formData.staffId, date: formData.date, serviceId: formData.serviceId });
+        
         const response = await fetch(url, {
           method: "GET",
           headers: {
@@ -263,18 +265,105 @@ const BookingContent = () => {
             ...(token ? { Authorization: `Bearer ${token}` } : {}),
           },
         });
+        
+        console.log("Response status:", response.status, response.statusText);
 
         if (response.ok) {
           const data = await response.json();
           console.log("Available slots response:", data);
           setAvailableSlots(data.slots || []);
         } else {
-          const errorData = await response.json().catch(() => ({ error: response.statusText }));
-          console.error("Failed to fetch available slots:", errorData);
+          let errorMessage = `HTTP ${response.status}`;
+          let errorDetails: Record<string, unknown> = {
+            status: response.status,
+            statusText: response.statusText,
+            url: url,
+          };
+          
+          try {
+            const contentType = response.headers.get("content-type");
+            if (contentType && contentType.includes("application/json")) {
+              const errorData = await response.json();
+              errorMessage = errorData.error || errorData.message || errorMessage;
+              errorDetails.errorData = errorData;
+            } else {
+              const text = await response.text();
+              if (text) {
+                errorMessage = text;
+                errorDetails.responseText = text;
+              } else {
+                errorMessage = response.statusText || errorMessage;
+                errorDetails.note = "Empty response body";
+              }
+            }
+          } catch (parseError) {
+            errorMessage = response.statusText || errorMessage;
+            errorDetails.parseError = parseError instanceof Error ? parseError.message : String(parseError);
+          }
+          
+          console.error("=== FAILED TO FETCH AVAILABLE SLOTS (Non-OK Response) ===");
+          console.error("Status:", response.status, response.statusText);
+          console.error("URL:", url);
+          console.error("Error message:", errorMessage);
+          console.error("Error details:", JSON.stringify(errorDetails, null, 2));
+          console.error("===========================================================");
+          
+          // Even if there's an error, try to show default slots or empty array
           setAvailableSlots([]);
         }
       } catch (error) {
-        console.error("Error fetching available slots:", error);
+        // Better error handling for network errors or other exceptions
+        let errorMessage = "Unknown error";
+        let errorName = "Unknown";
+        let errorStack: string | undefined;
+        
+        if (error instanceof Error) {
+          errorMessage = error.message || "Unknown error";
+          errorName = error.name || "Error";
+          errorStack = error.stack;
+        } else if (typeof error === "string") {
+          errorMessage = error;
+        } else if (error && typeof error === "object") {
+          // Try to extract useful info from error object
+          errorMessage = (error as { message?: string }).message || JSON.stringify(error);
+          errorName = (error as { name?: string }).name || "Error";
+        } else {
+          errorMessage = String(error);
+        }
+        
+        const errorDetails = {
+          message: errorMessage,
+          name: errorName,
+          stack: errorStack,
+          url: API_ENDPOINTS.BOOKINGS.AVAILABLE_SLOTS(
+            salonId,
+            formData.staffId,
+            formData.date,
+            formData.serviceId || undefined
+          ),
+          salonId,
+          staffId: formData.staffId,
+          date: formData.date,
+          serviceId: formData.serviceId,
+          errorType: error instanceof TypeError ? "TypeError" : 
+                     error instanceof SyntaxError ? "SyntaxError" :
+                     "Unknown",
+          rawError: error,
+        };
+        
+        // Log error in multiple ways to ensure we capture it
+        console.error("=== ERROR FETCHING AVAILABLE SLOTS ===");
+        console.error("Error message:", errorMessage);
+        console.error("Error name:", errorName);
+        console.error("Error details:", JSON.stringify(errorDetails, null, 2));
+        console.error("Raw error:", error);
+        console.error("Error type:", typeof error);
+        console.error("Error constructor:", error?.constructor?.name);
+        if (errorStack) {
+          console.error("Stack trace:", errorStack);
+        }
+        console.error("========================================");
+        
         setAvailableSlots([]);
       }
     };
@@ -308,10 +397,11 @@ const BookingContent = () => {
         notes: formData.notes,
       });
 
-      // Add appointment to cart
+      // Add appointment to cart (both local and backend)
       const appointmentId =
         result.appointmentId || result.appointment_id || result.id;
       if (appointmentId && selectedService && selectedStaff) {
+        // Add to local cart
         cart.addService({
           appointment_id: appointmentId,
           salon_id: parseInt(salonId),
@@ -325,9 +415,34 @@ const BookingContent = () => {
           notes: formData.notes,
         });
 
+        // Also add to backend cart
+        try {
+          const token = localStorage.getItem("token");
+          if (token) {
+            const response = await fetch(API_ENDPOINTS.SHOP.ADD_APPOINTMENT_TO_CART, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({
+                appointment_id: appointmentId,
+                salon_id: parseInt(salonId),
+              }),
+            });
+            
+            if (response.ok) {
+              console.log("[Booking] Appointment added to backend cart");
+            } else {
+              console.error("[Booking] Failed to add appointment to backend cart");
+            }
+          }
+        } catch (err) {
+          console.error("[Booking] Error adding appointment to backend cart:", err);
+        }
+
         // Redirect to cart
-        alert("Appointment added to cart!");
-        router.push("/customer/cart");
+        router.push(`/customer/cart?salonId=${salonId}`);
       } else {
         alert("Appointment booked successfully!");
         router.push("/customer/my-profile");

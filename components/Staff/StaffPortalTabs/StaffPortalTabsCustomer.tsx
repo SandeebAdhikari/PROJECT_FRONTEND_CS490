@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { MessageCircle, PhoneCall } from "lucide-react";
 import { StaffPortalCustomer } from "@/components/Staff/staffPortalTypes";
 
 interface StaffPortalTabsCustomerProps {
@@ -60,22 +59,6 @@ const StaffPortalTabsCustomer: React.FC<StaffPortalTabsCustomerProps> = ({
               )}
             </div>
 
-            <div className="mt-4 flex flex-wrap gap-2">
-              <button
-                type="button"
-                className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-xs font-semibold"
-              >
-                <MessageCircle className="h-4 w-4" />
-                Send check-in
-              </button>
-              <button
-                type="button"
-                className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-xs font-semibold"
-              >
-                <PhoneCall className="h-4 w-4" />
-                Call guest
-              </button>
-            </div>
           </article>
         ))}
       </div>

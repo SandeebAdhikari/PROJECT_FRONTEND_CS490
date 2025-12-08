@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { StaffMember } from "@/components/Dashboard/Staff/Staffcard";
 import {
   StaffPortalAppointment,
   StaffPortalCustomer,
@@ -12,8 +11,9 @@ import StaffPortalTabsCustomer from "./StaffPortalTabsCustomer";
 import StaffPortalTabsProduct from "./StaffPortalTabsProduct";
 import StaffPortalTabsAppointment from "./StaffPortalTabsAppointment";
 import StaffPortalTabsAvailability from "./StaffPortalTabsAvailability";
+import StaffPortalTabsSchedule from "./StaffPortalTabsSchedule";
 
-type TabKey = "overview" | "appointments" | "customers" | "products" | "availability";
+type TabKey = "overview" | "appointments" | "schedule" | "customers" | "products" | "availability";
 
 const tabConfig: { id: TabKey; label: string; description: string }[] = [
   { id: "overview", label: "Overview", description: "Shift briefing" },
@@ -22,6 +22,7 @@ const tabConfig: { id: TabKey; label: string; description: string }[] = [
     label: "Appointments",
     description: "Guests & prep notes",
   },
+  { id: "schedule", label: "Schedule", description: "Today&apos;s schedule" },
   { id: "customers", label: "Customers", description: "Relationships" },
   { id: "products", label: "Retail", description: "Attach & inventory" },
   { id: "availability", label: "Availability", description: "Set your hours" },
@@ -33,12 +34,12 @@ interface StaffPortalTabsProps {
   appointments: StaffPortalAppointment[];
   customers: StaffPortalCustomer[];
   products: StaffPortalProduct[];
-  featuredStaff: StaffMember[];
+  featuredStaff: any[];
   nextAppointment?: StaffPortalAppointment;
   onCreateAppointment: () => void;
   onEditAppointment: (appointmentId: number) => void;
   onAddStaff: () => void;
-  onEditStaff: (staff: StaffMember) => void;
+  onEditStaff: (staff: any) => void;
   onUpdateAppointmentStatus?: (appointmentId: number, status: string) => Promise<void>;
 }
 
@@ -102,6 +103,8 @@ const StaffPortalTabs: React.FC<StaffPortalTabsProps> = ({
             onUpdateStatus={onUpdateAppointmentStatus}
           />
         )}
+
+        {activeTab === "schedule" && <StaffPortalTabsSchedule />}
 
         {activeTab === "customers" && (
           <StaffPortalTabsCustomer customers={customers} />

@@ -35,10 +35,6 @@ const StaffPortalTabsProduct: React.FC<StaffPortalTabsProductProps> = ({
               Attach {heroProduct.attachRate}%
             </span>
           </div>
-          <p className="mt-4 text-sm text-muted-foreground">
-            Try: “To keep the gloss luminous between visits, work two drops of
-            Luna Repair Oil into damp mids + ends.”
-          </p>
         </article>
       )}
 
