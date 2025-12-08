@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { Calendar, Clock, Edit2, X } from "lucide-react";
 import { getAppointmentHistory, AppointmentHistory as AppointmentHistoryType } from "@/libs/api/history";
-import { API_ENDPOINTS, fetchConfig } from "@/libs/api/config";
+import { API_ENDPOINTS } from "@/libs/api/config";
 import { fetchWithRefresh } from "@/libs/api/fetchWithRefresh";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";

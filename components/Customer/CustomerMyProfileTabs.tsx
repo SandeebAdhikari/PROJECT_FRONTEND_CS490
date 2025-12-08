@@ -14,7 +14,6 @@ import AppointmentHistory from "@/components/History/AppointmentHistory";
 import { useFavorites } from "@/hooks/useFavorites";
 import SalonCard from "@/components/Salon/SalonCard";
 import { API_ENDPOINTS, fetchConfig } from "@/libs/api/config";
-import { Star } from "lucide-react";
 import LoyaltyPointsSummary from "@/components/Loyalty/LoyaltyPointsSummary";
 
 type TabType = "upcoming" | "past" | "favorites" | "loyalty" | "settings";

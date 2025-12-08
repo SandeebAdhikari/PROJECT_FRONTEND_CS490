@@ -20,7 +20,7 @@ const ForgotPasswordForm = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
-  const router = useRouter();
+  const _router = useRouter();
 
   const form = useForm<ForgotPasswordFormData>({
     resolver: zodResolver(forgotPasswordSchema),

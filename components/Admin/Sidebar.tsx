@@ -4,7 +4,6 @@ import {
     LayoutDashboard,
     Store,
     BarChart2,
-    Settings,
     Download,
     Activity,
     Users,

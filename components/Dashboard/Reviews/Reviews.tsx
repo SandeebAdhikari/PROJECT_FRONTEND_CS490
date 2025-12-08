@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Star, MessageSquare, Edit2 } from "lucide-react";
-import { API_BASE_URL, API_ENDPOINTS } from "@/libs/api/config";
+import { API_BASE_URL } from "@/libs/api/config";
 import { respondToReview } from "@/libs/api/reviews";
 import { checkOwnerSalon } from "@/libs/api/salons";
 import Header from "../Header";

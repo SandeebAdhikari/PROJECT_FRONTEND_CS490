@@ -20,7 +20,7 @@ const CustomerNavbar = () => {
     const products = cart.getProducts();
     const totalItems = services.length + products.reduce((sum, p) => sum + p.quantity, 0);
     setCartItemCount(totalItems);
-  }, [cart.items]);
+  }, [cart]);
 
   useEffect(() => {
     const fetchLoyaltyPoints = async () => {

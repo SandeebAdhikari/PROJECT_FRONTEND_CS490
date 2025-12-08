@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Tag, Users, Send, CheckCircle2, AlertCircle, DollarSign, Calendar } from "lucide-react";
 import { getLoyalCustomers, sendPromotionToCustomers, LoyalCustomer } from "@/libs/api/notifications";
 import { checkOwnerSalon } from "@/libs/api/salons";
@@ -38,13 +38,7 @@ const Promotions: React.FC = () => {
     fetchSalonId();
   }, []);
 
-  useEffect(() => {
-    if (salonId) {
-      loadLoyalCustomers();
-    }
-  }, [salonId, minVisits, minSpent]);
-
-  const loadLoyalCustomers = async () => {
+  const loadLoyalCustomers = useCallback(async () => {
     if (!salonId) return;
 
     try {
@@ -64,7 +58,13 @@ const Promotions: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [salonId, minVisits, minSpent]);
+
+  useEffect(() => {
+    if (salonId) {
+      loadLoyalCustomers();
+    }
+  }, [salonId, loadLoyalCustomers]);
 
   const handleToggleCustomer = (userId: number) => {
     setSelectedCustomers((prev) =>

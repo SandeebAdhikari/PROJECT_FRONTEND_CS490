@@ -184,7 +184,7 @@ const SalonBookingSettings = forwardRef<
             Deposit Percentage (%)
           </label>
           <p className="text-sm text-muted-foreground mb-2">
-            Percentage of total amount required as deposit for "pay in store" appointments (0-100%)
+            Percentage of total amount required as deposit for &quot;pay in store&quot; appointments (0-100%)
           </p>
           <input
             type="number"

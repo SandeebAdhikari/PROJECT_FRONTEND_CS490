@@ -27,7 +27,7 @@ export default function SystemHealthPage() {
         api: data.status === "ok" ? "healthy" : "unhealthy",
         overall: data.status === "ok" ? "healthy" : "unhealthy",
       });
-    } catch (error) {
+    } catch (_error) {
       setHealthStatus({
         database: "unhealthy",
         api: "unhealthy",

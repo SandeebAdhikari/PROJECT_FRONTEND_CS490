@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
-import { Download, Calendar } from "lucide-react";
+import { Download } from "lucide-react";
 import Header from "../Header";
 import RevenueAnalytics from "./AnalyticsRevenue";
 import AnalyticsBookingTrend from "./AnalyticsBookingTrend";
