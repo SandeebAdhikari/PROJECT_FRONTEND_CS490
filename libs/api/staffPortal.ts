@@ -137,8 +137,40 @@ export async function getStaffProfile(): Promise<StaffProfile> {
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: "Failed to fetch profile" }));
-    throw new Error(error.error || "Failed to fetch profile");
+    let errorMessage = "Failed to fetch profile";
+    try {
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        const errorData = await response.json();
+        errorMessage = errorData.error || errorData.message || errorMessage;
+      } else {
+        const text = await response.text();
+        if (text) {
+          errorMessage = text;
+        } else {
+          errorMessage = response.statusText || errorMessage;
+        }
+      }
+    } catch {
+      errorMessage = response.statusText || errorMessage;
+    }
+    
+    // Provide more helpful error messages
+    if (response.status === 401 || response.status === 403) {
+      // Log the actual error for debugging
+      console.error("Staff profile fetch failed:", {
+        status: response.status,
+        error: errorMessage,
+        hasToken: !!token,
+      });
+      
+      if (errorMessage.includes("Access denied") || errorMessage.includes("Staff context missing")) {
+        throw new Error("You must be logged in as staff to access this page. Please use the staff portal login.");
+      }
+      throw new Error(errorMessage || "Authentication required");
+    }
+    
+    throw new Error(errorMessage);
   }
 
   const data = await response.json();

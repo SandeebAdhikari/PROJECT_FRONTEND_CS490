@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useRef, ReactNode } from "react";
 
 export interface CartService {
   type: "service";
@@ -38,6 +38,7 @@ interface CartContextType {
   removeItem: (id: number, type: "service" | "product") => void;
   updateProductQuantity: (productId: number, quantity: number) => void;
   clearCart: () => void;
+  removeDuplicateServices: () => void;
   getServices: () => CartService[];
   getProducts: () => CartProduct[];
   getTotalPrice: () => number;
@@ -49,18 +50,115 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
+  const isDeduplicating = useRef(false);
 
-  // Load cart from localStorage on mount
+  // Load cart from localStorage on mount, deduplicate, and validate appointments
   useEffect(() => {
     const savedCart = localStorage.getItem("cart");
     if (savedCart) {
       try {
-        setItems(JSON.parse(savedCart));
+        const loadedItems = JSON.parse(savedCart);
+        // Deduplicate and validate services when loading
+        const seenServiceKeys = new Set<string>();
+        const validItems: CartItem[] = [];
+
+        loadedItems.forEach((item: CartItem) => {
+          if (item.type === "service") {
+            const key = `service-${item.appointment_id}`;
+            // Skip duplicates
+            if (seenServiceKeys.has(key)) {
+              return;
+            }
+            
+            // Validate service: must have valid scheduled_time (not empty, not "Invalid Date")
+            // AND must be in the future (not past)
+            const now = new Date();
+            const hasValidTime = item.scheduled_time && 
+                                 item.scheduled_time.trim() !== "" && 
+                                 item.scheduled_time !== "Invalid Date" &&
+                                 !isNaN(new Date(item.scheduled_time).getTime());
+            
+            if (hasValidTime) {
+              const appointmentDate = new Date(item.scheduled_time);
+              // Must be in the future - use <= to catch appointments exactly at current time
+              if (appointmentDate > now) {
+                seenServiceKeys.add(key);
+                validItems.push(item);
+              } else {
+                console.log(`[Cart Hook] Removing past service with appointment_id ${item.appointment_id} - scheduled: ${item.scheduled_time}, now: ${now.toISOString()}`);
+              }
+            } else {
+              console.log(`[Cart Hook] Removing invalid service with appointment_id ${item.appointment_id} - invalid scheduled_time`);
+            }
+          } else {
+            // Products are always valid
+            validItems.push(item);
+          }
+        });
+
+        const removedCount = loadedItems.length - validItems.length;
+        if (removedCount > 0) {
+          console.log(`[Cart] Removed ${removedCount} invalid/duplicate items from localStorage`);
+        }
+        
+        // Update localStorage with cleaned items
+        if (validItems.length !== loadedItems.length) {
+          localStorage.setItem("cart", JSON.stringify(validItems));
+        }
+        
+        setItems(validItems);
       } catch (error) {
         console.error("Failed to load cart:", error);
+        // Clear corrupted localStorage
+        localStorage.removeItem("cart");
       }
     }
   }, []);
+
+  // Aggressively remove duplicates and past appointments from items whenever they change
+  useEffect(() => {
+    if (items.length === 0 || isDeduplicating.current) return;
+    
+    const seenServiceKeys = new Set<string>();
+    const deduplicatedItems: CartItem[] = [];
+    const now = new Date();
+
+    items.forEach((item) => {
+      if (item.type === "service") {
+        const key = `service-${item.appointment_id}`;
+        // Skip duplicates
+        if (seenServiceKeys.has(key)) {
+          return;
+        }
+        
+        // Also check if appointment is in the past
+        if (item.scheduled_time) {
+          const appointmentDate = new Date(item.scheduled_time);
+          if (!isNaN(appointmentDate.getTime()) && appointmentDate <= now) {
+            console.log(`[Cart Hook] Removing past appointment ${item.appointment_id} during deduplication - scheduled: ${item.scheduled_time}`);
+            return; // Skip past appointments
+          }
+        }
+        
+        seenServiceKeys.add(key);
+        deduplicatedItems.push(item);
+      } else {
+        deduplicatedItems.push(item);
+      }
+    });
+
+    // Always update if we found duplicates or past appointments (immediate removal, no delay)
+    if (deduplicatedItems.length < items.length) {
+      const removedCount = items.length - deduplicatedItems.length;
+      console.log(`[Cart Hook] Automatically removing ${removedCount} duplicate/past services`);
+      // Update localStorage first, then state (ensures persistence)
+      localStorage.setItem("cart", JSON.stringify(deduplicatedItems));
+      isDeduplicating.current = true;
+      setItems(deduplicatedItems);
+      // Reset flag immediately (synchronous)
+      isDeduplicating.current = false;
+    }
+  }, [items]);
 
   // Save cart to localStorage whenever it changes
   useEffect(() => {
@@ -68,7 +166,21 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [items]);
 
   const addService = (service: Omit<CartService, "type">) => {
-    setItems((prev) => [...prev, { ...service, type: "service" }]);
+    setItems((prev) => {
+      // Check if service already exists in cart
+      const existingServiceIndex = prev.findIndex(
+        (item) => item.type === "service" && item.appointment_id === service.appointment_id
+      );
+
+      if (existingServiceIndex > -1) {
+        // Service already exists, don't add duplicate
+        console.warn("Service already in cart");
+        return prev;
+      }
+
+      // Add new service
+      return [...prev, { ...service, type: "service" }];
+    });
   };
 
   const addProduct = (product: Omit<CartProduct, "type">) => {
@@ -110,15 +222,41 @@ export function CartProvider({ children }: { children: ReactNode }) {
   };
 
   const removeItem = (id: number, type: "service" | "product") => {
-    setItems((prev) =>
-      prev.filter((item) => {
-        if (type === "service") {
+    setItems((prev) => {
+      if (type === "service") {
+        // For services, remove ALL items with this appointment_id (handles duplicates)
+        return prev.filter((item) => {
           return !(item.type === "service" && item.appointment_id === id);
-        } else {
+        });
+      } else {
+        return prev.filter((item) => {
           return !(item.type === "product" && item.product_id === id);
+        });
+      }
+    });
+  };
+
+  // Function to remove all duplicate services (keep first occurrence of each appointment_id)
+  const removeDuplicateServices = () => {
+    setItems((prev) => {
+      const seenAppointmentIds = new Set<number>();
+      const deduplicated = prev.filter((item) => {
+        if (item.type === "service") {
+          if (seenAppointmentIds.has(item.appointment_id)) {
+            return false; // Remove duplicate
+          }
+          seenAppointmentIds.add(item.appointment_id);
+          return true; // Keep first occurrence
         }
-      })
-    );
+        return true; // Keep all products
+      });
+      
+      if (deduplicated.length !== prev.length) {
+        console.log(`[Cart] Removed ${prev.length - deduplicated.length} duplicate services`);
+      }
+      
+      return deduplicated;
+    });
   };
 
   const updateProductQuantity = (productId: number, quantity: number) => {
@@ -145,6 +283,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const clearCart = () => {
     setItems([]);
+    localStorage.removeItem("cart");
   };
 
   const getServices = (): CartService[] => {
@@ -181,6 +320,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         removeItem,
         updateProductQuantity,
         clearCart,
+        removeDuplicateServices,
         getServices,
         getProducts,
         getTotalPrice,
