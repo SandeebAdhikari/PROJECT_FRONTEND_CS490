@@ -366,7 +366,19 @@ const StaffPortal = () => {
     ]
   );
 
-  const analyticsInsights = (dashboard as StaffPortalDashboard & { insights?: unknown[] })?.insights || [];
+  const analyticsInsights: Array<{
+    title: string;
+    description: string;
+    metric: string;
+    progress: number;
+  }> = (dashboard as StaffPortalDashboard & { 
+    insights?: Array<{
+      title: string;
+      description: string;
+      metric: string;
+      progress: number;
+    }> 
+  })?.insights || [];
 
   // Team members feature removed - staff can't manage other staff
   const featuredStaff: never[] = [];

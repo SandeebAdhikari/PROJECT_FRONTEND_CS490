@@ -270,7 +270,7 @@ export default function PendingApprovalsPage() {
               </span>{" "}
               the salon <br />
               <span className="font-semibold text-foreground">
-                "{confirmAction.salon.name || confirmAction.salon.salon_name || `Salon ${confirmAction.salon.salon_id}`}"?
+                &quot;{confirmAction.salon.name || confirmAction.salon.salon_name || `Salon ${confirmAction.salon.salon_id}`}&quot;?
               </span>
             </p>
 

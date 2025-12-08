@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CheckCircle, Calendar, Clock, User, Scissors, MapPin, DollarSign, Mail, Download } from "lucide-react";
 import { API_ENDPOINTS, fetchConfig } from "@/libs/api/config";
@@ -43,7 +43,7 @@ interface PaymentDetails {
   }>;
 }
 
-const PaymentSuccessPage = () => {
+const PaymentSuccessPageContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("session_id");
@@ -54,21 +54,7 @@ const PaymentSuccessPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    if (sessionId) {
-      fetchPaymentDetails();
-      // Clear local cart and localStorage when payment is successful
-      cart.clearCart();
-      localStorage.removeItem("cart");
-      // Set flag to refresh loyalty points when user navigates back
-      sessionStorage.setItem('payment_completed', 'true');
-    } else {
-      setError("No payment session found");
-      setLoading(false);
-    }
-  }, [sessionId]);
-
-  const fetchPaymentDetails = async () => {
+  const fetchPaymentDetails = useCallback(async () => {
     try {
       setLoading(true);
       if (!sessionId) {
@@ -138,7 +124,7 @@ const PaymentSuccessPage = () => {
             staff_id: 0,
             staff_name: "Multiple Services",
             service_id: 0,
-            service_name: result.payment.cart_items.map((item: any) => `${item.item_name} (x${item.quantity})`).join(", ") || "Products & Services",
+            service_name: result.payment.cart_items.map((item: { item_name: string; quantity: number }) => `${item.item_name} (x${item.quantity})`).join(", ") || "Products & Services",
             scheduled_time: "",
             status: "confirmed",
             price: paymentData.amount,
@@ -166,7 +152,21 @@ const PaymentSuccessPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [sessionId]);
+
+  useEffect(() => {
+    if (sessionId) {
+      fetchPaymentDetails();
+      // Clear local cart and localStorage when payment is successful
+      cart.clearCart();
+      localStorage.removeItem("cart");
+      // Set flag to refresh loyalty points when user navigates back
+      sessionStorage.setItem('payment_completed', 'true');
+    } else {
+      setError("No payment session found");
+      setLoading(false);
+    }
+  }, [sessionId, cart, fetchPaymentDetails]);
 
   const handleDownloadReceipt = () => {
     // In production, this would generate a PDF receipt
@@ -236,7 +236,7 @@ const PaymentSuccessPage = () => {
     staff_id: 0,
     staff_name: "N/A",
     service_id: 0,
-    service_name: payment.cart_items?.map((item: any) => `${item.item_name} (x${item.quantity})`).join(", ") || "Products & Services",
+    service_name: payment.cart_items?.map((item: { item_name: string; quantity: number }) => `${item.item_name} (x${item.quantity})`).join(", ") || "Products & Services",
     scheduled_time: "",
     status: "confirmed",
     price: typeof payment.amount === 'number' ? payment.amount : parseFloat(String(payment.amount)) || 0,
@@ -406,7 +406,7 @@ const PaymentSuccessPage = () => {
 
         {/* Next Steps */}
         <div className="bg-card border border-border rounded-2xl p-6 sm:p-8 shadow-soft-br mb-6">
-          <h2 className="text-xl font-bold mb-4">What's Next?</h2>
+          <h2 className="text-xl font-bold mb-4">What&apos;s Next?</h2>
           <div className="space-y-4">
             <div className="flex items-start gap-3">
               <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center flex-shrink-0 text-white font-bold">
@@ -415,7 +415,7 @@ const PaymentSuccessPage = () => {
               <div>
                 <p className="font-semibold">Confirmation Email</p>
                 <p className="text-sm text-muted-foreground">
-                  You'll receive a confirmation email with your appointment details and receipt.
+                  You&apos;ll receive a confirmation email with your appointment details and receipt.
                 </p>
               </div>
             </div>
@@ -426,7 +426,7 @@ const PaymentSuccessPage = () => {
               <div>
                 <p className="font-semibold">Appointment Reminder</p>
                 <p className="text-sm text-muted-foreground">
-                  We'll send you a reminder 24 hours before your appointment.
+                  We&apos;ll send you a reminder 24 hours before your appointment.
                 </p>
               </div>
             </div>
@@ -471,6 +471,21 @@ const PaymentSuccessPage = () => {
         </div>
       </div>
     </div>
+  );
+};
+
+const PaymentSuccessPage = () => {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-muted flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground font-semibold">Loading...</p>
+        </div>
+      </div>
+    }>
+      <PaymentSuccessPageContent />
+    </Suspense>
   );
 };
 

@@ -480,12 +480,12 @@ const AppointmentHistory: React.FC<AppointmentHistoryProps> = ({ filter = "past"
                 </button>
                 <button
                   onClick={handleReschedule}
-                  disabled={
+                  disabled={Boolean(
                     rescheduling || 
                     !selectedDate || 
                     !selectedTimeSlot || 
                     (selectedTimeSlot && !availableSlots.includes(selectedTimeSlot))
-                  }
+                  )}
                   className="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   title={
                     selectedTimeSlot && !availableSlots.includes(selectedTimeSlot)

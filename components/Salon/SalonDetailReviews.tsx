@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Star, X, Edit2, Trash2 } from "lucide-react";
+import { API_ENDPOINTS } from "@/libs/api/config";
 import { addReview, updateReview, deleteReview, respondToReview } from "@/libs/api/reviews";
 
 interface RatingStats {
@@ -79,7 +80,7 @@ const SalonDetailReview: React.FC<SalonReviewsSectionProps> = ({
           headers["Authorization"] = `Bearer ${token}`;
         }
         const response = await fetch(
-          `${API_BASE_URL}/api/reviews/salon/${salonId}`,
+          API_ENDPOINTS.REVIEWS.GET_SALON_REVIEWS(salonId),
           { headers }
         );
 
@@ -564,7 +565,7 @@ const SalonDetailReview: React.FC<SalonReviewsSectionProps> = ({
                                 setResponseText("");
                                 // Refresh reviews
                                 const response = await fetch(
-                                  `${API_BASE_URL}/api/reviews/salon/${salonId}`,
+                                  API_ENDPOINTS.REVIEWS.GET_SALON_REVIEWS(salonId),
                                   {
                                     headers: token ? { Authorization: `Bearer ${token}` } : {},
                                   }
@@ -640,7 +641,7 @@ const SalonDetailReview: React.FC<SalonReviewsSectionProps> = ({
                             setResponseText("");
                             // Refresh reviews
                             const response = await fetch(
-                              `${API_BASE_URL}/api/reviews/salon/${salonId}`,
+                              API_ENDPOINTS.REVIEWS.GET_SALON_REVIEWS(salonId),
                               {
                                 headers: token ? { Authorization: `Bearer ${token}` } : {},
                               }

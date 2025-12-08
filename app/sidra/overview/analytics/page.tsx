@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import ChartCard from "@/components/Admin/ChartCard";
 import { ResponsiveContainer } from "recharts";
 import {
@@ -32,11 +32,7 @@ export default function AnalyticsPage() {
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
 
-  useEffect(() => {
-    loadAnalytics();
-  }, [startDate, endDate]);
-
-  const loadAnalytics = async () => {
+  const loadAnalytics = useCallback(async () => {
     setLoading(true);
     setError(null);
 
@@ -70,7 +66,11 @@ export default function AnalyticsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [startDate, endDate]);
+
+  useEffect(() => {
+    loadAnalytics();
+  }, [loadAnalytics]);
 
   // Format appointment trends for chart (24 hours)
   const trendsChartData = Array.from({ length: 24 }, (_, i) => {

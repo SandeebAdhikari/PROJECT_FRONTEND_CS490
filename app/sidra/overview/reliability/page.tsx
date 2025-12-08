@@ -3,7 +3,7 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import AdminHeader from "@/components/Admin/AdminHeader";
-import { Download, FileText, TrendingUp, BarChart2 } from "lucide-react";
+import { Download, FileText, TrendingUp } from "lucide-react";
 
 export default function ReliabilityPage() {
   const router = useRouter();

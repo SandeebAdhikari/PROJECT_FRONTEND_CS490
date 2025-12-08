@@ -20,6 +20,7 @@ const Setup2FAModal: React.FC<Setup2FAModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [loadingPhone, setLoadingPhone] = useState(false);
   const [error, setError] = useState("");
+  const [smsOptIn, setSmsOptIn] = useState(false); // Checkbox must not be pre-checked
 
   // Use userPhone prop if provided
   useEffect(() => {
@@ -80,6 +81,11 @@ const Setup2FAModal: React.FC<Setup2FAModalProps> = ({
       return;
     }
 
+    if (!smsOptIn) {
+      setError("You must agree to receive SMS messages to enable 2FA");
+      return;
+    }
+
     setLoading(true);
     setError("");
 
@@ -87,7 +93,7 @@ const Setup2FAModal: React.FC<Setup2FAModalProps> = ({
       const result = await enable2FA("sms", phoneNumber);
       if (!result.error) {
         alert(
-          "2FA enabled successfully! You'll receive a verification code on your next login."
+          "2FA enabled successfully! You&apos;ll receive a verification code on your next login."
         );
         localStorage.setItem("2fa_setup_completed", "true");
         onClose();
@@ -210,6 +216,32 @@ const Setup2FAModal: React.FC<Setup2FAModalProps> = ({
           </p>
         </div>
 
+        {/* SMS Opt-in Checkbox and Disclosure - Required for ClickSend TFN compliance */}
+        <div className="mb-6 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+          <label className="flex items-start gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={smsOptIn}
+              onChange={(e) => setSmsOptIn(e.target.checked)}
+              className="mt-1 w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+            />
+            <div className="flex-1 text-sm text-gray-700">
+              <p className="mb-2">
+                By providing your phone number and enabling 2FA, you agree to receive SMS messages from <strong>StyGo</strong> for two-factor authentication codes, security alerts, and account notifications.
+              </p>
+              <p className="mb-2 text-xs text-gray-600">
+                <strong>Message frequency:</strong> Message frequency varies. You may receive 1-5 messages per month for authentication and security purposes.
+              </p>
+              <p className="mb-2 text-xs text-gray-600">
+                <strong>Message and data rates may apply.</strong> Text <strong>HELP</strong> for help, <strong>STOP</strong> to unsubscribe.
+              </p>
+              <p className="text-xs text-gray-600">
+                <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">View our Terms & Conditions</a> and <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Privacy Policy</a>.
+              </p>
+            </div>
+          </label>
+        </div>
+
         {error && (
           <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg">
             {error}
@@ -226,7 +258,7 @@ const Setup2FAModal: React.FC<Setup2FAModalProps> = ({
           </button>
           <button
             onClick={handleEnable2FA}
-            disabled={loading || !phoneNumber}
+            disabled={loading || !phoneNumber || !smsOptIn}
             className="flex-1 px-6 py-3 bg-primary text-white rounded-lg font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? "Enabling..." : "Enable 2FA"}

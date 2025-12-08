@@ -274,7 +274,7 @@ const BookingContent = () => {
           setAvailableSlots(data.slots || []);
         } else {
           let errorMessage = `HTTP ${response.status}`;
-          let errorDetails: Record<string, unknown> = {
+          const errorDetails: Record<string, unknown> = {
             status: response.status,
             statusText: response.statusText,
             url: url,

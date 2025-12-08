@@ -1,10 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Calendar, Clock, DollarSign, User, Scissors, MapPin, Mail, CreditCard, Gift } from "lucide-react";
+import { Calendar, Clock, User, Scissors, MapPin, Mail, CreditCard, Gift } from "lucide-react";
 import { API_ENDPOINTS, fetchConfig } from "@/libs/api/config";
 import { getMyPoints, calculateDiscount } from "@/libs/api/loyalty";
+
+export const dynamic = 'force-dynamic';
 
 interface AppointmentDetails {
   appointment_id: number;
@@ -20,7 +22,7 @@ interface AppointmentDetails {
   notes?: string;
 }
 
-const CheckoutPage = () => {
+const CheckoutPageContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const appointmentId = searchParams.get("appointmentId");
@@ -544,6 +546,21 @@ const CheckoutPage = () => {
         </div>
       </div>
     </div>
+  );
+};
+
+const CheckoutPage = () => {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-muted flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground font-semibold">Loading...</p>
+        </div>
+      </div>
+    }>
+      <CheckoutPageContent />
+    </Suspense>
   );
 };
 

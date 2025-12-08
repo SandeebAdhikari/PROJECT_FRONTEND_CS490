@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useCart } from "@/hooks/useCart";
 import { ShoppingCart, Trash2, Plus, Minus, Calendar, Clock, User, Scissors, Package, CreditCard, Loader2, MapPin, Gift } from "lucide-react";
-import { API_ENDPOINTS, fetchConfig } from "@/libs/api/config";
+import { API_ENDPOINTS } from "@/libs/api/config";
 import { addAppointmentToCart, addToCart, getUnifiedCart, removeFromCart } from "@/libs/api/shop";
 import { createUnifiedCheckout } from "@/libs/api/payments";
 import { getMyPoints, calculateDiscount } from "@/libs/api/loyalty";
@@ -1919,7 +1919,7 @@ const CartPage = () => {
                     </div>
                     {paymentMethod === "pay_in_store" && depositPercentage > 0 && (
                       <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-xs text-blue-700">
-                        A deposit of ${((serviceTotal * depositPercentage) / 100).toFixed(2)} will be required to confirm your appointment. You'll pay the remaining ${(serviceTotal - (serviceTotal * depositPercentage) / 100).toFixed(2)} when you arrive.
+                        A deposit of ${((serviceTotal * depositPercentage) / 100).toFixed(2)} will be required to confirm your appointment. You&apos;ll pay the remaining ${(serviceTotal - (serviceTotal * depositPercentage) / 100).toFixed(2)} when you arrive.
                       </div>
                     )}
                   </div>

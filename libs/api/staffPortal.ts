@@ -19,6 +19,7 @@ export interface StaffPortalDashboard {
     customer_email: string;
     services: string;
     duration_minutes: number;
+    notes?: string;
   } | null;
   recent_performance: {
     completed: number;

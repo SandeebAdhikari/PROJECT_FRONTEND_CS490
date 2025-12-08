@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Star, MessageSquare, Edit2 } from "lucide-react";
-import { API_BASE_URL } from "@/libs/api/config";
+import { API_ENDPOINTS } from "@/libs/api/config";
 import { respondToReview } from "@/libs/api/reviews";
 import { checkOwnerSalon } from "@/libs/api/salons";
 import Header from "../Header";
@@ -67,7 +67,7 @@ const Reviews: React.FC<ReviewsProps> = ({ salonId: propSalonId }) => {
         }
 
         const response = await fetch(
-          `${API_BASE_URL}/api/reviews/salon/${salonId}`,
+          API_ENDPOINTS.REVIEWS.GET_SALON_REVIEWS(salonId),
           { headers }
         );
 
@@ -113,7 +113,7 @@ const Reviews: React.FC<ReviewsProps> = ({ salonId: propSalonId }) => {
           headers["Authorization"] = `Bearer ${token}`;
         }
         const response = await fetch(
-          `${API_BASE_URL}/api/reviews/salon/${salonId}`,
+          API_ENDPOINTS.REVIEWS.GET_SALON_REVIEWS(salonId),
           { headers }
         );
         if (response.ok) {
