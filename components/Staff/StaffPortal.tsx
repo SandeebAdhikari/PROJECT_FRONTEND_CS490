@@ -6,10 +6,7 @@ import StaffPortalAnalytics from "./StaffPortalAnalytics";
 import StaffPortalTabs from "./StaffPortalTabs/StaffPortalTabs";
 import NewAppointmentModal from "@/components/Dashboard/Appointments/NewAppointmentModal";
 import AppointmentEditModal from "@/components/Dashboard/Appointments/AppointmentEditModal";
-import AddStaffModal from "@/components/Dashboard/Staff/AddStaffModal";
-import EditStaffModal from "@/components/Dashboard/Staff/EditStaffModal";
 import useSalonId from "@/hooks/useSalonId";
-import { StaffMember } from "@/components/Dashboard/Staff/Staffcard";
 import {
   StaffPortalAppointment,
   StaffPortalCustomer,
@@ -27,134 +24,8 @@ import {
   StaffPortalProductBackend,
 } from "@/libs/api/staffPortal";
 
-const isoForDay = (dayOffset: number, hour: number, minute: number) => {
-  const d = new Date();
-  d.setDate(d.getDate() + dayOffset);
-  d.setHours(hour, minute, 0, 0);
-  return d.toISOString();
-};
 
-const _demoAppointments: StaffPortalAppointment[] = [
-  {
-    id: 4312,
-    client: "Hazel Spencer",
-    service: "Balayage gloss",
-    status: "confirmed",
-    time: isoForDay(0, 9, 30),
-    duration: 90,
-    price: 210,
-    notes: "Prefers warmer tone + chamomile tea",
-  },
-  {
-    id: 4313,
-    client: "Leo Watkins",
-    service: "Signature fade",
-    status: "checked-in",
-    time: isoForDay(0, 11, 0),
-    duration: 45,
-    price: 68,
-    notes: "Use matte pomade finish",
-  },
-  {
-    id: 4314,
-    client: "Marina Ellis",
-    service: "Hydration facial",
-    status: "completed",
-    time: isoForDay(-1, 15, 15),
-    duration: 60,
-    price: 145,
-    notes: "Allergic to lavender",
-  },
-  {
-    id: 4315,
-    client: "Tessa Monroe",
-    service: "Copper refresh",
-    status: "confirmed",
-    time: isoForDay(1, 10, 0),
-    duration: 105,
-    price: 265,
-    notes: "Upsell gloss top coat",
-  },
-];
-
-const _demoCustomers: StaffPortalCustomer[] = [
-  {
-    id: 91,
-    name: "Hazel Spencer",
-    favoriteService: "Balayage gloss",
-    visits: 18,
-    lastVisit: isoForDay(-32, 12, 0),
-    lifetimeValue: 12340,
-    phone: "(555) 412‑9182",
-    notes: "Prefers early appointments",
-  },
-  {
-    id: 92,
-    name: "Leo Watkins",
-    favoriteService: "Signature fade",
-    visits: 7,
-    lastVisit: isoForDay(-56, 14, 0),
-    lifetimeValue: 860,
-    phone: "(555) 410‑7729",
-  },
-  {
-    id: 93,
-    name: "Marina Ellis",
-    favoriteService: "Hydration facial",
-    visits: 11,
-    lastVisit: isoForDay(-12, 16, 30),
-    lifetimeValue: 2240,
-    phone: "(555) 482‑6110",
-    notes: "Sensitive skin protocol",
-  },
-  {
-    id: 94,
-    name: "Tessa Monroe",
-    favoriteService: "Copper refresh",
-    visits: 3,
-    lastVisit: isoForDay(-84, 9, 45),
-    lifetimeValue: 690,
-    phone: "(555) 501‑1250",
-  },
-];
-
-const _demoProducts: StaffPortalProduct[] = [
-  {
-    id: 2001,
-    name: "Luna Repair Oil",
-    brand: "StyGo Labs",
-    retailPrice: 42,
-    stock: 14,
-    attachRate: 36,
-    hero: true,
-  },
-  {
-    id: 2002,
-    name: "Velvet Curl Crème",
-    brand: "North Shore",
-    retailPrice: 28,
-    stock: 26,
-    attachRate: 29,
-  },
-  {
-    id: 2003,
-    name: "Copper Care Kit",
-    brand: "Aurora",
-    retailPrice: 58,
-    stock: 9,
-    attachRate: 18,
-  },
-  {
-    id: 2004,
-    name: "Daily SPF Veil",
-    brand: "Lyra Skin",
-    retailPrice: 34,
-    stock: 33,
-    attachRate: 41,
-  },
-];
-
-type TabKey = "overview" | "appointments" | "customers" | "products" | "availability";
+type TabKey = "overview" | "appointments" | "schedule" | "customers" | "products" | "availability";
 
 interface StaffProfile {
   fullName: string;
@@ -192,8 +63,6 @@ const StaffPortal = () => {
   const [editingAppointmentId, setEditingAppointmentId] = useState<
     number | null
   >(null);
-  const [showAddStaff, setShowAddStaff] = useState(false);
-  const [editingStaff, setEditingStaff] = useState<StaffMember | null>(null);
 
   // Map backend appointment to frontend type
   const mapAppointment = (
@@ -213,7 +82,7 @@ const StaffPortal = () => {
       service: appt.services || "Service",
       status,
       time: appt.scheduled_time,
-      duration: appt.duration_minutes || 30,
+      duration: Number(appt.duration_minutes) || 30,
       price: parseFloat(String(appt.price)) || 0,
       notes: appt.notes,
     };
@@ -226,10 +95,10 @@ const StaffPortal = () => {
     return {
       id: customer.user_id,
       name: customer.full_name || "Guest",
-      favoriteService: customer.favorite_service || "Service",
-      visits: customer.total_visits || 0,
+      favoriteService: customer.favorite_service || "No service",
+      visits: Number(customer.total_visits) || 0,
       lastVisit: customer.last_visit || new Date().toISOString(),
-      lifetimeValue: customer.lifetime_value || 0,
+      lifetimeValue: Number(customer.lifetime_value) || 0,
       phone: customer.phone,
       notes: customer.notes,
     };
@@ -280,10 +149,44 @@ const StaffPortal = () => {
             return;
           }
           
-          // If there's a regular token but no staff token, redirect to login
-          setError("Staff authentication required. Please log in with your staff code and PIN.");
+          // If there's a regular token but no staff token, they need to use staff portal login
+          // Get salon slug from URL or redirect to staff login
+          const pathParts = window.location.pathname.split('/');
+          const salonSlugIndex = pathParts.indexOf('salon');
+          const salonSlug = salonSlugIndex >= 0 && pathParts[salonSlugIndex + 1] 
+            ? pathParts[salonSlugIndex + 1] 
+            : null;
+          
+          if (salonSlug) {
+            setError(`Staff authentication required. Please log in with your staff code and PIN at /salon/${salonSlug}/staff/login`);
+            // Optionally redirect after a delay
+            setTimeout(() => {
+              window.location.href = `/salon/${salonSlug}/staff/login`;
+            }, 2000);
+          } else {
+            setError("Staff authentication required. Please log in with your staff code and PIN.");
+          }
           setLoading(false);
           return;
+        }
+        
+        // Verify the token is actually a staff portal token by checking if it has the right structure
+        // Decode the token to check (basic check without verification)
+        try {
+          const tokenParts = staffToken.split('.');
+          if (tokenParts.length === 3) {
+            const payload = JSON.parse(atob(tokenParts[1]));
+            if (!payload.staff_id && !payload.scope) {
+              console.warn("Token doesn't appear to be a staff portal token");
+              // Clear invalid token
+              localStorage.removeItem("staffToken");
+              setError("Invalid staff token. Please log in again with your staff code and PIN.");
+              setLoading(false);
+              return;
+            }
+          }
+        } catch (e) {
+          console.error("Error checking token:", e);
         }
 
         // Fetch profile
@@ -392,20 +295,32 @@ const StaffPortal = () => {
 
   const nextAppointment = useMemo(() => {
     if (dashboard?.upcoming) {
-      return mapAppointment({
+      const mapped = mapAppointment({
         appointment_id: dashboard.upcoming.appointment_id,
         scheduled_time: dashboard.upcoming.scheduled_time,
-        status: dashboard.upcoming.status,
-        price: dashboard.upcoming.price,
-        customer_name: dashboard.upcoming.customer_name,
+        status: dashboard.upcoming.status || "confirmed",
+        price: dashboard.upcoming.price || 0,
+        customer_name: dashboard.upcoming.customer_name || "Guest",
         customer_phone: dashboard.upcoming.customer_phone,
         customer_email: dashboard.upcoming.customer_email,
-        services: dashboard.upcoming.services,
-        duration_minutes: dashboard.upcoming.duration_minutes,
+        services: dashboard.upcoming.services || "Service",
+        duration_minutes: dashboard.upcoming.duration_minutes || 30,
+        notes: dashboard.upcoming.notes,
       });
+      // Only return if it's a valid appointment (not "Guest" and in the future)
+      if (mapped.client && mapped.client !== "Guest" && new Date(mapped.time) >= new Date()) {
+        return mapped;
+      }
     }
     const upcoming = [...appointments].filter(
-      (appt) => new Date(appt.time) >= new Date()
+      (appt) => {
+        const apptDate = new Date(appt.time);
+        return apptDate >= new Date() && 
+               appt.status !== "cancelled" && 
+               appt.status !== "completed" &&
+               appt.client &&
+               appt.client !== "Guest";
+      }
     );
     return upcoming.sort(
       (a, b) => new Date(a.time).getTime() - new Date(b.time).getTime()
@@ -449,79 +364,10 @@ const StaffPortal = () => {
     ]
   );
 
-  const analyticsInsights = [
-    {
-      title: "Retail attach rate",
-      description: "Offer Luna Repair Oil after every color glaze.",
-      metric: "32%",
-      progress: 32,
-    },
-    {
-      title: "Rebooking focus",
-      description: "Ask Hazel + Marina to pre-book before checkout.",
-      metric: "74%",
-      progress: 74,
-    },
-    {
-      title: "Service add-ons",
-      description: "Recommend scalp detox during lightener rinses.",
-      metric: "2 / 3",
-      progress: 66,
-    },
-  ];
+  const analyticsInsights = dashboard?.insights || [];
 
-  const featuredStaff = useMemo<StaffMember[]>(() => {
-    const primary: StaffMember = {
-      staff_id: staffProfile.salonId || 1,
-      salon_id: salonId || staffProfile.salonId || 1,
-      user_id: staffProfile.salonId || 1,
-      staff_role: staffProfile.role,
-      specialization: "Color correction, Signature gloss",
-      is_active: true,
-      full_name: staffProfile.fullName,
-      email: staffProfile.email,
-      phone: staffProfile.phone,
-      avg_rating: 4.9,
-      review_count: 58,
-      total_revenue: 14200,
-      efficiency_percentage: 94,
-    };
-
-    const support: StaffMember[] = [
-      {
-        staff_id: 7821,
-        salon_id: salonId || staffProfile.salonId || 1,
-        user_id: 7821,
-        staff_role: "Assistant",
-        specialization: "Blowouts, scalp prep",
-        is_active: true,
-        full_name: "River Mae",
-        email: "river@stygo.com",
-        phone: "(555) 400‑8122",
-        avg_rating: 4.7,
-        review_count: 31,
-        total_revenue: 4800,
-        efficiency_percentage: 88,
-      },
-      {
-        staff_id: 7822,
-        salon_id: salonId || staffProfile.salonId || 1,
-        user_id: 7822,
-        staff_role: "Front desk",
-        specialization: "Guest relations",
-        is_active: true,
-        full_name: "Jamie Cole",
-        email: "jamie@stygo.com",
-        phone: "(555) 490‑1124",
-        avg_rating: 4.8,
-        review_count: 24,
-        total_revenue: 0,
-        efficiency_percentage: 91,
-      },
-    ];
-
-    return [primary, ...support];
-  }, [salonId, staffProfile]);
+  // Team members feature removed - staff can't manage other staff
+  const featuredStaff: any[] = [];
 
   const heroStats = [
     {
@@ -594,14 +440,15 @@ const StaffPortal = () => {
             focus={staffProfile.focus}
             stats={heroStats}
             onBookAppointment={() => setShowNewAppointment(true)}
-            onOpenTeam={() => setShowAddStaff(true)}
             onOpenSchedule={() => setActiveTab("appointments")}
           />
 
-          <StaffPortalAnalytics
-            stats={analyticsStats}
-            insights={analyticsInsights}
-          />
+          {analyticsStats.length > 0 && (
+            <StaffPortalAnalytics
+              stats={analyticsStats}
+              insights={analyticsInsights}
+            />
+          )}
 
           <StaffPortalTabs
             activeTab={activeTab}
@@ -612,8 +459,8 @@ const StaffPortal = () => {
             featuredStaff={featuredStaff}
             onCreateAppointment={() => setShowNewAppointment(true)}
             onEditAppointment={(id) => setEditingAppointmentId(id)}
-            onAddStaff={() => setShowAddStaff(true)}
-            onEditStaff={(member) => setEditingStaff(member)}
+            onAddStaff={() => {}}
+            onEditStaff={() => {}}
             nextAppointment={nextAppointment}
             onUpdateAppointmentStatus={async (id, status) => {
               try {
@@ -650,26 +497,6 @@ const StaffPortal = () => {
         onUpdated={() => setEditingAppointmentId(null)}
       />
 
-      <AddStaffModal
-        isOpen={showAddStaff}
-        onClose={() => setShowAddStaff(false)}
-        salonId={Number(effectiveSalonId) || 0}
-        salonSlug={derivedSalonSlug || "stygo-salon"}
-        onAdded={() => setShowAddStaff(false)}
-      />
-
-      {editingStaff && (
-        <EditStaffModal
-          isOpen
-          onClose={() => setEditingStaff(null)}
-          staff={{
-            ...editingStaff,
-            staff_role_id: editingStaff.staff_role_id ?? 0,
-          }}
-          salonId={Number(effectiveSalonId) || 0}
-          onUpdated={() => setEditingStaff(null)}
-        />
-      )}
     </>
   );
 };
