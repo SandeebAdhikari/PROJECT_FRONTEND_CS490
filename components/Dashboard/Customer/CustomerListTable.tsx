@@ -1,9 +1,12 @@
 "use client";
 
-import React from "react";
-import { Eye, Edit, Phone, Mail } from "lucide-react";
+import React, { useState } from "react";
+import { Edit, Camera } from "lucide-react";
+import CustomerPhotoManager from "@/components/Staff/CustomerPhotoManager";
+import EditCustomerModal from "./EditCustomerModal";
 
 interface CustomerCardProps {
+  userId: number;
   name: string;
   email: string;
   phone?: string | null;
@@ -12,9 +15,19 @@ interface CustomerCardProps {
   lastVisit?: string | null;
   favoriteStaff?: string | null;
   membershipTier?: string;
+  salonId?: number;
+  staffId?: number;
+  customerData?: {
+    address?: string;
+    city?: string;
+    state?: string;
+    zip?: string;
+    notes?: string;
+  };
 }
 
 const CustomerCard: React.FC<CustomerCardProps> = ({
+  userId,
   name = "",
   email = "",
   phone = "",
@@ -23,7 +36,13 @@ const CustomerCard: React.FC<CustomerCardProps> = ({
   lastVisit = "-",
   favoriteStaff = "-",
   membershipTier = "",
+  salonId,
+  staffId,
+  customerData,
 }) => {
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showPhotoManager, setShowPhotoManager] = useState(false);
+  
   const initials = (name || "U N")
     .split(" ")
     .map((n) => n[0])
@@ -80,30 +99,53 @@ const CustomerCard: React.FC<CustomerCardProps> = ({
 
       <div className="flex items-center gap-3 justify-center lg:justify-end text-gray-600">
         <button
-          title="View Details"
-          className="p-2 rounded-md hover:bg-gray-100 transition-smooth"
-        >
-          <Eye className="w-4 h-4" />
-        </button>
-        <button
           title="Edit Customer"
+          onClick={() => setShowEditModal(true)}
           className="p-2 rounded-md hover:bg-gray-100 transition-smooth"
         >
           <Edit className="w-4 h-4" />
         </button>
         <button
-          title="Call Customer"
+          title="Before & After Photos"
+          onClick={() => setShowPhotoManager(true)}
           className="p-2 rounded-md hover:bg-gray-100 transition-smooth"
         >
-          <Phone className="w-4 h-4" />
-        </button>
-        <button
-          title="Email Customer"
-          className="p-2 rounded-md hover:bg-gray-100 transition-smooth"
-        >
-          <Mail className="w-4 h-4" />
+          <Camera className="w-4 h-4" />
         </button>
       </div>
+
+      {showEditModal && (
+        <EditCustomerModal
+          isOpen={showEditModal}
+          onClose={() => setShowEditModal(false)}
+          userId={userId}
+          salonId={salonId}
+          initialData={{
+            full_name: name,
+            email,
+            phone: phone || "",
+            address: customerData?.address || "",
+            city: customerData?.city || "",
+            state: customerData?.state || "",
+            zip: customerData?.zip || "",
+            notes: customerData?.notes || "",
+          }}
+          onUpdated={() => {
+            setShowEditModal(false);
+            // Reload the page or refresh data
+            window.location.reload();
+          }}
+        />
+      )}
+
+      {showPhotoManager && salonId && (
+        <CustomerPhotoManager
+          customerId={userId}
+          staffId={staffId}
+          salonId={salonId}
+          onClose={() => setShowPhotoManager(false)}
+        />
+      )}
     </div>
   );
 };

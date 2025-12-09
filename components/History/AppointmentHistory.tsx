@@ -205,12 +205,22 @@ const AppointmentHistory: React.FC<AppointmentHistoryProps> = ({ filter = "past"
   };
 
   const now = new Date();
-  const displayedAppointments = appointments.filter((apt) => {
-    const appointmentDate = new Date(apt.scheduled_time);
-    return filter === "upcoming" 
-      ? appointmentDate >= now 
-      : appointmentDate < now;
-  });
+  const displayedAppointments = appointments
+    .filter((apt) => {
+      const appointmentDate = new Date(apt.scheduled_time);
+      return filter === "upcoming" 
+        ? appointmentDate >= now 
+        : appointmentDate < now;
+    })
+    .sort((a, b) => {
+      const aTime = new Date(a.scheduled_time).getTime();
+      const bTime = new Date(b.scheduled_time).getTime();
+      // For upcoming: soonest first (ascending)
+      // For past: most recent first (descending)
+      return filter === "upcoming" 
+        ? aTime - bTime 
+        : bTime - aTime;
+    });
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {

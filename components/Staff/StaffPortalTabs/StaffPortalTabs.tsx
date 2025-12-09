@@ -41,6 +41,8 @@ interface StaffPortalTabsProps {
   onAddStaff: () => void;
   onEditStaff: (staff: never) => void;
   onUpdateAppointmentStatus?: (appointmentId: number, status: string) => Promise<void>;
+  staffId?: number;
+  salonId?: number;
 }
 
 const StaffPortalTabs: React.FC<StaffPortalTabsProps> = ({
@@ -56,6 +58,8 @@ const StaffPortalTabs: React.FC<StaffPortalTabsProps> = ({
   onAddStaff,
   onEditStaff,
   onUpdateAppointmentStatus,
+  staffId,
+  salonId,
 }) => {
   return (
     <section className="rounded-3xl border border-border bg-card p-4 sm:p-6 shadow-soft-br">
@@ -107,7 +111,7 @@ const StaffPortalTabs: React.FC<StaffPortalTabsProps> = ({
         {activeTab === "schedule" && <StaffPortalTabsSchedule />}
 
         {activeTab === "customers" && (
-          <StaffPortalTabsCustomer customers={customers} />
+          <StaffPortalTabsCustomer customers={customers} staffId={staffId} salonId={salonId} />
         )}
 
         {activeTab === "products" && (

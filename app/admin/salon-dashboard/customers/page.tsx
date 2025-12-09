@@ -17,6 +17,11 @@ interface DirectoryCustomer {
   full_name: string;
   email: string;
   phone?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zip?: string;
+  notes?: string;
   total_visits: number;
   total_spent: number;
   last_visit?: string | null;
@@ -126,6 +131,7 @@ const CustomersPage = () => {
                 {customers.map((customer) => (
                   <CustomerCard
                     key={customer.user_id}
+                    userId={customer.user_id}
                     name={customer.full_name}
                     email={customer.email}
                     phone={customer.phone}
@@ -134,6 +140,14 @@ const CustomersPage = () => {
                     lastVisit={customer.last_visit || undefined}
                     favoriteStaff={customer.favorite_staff || undefined}
                     membershipTier={customer.membership_tier}
+                    salonId={salonId ?? undefined}
+                    customerData={{
+                      address: customer.address,
+                      city: customer.city,
+                      state: customer.state,
+                      zip: customer.zip,
+                      notes: customer.notes,
+                    }}
                   />
                 ))}
               </div>

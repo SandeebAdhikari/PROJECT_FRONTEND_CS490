@@ -36,7 +36,7 @@ const StaffPortalTabsOverview: React.FC<StaffPortalTabsOverviewProps> = ({
 }) => {
   // Filter out customers with no name or invalid data
   const favoriteGuests = customers
-    .filter((c) => c.name && c.name !== "Guest" && c.id)
+    .filter((c) => c.name && c.id)
     .slice(0, 3);
   
   // Filter upcoming appointments (future appointments only, not cancelled/completed)
@@ -62,11 +62,11 @@ const StaffPortalTabsOverview: React.FC<StaffPortalTabsOverviewProps> = ({
             <div>
               <p className="text-sm text-muted-foreground">Next guest</p>
               <p className="text-lg font-semibold">
-                {nextAppointment?.client ?? "All caught up"}
+                {nextAppointment?.client || "All caught up"}
               </p>
             </div>
           </div>
-          {nextAppointment && nextAppointment.client && nextAppointment.client !== "Guest" ? (
+          {nextAppointment && nextAppointment.client ? (
             <dl className="mt-4 space-y-2 text-sm">
               <div className="flex items-center justify-between">
                 <dt className="text-muted-foreground">Time</dt>
@@ -124,9 +124,9 @@ const StaffPortalTabsOverview: React.FC<StaffPortalTabsOverviewProps> = ({
                   className="flex items-center justify-between rounded-2xl border border-border px-4 py-3"
                 >
                   <div>
-                    <p className="font-semibold">{guest.name || "Guest"}</p>
+                    <p className="font-semibold">{guest.name || ""}</p>
                     <p className="text-xs text-muted-foreground">
-                      {guest.favoriteService || "No service"}
+                      {guest.favoriteService || ""}
                     </p>
                   </div>
                   <span className="text-xs font-semibold text-primary">
@@ -156,7 +156,7 @@ const StaffPortalTabsOverview: React.FC<StaffPortalTabsOverviewProps> = ({
                     day: "numeric",
                   })}
                 </p>
-                <p className="mt-1 text-lg font-semibold">{item.client || "Guest"}</p>
+                <p className="mt-1 text-lg font-semibold">{item.client || ""}</p>
                 <p className="text-sm text-muted-foreground">{item.service || "Service"}</p>
                 <p className="mt-2 text-sm font-semibold text-primary">
                   {formatTime(item.time)}

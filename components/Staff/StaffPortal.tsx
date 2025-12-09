@@ -34,6 +34,7 @@ interface StaffProfile {
   salonName: string;
   salonSlug?: string;
   salonId?: number;
+  staffId?: number;
   email?: string;
   phone?: string;
   shiftWindow: string;
@@ -46,11 +47,11 @@ const StaffPortal = () => {
 
   const [activeTab, setActiveTab] = useState<TabKey>("overview");
   const [staffProfile, setStaffProfile] = useState<StaffProfile>({
-    fullName: "Guest Stylist",
-    role: "Color Specialist",
-    salonName: "StyGo Salon",
-    shiftWindow: "9:00 AM – 5:00 PM",
-    focus: "Attach a treatment to 3 color guests",
+    fullName: "",
+    role: "",
+    salonName: "",
+    shiftWindow: "",
+    focus: "",
   });
 
   const [appointments, setAppointments] = useState<StaffPortalAppointment[]>([]);
@@ -79,11 +80,11 @@ const StaffPortal = () => {
 
     return {
       id: appt.appointment_id,
-      client: appt.customer_name || "Guest",
-      service: appt.services || "Service",
+      client: appt.customer_name || "",
+      service: appt.services || "",
       status,
       time: appt.scheduled_time,
-      duration: Number(appt.duration_minutes) || 30,
+      duration: Number(appt.duration_minutes) || 0,
       price: parseFloat(String(appt.price)) || 0,
       notes: appt.notes,
     };
@@ -93,12 +94,19 @@ const StaffPortal = () => {
   const mapCustomer = (
     customer: StaffPortalCustomerBackend
   ): StaffPortalCustomer => {
+    // Ensure last_visit is valid or use a fallback
+    let lastVisit = customer.last_visit;
+    if (!lastVisit || isNaN(new Date(lastVisit).getTime())) {
+      // If no valid last visit, use a date far in the past to indicate "never"
+      lastVisit = new Date(0).toISOString();
+    }
+    
     return {
       id: customer.user_id,
-      name: customer.full_name || "Guest",
-      favoriteService: customer.favorite_service || "No service",
+      name: customer.full_name || "",
+      favoriteService: customer.favorite_service || "",
       visits: Number(customer.total_visits) || 0,
-      lastVisit: customer.last_visit || new Date().toISOString(),
+      lastVisit,
       lifetimeValue: Number(customer.lifetime_value) || 0,
       phone: customer.phone,
       notes: customer.notes,
@@ -110,7 +118,7 @@ const StaffPortal = () => {
     return {
       id: product.product_id,
       name: product.name,
-      brand: product.brand || "StyGo",
+      brand: product.brand || "",
       retailPrice: parseFloat(String(product.price)) || 0,
       stock: product.stock || 0,
       attachRate: product.attach_rate || 0,
@@ -193,15 +201,16 @@ const StaffPortal = () => {
         // Fetch profile
         const profile = await getStaffProfile();
         setStaffProfile({
-          fullName: profile.full_name || "Guest Stylist",
-          role: profile.staff_role || "Stylist",
-          salonName: profile.salon_name || "StyGo Salon",
+          fullName: profile.full_name || "",
+          role: profile.staff_role || "",
+          salonName: profile.salon_name || "",
           salonSlug: ownerSalonSlug || undefined,
           salonId: profile.salon_id,
+          staffId: profile.staff_id,
           email: profile.email,
           phone: profile.phone,
-          shiftWindow: "9:00 AM – 5:00 PM", // Will be updated from dashboard
-          focus: "Check your appointments",
+          shiftWindow: "",
+          focus: "",
         });
 
         // Fetch dashboard
@@ -215,17 +224,17 @@ const StaffPortal = () => {
                 hour: "numeric",
                 minute: "2-digit",
               })
-            : "9:00 AM";
+            : "";
           const end = dashboardData.shift.end
             ? new Date(dashboardData.shift.end).toLocaleTimeString("en-US", {
                 hour: "numeric",
                 minute: "2-digit",
               })
-            : "5:00 PM";
+            : "";
           setStaffProfile((prev) => ({
             ...prev,
-            shiftWindow: `${start} – ${end}`,
-            focus: dashboardData.shift.focus || prev.focus,
+            shiftWindow: start && end ? `${start} – ${end}` : "",
+            focus: dashboardData.shift.focus || "",
           }));
         }
 
@@ -259,7 +268,7 @@ const StaffPortal = () => {
   }, [ownerSalonSlug]);
 
   const derivedSalonName =
-    staffProfile.salonName || ownerSalonName || "Your Salon";
+    staffProfile.salonName || ownerSalonName || "";
 
   // Removed unused derivedSalonSlug - keeping for potential future use
   // const _derivedSalonSlug = useMemo(() => {
@@ -291,8 +300,8 @@ const StaffPortal = () => {
   const completedAppointments = appointments.filter(
     (appt) => appt.status === "completed"
   ).length;
-  const checkedInAppointments = appointments.filter(
-    (appt) => appt.status === "checked-in"
+  const confirmedAppointments = appointments.filter(
+    (appt) => appt.status === "confirmed" || appt.status === "checked-in"
   ).length;
 
   const nextAppointment = useMemo(() => {
@@ -302,15 +311,15 @@ const StaffPortal = () => {
         scheduled_time: dashboard.upcoming.scheduled_time,
         status: dashboard.upcoming.status || "confirmed",
         price: dashboard.upcoming.price || 0,
-        customer_name: dashboard.upcoming.customer_name || "Guest",
+        customer_name: dashboard.upcoming.customer_name || "",
         customer_phone: dashboard.upcoming.customer_phone,
         customer_email: dashboard.upcoming.customer_email,
-        services: dashboard.upcoming.services || "Service",
-        duration_minutes: dashboard.upcoming.duration_minutes || 30,
+        services: dashboard.upcoming.services || "",
+        duration_minutes: dashboard.upcoming.duration_minutes || 0,
         notes: dashboard.upcoming.notes,
       });
-      // Only return if it's a valid appointment (not "Guest" and in the future)
-      if (mapped.client && mapped.client !== "Guest" && new Date(mapped.time) >= new Date()) {
+      // Only return if it's a valid appointment (has a client name and in the future)
+      if (mapped.client && new Date(mapped.time) >= new Date()) {
         return mapped;
       }
     }
@@ -320,8 +329,7 @@ const StaffPortal = () => {
         return apptDate >= new Date() && 
                appt.status !== "cancelled" && 
                appt.status !== "completed" &&
-               appt.client &&
-               appt.client !== "Guest";
+               appt.client;
       }
     );
     return upcoming.sort(
@@ -336,12 +344,12 @@ const StaffPortal = () => {
       {
         label: "Guests today",
         value: dashboard?.totals?.total?.toString() || todaysAppointments.length.toString(),
-        change: dashboard?.shift?.focus || "+2 vs last Thursday",
+        change: dashboard?.shift?.focus || "",
         positive: true,
       },
       {
         label: "Confirmed",
-        value: dashboard?.totals?.confirmed?.toString() || checkedInAppointments.toString(),
+        value: dashboard?.totals?.confirmed?.toString() || confirmedAppointments.toString(),
         change: "Keep under 10 min wait",
         positive: true,
       },
@@ -353,13 +361,13 @@ const StaffPortal = () => {
       },
       {
         label: "Revenue today",
-        value: `$${dashboard?.totals?.revenue_today?.toFixed(0) || "0"}`,
-        change: `$${dashboard?.recent_performance?.revenue?.toFixed(0) || "0"} this week`,
+        value: `$${dashboard?.totals?.revenue_today ? Number(dashboard.totals.revenue_today).toFixed(0) : "0"}`,
+        change: `$${dashboard?.recent_performance?.revenue ? Number(dashboard.recent_performance.revenue).toFixed(0) : "0"} this week`,
         positive: true,
       },
     ],
     [
-      checkedInAppointments,
+      confirmedAppointments,
       completedAppointments,
       todaysAppointments.length,
       dashboard,
@@ -476,6 +484,8 @@ const StaffPortal = () => {
             onAddStaff={() => {}}
             onEditStaff={() => {}}
             nextAppointment={nextAppointment}
+            staffId={staffProfile.staffId}
+            salonId={staffProfile.salonId}
             onUpdateAppointmentStatus={async (id, status) => {
               try {
                 await updateAppointmentStatus(id, status);

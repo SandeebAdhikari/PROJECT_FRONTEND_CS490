@@ -9,6 +9,7 @@ import {
   appointmentStatusOptions,
   normalizeAppointmentStatus,
 } from "@/libs/constants/appointments";
+import AppointmentPhotoUpload from "./AppointmentPhotoUpload";
 import "react-datepicker/dist/react-datepicker.css";
 
 interface AppointmentEditModalProps {
@@ -199,7 +200,7 @@ const AppointmentEditModal = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm font-inter ">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto  scrollbar-hide p-6 relative">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto  scrollbar-hide p-6 relative">
         <button
           type="button"
           onClick={onClose}
@@ -213,6 +214,17 @@ const AppointmentEditModal = ({
         <h2 className="text-xl font-semibold text-center mb-6 text-foreground">
           Edit Appointment
         </h2>
+
+        {/* Before & After Photos Section - Moved to top for visibility */}
+        {form && (
+          <div className="mb-6 pb-6 border-b border-border">
+            <AppointmentPhotoUpload
+              appointmentId={form.appointment_id}
+              staffId={form.staff_id || undefined}
+              serviceId={form.service_ids?.[0]}
+            />
+          </div>
+        )}
 
         <form onSubmit={handleSave} className="space-y-5">
           <div>

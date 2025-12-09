@@ -2,10 +2,18 @@
 
 import React, { useState, useEffect } from "react";
 import { Calendar, Clock, User, Scissors, RefreshCw } from "lucide-react";
-import { getBarberSchedule, BarberSchedule } from "@/libs/api/bookings";
+import { listStaffAppointments, StaffPortalAppointmentBackend } from "@/libs/api/staffPortal";
+
+interface ScheduleAppointment {
+  appointment_id: number;
+  status: string;
+  scheduled_time: string;
+  service_name: string | null;
+  customer_name: string | null;
+}
 
 const StaffPortalTabsSchedule: React.FC = () => {
-  const [schedule, setSchedule] = useState<BarberSchedule[]>([]);
+  const [schedule, setSchedule] = useState<ScheduleAppointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -13,12 +21,31 @@ const StaffPortalTabsSchedule: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const result = await getBarberSchedule();
-      if (result.error) {
-        setError(result.error);
-        setSchedule([]);
+      // Get today's date in YYYY-MM-DD format (local timezone)
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      const dateStr = `${year}-${month}-${day}`;
+      
+      console.log("[Schedule] Fetching appointments for date:", dateStr);
+      const result = await listStaffAppointments({ date: dateStr });
+      console.log("[Schedule] Received result:", result);
+      
+      if (result.data && Array.isArray(result.data)) {
+        // Map staff portal appointments to schedule format
+        const mappedSchedule: ScheduleAppointment[] = result.data.map((appt: StaffPortalAppointmentBackend) => ({
+          appointment_id: appt.appointment_id,
+          status: appt.status,
+          scheduled_time: appt.scheduled_time,
+          service_name: appt.services || null,
+          customer_name: appt.customer_name || null,
+        }));
+        console.log("[Schedule] Mapped schedule:", mappedSchedule);
+        setSchedule(mappedSchedule);
       } else {
-        setSchedule(result.schedule || []);
+        console.log("[Schedule] No data in result, setting empty schedule");
+        setSchedule([]);
       }
     } catch (err) {
       console.error("Error loading schedule:", err);

@@ -166,7 +166,8 @@ const PaymentSuccessPageContent = () => {
       setError("No payment session found");
       setLoading(false);
     }
-  }, [sessionId, cart, fetchPaymentDetails]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionId]);
 
   const handleDownloadReceipt = () => {
     // In production, this would generate a PDF receipt

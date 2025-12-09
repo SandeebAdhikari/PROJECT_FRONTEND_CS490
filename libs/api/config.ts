@@ -181,6 +181,8 @@ export const API_ENDPOINTS = {
       `${API_BASE_URL}/api/users/salon-customers/stats?salon_id=${salonId}`,
     SALON_CUSTOMERS_DIRECTORY: (salonId: number | string) =>
       `${API_BASE_URL}/api/users/salon-customers/directory?salon_id=${salonId}`,
+    UPDATE_SALON_CUSTOMER: (userId: number | string) =>
+      `${API_BASE_URL}/api/users/salon-customers/${userId}`,
   },
   ANALYTICS: {
     OVERVIEW: (salonId: number | string, params?: string) =>

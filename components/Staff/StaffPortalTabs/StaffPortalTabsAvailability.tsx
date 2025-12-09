@@ -117,12 +117,30 @@ const StaffPortalTabsAvailability: React.FC = () => {
     setSuccess(false);
 
     try {
-      await updateStaffAvailability(availability);
+      const result = await updateStaffAvailability(availability);
+      // Update local state with the response from server to ensure consistency
+      if (result.availability) {
+        // Fill in missing days
+        const existingDays = new Set(result.availability.map(a => a.day_of_week));
+        const missingDays = daysOfWeek.filter(day => !existingDays.has(day));
+        const completeAvailability = [
+          ...result.availability,
+          ...missingDays.map(day => ({
+            day_of_week: day,
+            start_time: "09:00",
+            end_time: "17:00",
+            is_available: false,
+          })),
+        ].sort((a, b) => daysOfWeek.indexOf(a.day_of_week) - daysOfWeek.indexOf(b.day_of_week));
+        setAvailability(completeAvailability);
+      }
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
       console.error("Error saving availability:", err);
       setError(err instanceof Error ? err.message : "Failed to save availability");
+      // Reload from server on error to get current state
+      loadAvailability();
     } finally {
       setSaving(false);
     }

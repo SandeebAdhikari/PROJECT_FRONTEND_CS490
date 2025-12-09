@@ -16,6 +16,7 @@ import {
   AppointmentStatus,
   normalizeAppointmentStatus,
 } from "@/libs/constants/appointments";
+import AppointmentPhotoUpload from "./AppointmentPhotoUpload";
 
 interface AppointmentDetailsModalProps {
   isOpen: boolean;
@@ -37,7 +38,9 @@ interface AppointmentDetails {
   price: number;
   notes: string;
   customer_name: string;
+  customer_id?: number;
   staff_name: string | null;
+  staff_id?: number;
   salon_name: string;
   services?: ServiceItem[];
 }
@@ -101,12 +104,12 @@ const AppointmentDetailsModal = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm font-inter">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto p-6 relative">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 relative">
         <button
           type="button"
           onClick={onClose}
           aria-label="Close modal"
-          className="absolute top-3 right-3 p-2 rounded-full hover:bg-primary-foreground transition-smooth"
+          className="absolute top-3 right-3 p-2 rounded-full hover:bg-primary-foreground transition-smooth z-10"
         >
           <X className="w-5 h-5 text-gray-600" />
         </button>
@@ -212,6 +215,15 @@ const AppointmentDetailsModal = ({
                   <p className="text-sm text-gray-700">{details.notes}</p>
                 </div>
               )}
+
+              {/* Before & After Photos Section */}
+              <div className="border-t pt-4 mt-4">
+                <AppointmentPhotoUpload
+                  appointmentId={details.appointment_id}
+                  staffId={details.staff_id}
+                  serviceId={details.services?.[0]?.service_id}
+                />
+              </div>
             </div>
           </>
         ) : (

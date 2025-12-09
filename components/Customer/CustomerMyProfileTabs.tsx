@@ -15,8 +15,9 @@ import { useFavorites } from "@/hooks/useFavorites";
 import SalonCard from "@/components/Salon/SalonCard";
 import { API_ENDPOINTS, fetchConfig } from "@/libs/api/config";
 import LoyaltyPointsSummary from "@/components/Loyalty/LoyaltyPointsSummary";
+import CustomerPhotoGallery from "@/components/Customer/CustomerPhotoGallery";
 
-type TabType = "upcoming" | "past" | "favorites" | "loyalty" | "settings";
+type TabType = "upcoming" | "past" | "photos" | "favorites" | "loyalty" | "settings";
 
 const ProfileTabs = () => {
   const searchParams = useSearchParams();
@@ -25,7 +26,7 @@ const ProfileTabs = () => {
   const { toggleFavorite, isFavorite, favorites } = useFavorites();
 
   useEffect(() => {
-    if (tabFromUrl && ["upcoming", "past", "favorites", "loyalty", "settings"].includes(tabFromUrl)) {
+    if (tabFromUrl && ["upcoming", "past", "photos", "favorites", "loyalty", "settings"].includes(tabFromUrl)) {
       setActiveTab(tabFromUrl);
     }
   }, [tabFromUrl]);
@@ -33,6 +34,7 @@ const ProfileTabs = () => {
   const tabs = [
     { id: "upcoming", label: "Upcoming" },
     { id: "past", label: "Past Bookings" },
+    { id: "photos", label: "My Photos" },
     { id: "favorites", label: "Favorites" },
     { id: "loyalty", label: "Loyalty Points" },
     { id: "settings", label: "Settings" },
@@ -59,6 +61,7 @@ const ProfileTabs = () => {
       <div className="bg-card rounded-lg shadow border border-border p-8 sm:p-12">
         {activeTab === "upcoming" && <UpcomingContent />}
         {activeTab === "past" && <PastBookingsContent />}
+        {activeTab === "photos" && <CustomerPhotoGallery />}
         {activeTab === "favorites" && (
           <FavoritesContent
             favorites={favorites}
