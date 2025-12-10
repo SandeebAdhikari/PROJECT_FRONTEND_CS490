@@ -1,94 +1,140 @@
-import { test, expect } from '@playwright/test';
+import { describe, test, expect } from 'vitest';
+import { getDriver } from '../e2e-setup';
+import {
+  goto,
+  waitForLoadState,
+  getCurrentUrl,
+  findElement,
+  findElements,
+  click,
+  fill,
+  sleep,
+  countElements,
+} from '../helpers/test-utils';
 
-test.describe('Feature 6: Customer Management', () => {
-  test.beforeEach(async ({ page }) => {
-    // Navigate to customers page as salon owner
-    await page.goto('/admin/salon-dashboard/customers');
-    await page.waitForLoadState('networkidle');
-  });
+describe('Feature 6: Customer Management', () => {
+  describe('View Customers', () => {
+    test('Test 54: Should display customer list', async () => {
+      const driver = getDriver();
 
-  test.describe('View Customers', () => {
-    test('Test 54: Should display customer list', async ({ page }) => {
+      await goto(driver, '/admin/salon-dashboard/customers');
+      await waitForLoadState(driver, 'networkidle');
+
       // Verify customers page loads
-      await expect(page).toHaveURL(/.*customers/);
+      const url = await getCurrentUrl(driver);
+      expect(url).toMatch(/.*customers/);
 
       // Look for customer list or table
-      const customerList = page.locator(
-        '[data-testid="customer-list"], ' +
-        'table, ' +
-        '.customer-list'
-      ).first();
-
-      await expect(customerList).toBeVisible({ timeout: 5000 });
+      const customerList = await findElement(
+        driver,
+        '[data-testid="customer-list"], table, .customer-list'
+      );
+      expect(await customerList.isDisplayed()).toBe(true);
     });
 
-    test('Test 55: Should display customer statistics', async ({ page }) => {
-      await page.waitForTimeout(1000);
+    test('Test 55: Should display customer statistics', async () => {
+      const driver = getDriver();
+
+      await goto(driver, '/admin/salon-dashboard/customers');
+      await waitForLoadState(driver, 'networkidle');
+      await sleep(driver, 1000);
 
       // Look for customer stats (total, new, loyal)
-      const statsSection = page.locator('text=/total.*customers|new.*customers|loyal/i');
+      const elements = await findElements(driver, '*');
+      let statsFound = false;
+      let numberFound = false;
 
-      if (await statsSection.count() > 0) {
-        expect(await statsSection.count()).toBeGreaterThan(0);
+      for (const element of elements) {
+        const text = await element.getText();
+        if (/total.*customers|new.*customers|loyal/i.test(text)) {
+          statsFound = true;
+        }
+        if (/[0-9]+/.test(text)) {
+          numberFound = true;
+        }
+      }
 
-        // Verify stats show numbers
-        const numberPattern = page.locator('text=/[0-9]+/');
-        expect(await numberPattern.count()).toBeGreaterThan(0);
+      if (statsFound) {
+        expect(statsFound).toBe(true);
+        expect(numberFound).toBe(true);
       }
     });
 
-    test('Test 56: Should display customer details', async ({ page }) => {
-      await page.waitForTimeout(1000);
+    test('Test 56: Should display customer details', async () => {
+      const driver = getDriver();
+
+      await goto(driver, '/admin/salon-dashboard/customers');
+      await waitForLoadState(driver, 'networkidle');
+      await sleep(driver, 1000);
 
       // Look for customer entries
-      const customers = page.locator(
-        '[data-testid="customer-row"], ' +
-        'tr[data-testid*="customer"]'
+      const customerCount = await countElements(
+        driver,
+        '[data-testid="customer-row"], tr[data-testid*="customer"]'
       );
-
-      const customerCount = await customers.count();
 
       if (customerCount > 0) {
         // Verify customer information is shown
-        const customerInfo = page.locator('text=/name|email|phone|visits|spent/i');
-        expect(await customerInfo.count()).toBeGreaterThan(0);
+        const elements = await findElements(driver, '*');
+        let infoFound = false;
+        for (const element of elements) {
+          const text = await element.getText();
+          if (/name|email|phone|visits|spent/i.test(text)) {
+            infoFound = true;
+            break;
+          }
+        }
+        expect(infoFound).toBe(true);
       }
     });
   });
 
-  test.describe('Customer Search', () => {
-    test('Test 57: Should search for customers by name', async ({ page }) => {
-      await page.waitForTimeout(1000);
+  describe('Customer Search', () => {
+    test('Test 57: Should search for customers by name', async () => {
+      const driver = getDriver();
+
+      await goto(driver, '/admin/salon-dashboard/customers');
+      await waitForLoadState(driver, 'networkidle');
+      await sleep(driver, 1000);
 
       // Look for search input
-      const searchInput = page.locator(
-        'input[type="search"], ' +
-        'input[placeholder*="Search"], ' +
-        '[data-testid="customer-search"]'
-      ).first();
+      const searchInputCount = await countElements(
+        driver,
+        'input[type="search"], input[placeholder*="Search"], [data-testid="customer-search"]'
+      );
 
-      if (await searchInput.count() > 0) {
-        await searchInput.fill('test');
-        await page.waitForTimeout(1000);
+      if (searchInputCount > 0) {
+        await fill(
+          driver,
+          'input[type="search"], input[placeholder*="Search"], [data-testid="customer-search"]',
+          'test'
+        );
+        await sleep(driver, 1000);
 
         // Results should update or show filtered list
         expect(true).toBeTruthy(); // Placeholder
       }
     });
 
-    test('Test 58: Should filter customers by criteria', async ({ page }) => {
-      await page.waitForTimeout(1000);
+    test('Test 58: Should filter customers by criteria', async () => {
+      const driver = getDriver();
+
+      await goto(driver, '/admin/salon-dashboard/customers');
+      await waitForLoadState(driver, 'networkidle');
+      await sleep(driver, 1000);
 
       // Look for filter options
-      const filterDropdown = page.locator(
-        'select[name*="filter"], ' +
-        'button:has-text("Filter"), ' +
-        '[data-testid="customer-filter"]'
-      ).first();
+      const filterDropdownCount = await countElements(
+        driver,
+        'select[name*="filter"], button:has-text("Filter"), [data-testid="customer-filter"]'
+      );
 
-      if (await filterDropdown.count() > 0) {
-        await filterDropdown.click();
-        await page.waitForTimeout(1000);
+      if (filterDropdownCount > 0) {
+        await click(
+          driver,
+          'select[name*="filter"], button:has-text("Filter"), [data-testid="customer-filter"]'
+        );
+        await sleep(driver, 1000);
 
         // Verify filter options are available
         expect(true).toBeTruthy(); // Placeholder
@@ -96,42 +142,69 @@ test.describe('Feature 6: Customer Management', () => {
     });
   });
 
-  test.describe('Customer Details', () => {
-    test('Test 59: Should view customer appointment history', async ({ page }) => {
-      await page.waitForTimeout(1000);
+  describe('Customer Details', () => {
+    test('Test 59: Should view customer appointment history', async () => {
+      const driver = getDriver();
+
+      await goto(driver, '/admin/salon-dashboard/customers');
+      await waitForLoadState(driver, 'networkidle');
+      await sleep(driver, 1000);
 
       // Click on a customer to view details
-      const customerRow = page.locator(
-        '[data-testid="customer-row"], ' +
-        'button:has-text("View"), ' +
-        'tr[data-testid*="customer"]'
-      ).first();
+      const customerRowCount = await countElements(
+        driver,
+        '[data-testid="customer-row"], button:has-text("View"), tr[data-testid*="customer"]'
+      );
 
-      if (await customerRow.count() > 0) {
-        await customerRow.click();
-        await page.waitForTimeout(1000);
+      if (customerRowCount > 0) {
+        await click(
+          driver,
+          '[data-testid="customer-row"], button:has-text("View"), tr[data-testid*="customer"]'
+        );
+        await sleep(driver, 1000);
 
         // Look for appointment history
-        const appointmentHistory = page.locator('text=/appointment.*history|past.*appointments|bookings/i');
+        const elements = await findElements(driver, '*');
+        let historyFound = false;
+        for (const element of elements) {
+          const text = await element.getText();
+          if (/appointment.*history|past.*appointments|bookings/i.test(text)) {
+            historyFound = true;
+            break;
+          }
+        }
 
-        if (await appointmentHistory.count() > 0) {
-          expect(await appointmentHistory.count()).toBeGreaterThan(0);
+        if (historyFound) {
+          expect(historyFound).toBe(true);
         }
       }
     });
 
-    test('Test 60: Should display customer loyalty points', async ({ page }) => {
-      await page.waitForTimeout(1000);
+    test('Test 60: Should display customer loyalty points', async () => {
+      const driver = getDriver();
+
+      await goto(driver, '/admin/salon-dashboard/customers');
+      await waitForLoadState(driver, 'networkidle');
+      await sleep(driver, 1000);
 
       // Look for loyalty points display
-      const loyaltyPoints = page.locator('text=/loyalty.*points|points|rewards/i');
+      const elements = await findElements(driver, '*');
+      let loyaltyFound = false;
+      let pointsValueFound = false;
 
-      if (await loyaltyPoints.count() > 0) {
-        expect(await loyaltyPoints.count()).toBeGreaterThan(0);
+      for (const element of elements) {
+        const text = await element.getText();
+        if (/loyalty.*points|points|rewards/i.test(text)) {
+          loyaltyFound = true;
+        }
+        if (/[0-9]+.*points/i.test(text)) {
+          pointsValueFound = true;
+        }
+      }
 
-        // Verify points show a number
-        const pointsValue = page.locator('text=/[0-9]+.*points/i');
-        expect(await pointsValue.count()).toBeGreaterThan(0);
+      if (loyaltyFound) {
+        expect(loyaltyFound).toBe(true);
+        expect(pointsValueFound).toBe(true);
       }
     });
   });

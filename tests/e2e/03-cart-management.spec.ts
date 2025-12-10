@@ -1,125 +1,204 @@
-import { test, expect } from '@playwright/test';
+import { describe, test, expect } from 'vitest';
+import { getDriver } from '../e2e-setup';
+import {
+  goto,
+  waitForLoadState,
+  getCurrentUrl,
+  findElement,
+  findElements,
+  click,
+  fill,
+  sleep,
+  countElements,
+  getInputValue,
+  reload,
+  isEnabled,
+} from '../helpers/test-utils';
 
-test.describe('Feature 3: Shopping Cart Management', () => {
-  test.beforeEach(async ({ page }) => {
-    // Navigate to cart page
-    await page.goto('/customer/cart');
-    await page.waitForLoadState('networkidle');
-  });
+describe('Feature 3: Shopping Cart Management', () => {
+  describe('Cart Operations', () => {
+    test('Test 22: Should display cart items correctly', async () => {
+      const driver = getDriver();
 
-  test.describe('Cart Operations', () => {
-    test('Test 22: Should display cart items correctly', async ({ page }) => {
+      await goto(driver, '/customer/cart');
+      await waitForLoadState(driver, 'networkidle');
+
       // Check if cart page loads
-      await expect(page).toHaveURL(/.*cart/);
+      const url = await getCurrentUrl(driver);
+      expect(url).toMatch(/.*cart/);
 
       // Verify cart structure exists
-      const cartContainer = page.locator('[data-testid="cart"], .cart, main').first();
-      await expect(cartContainer).toBeVisible();
+      const cartContainer = await findElement(driver, '[data-testid="cart"], .cart, main');
+      expect(await cartContainer.isDisplayed()).toBe(true);
 
       // Cart should show either items or empty state
-      const emptyState = page.locator('text=/empty.*cart|no.*items|cart.*empty/i');
-      const cartItems = page.locator('[data-testid="cart-item"], .cart-item, [class*="cart-item"]');
+      const emptyStateCount = await countElements(driver, '*');
+      let isEmpty = false;
+      if (emptyStateCount > 0) {
+        const elements = await findElements(driver, '*');
+        for (const element of elements) {
+          const text = await element.getText();
+          if (/empty.*cart|no.*items|cart.*empty/i.test(text)) {
+            isEmpty = true;
+            break;
+          }
+        }
+      }
 
-      const isEmpty = await emptyState.count() > 0;
-      const hasItems = await cartItems.count() > 0;
-
+      const hasItems = await countElements(driver, '[data-testid="cart-item"], .cart-item, [class*="cart-item"]') > 0;
       expect(isEmpty || hasItems).toBeTruthy();
     });
 
-    test('Test 23: Should remove item from cart', async ({ page }) => {
-      // Wait for cart to load
-      await page.waitForTimeout(1000);
+    test('Test 23: Should remove item from cart', async () => {
+      const driver = getDriver();
 
-      const cartItems = page.locator('[data-testid="cart-item"], .cart-item');
-      const initialCount = await cartItems.count();
+      await goto(driver, '/customer/cart');
+      await waitForLoadState(driver, 'networkidle');
+      await sleep(driver, 1000);
+
+      const initialCount = await countElements(driver, '[data-testid="cart-item"], .cart-item');
 
       if (initialCount > 0) {
         // Find and click remove button
-        const removeButton = page.locator('button:has-text("Remove"), button:has-text("Delete"), [data-testid="remove-item"]').first();
+        const removeButtonCount = await countElements(
+          driver,
+          'button:has-text("Remove"), button:has-text("Delete"), [data-testid="remove-item"]'
+        );
 
-        if (await removeButton.count() > 0) {
+        if (removeButtonCount > 0) {
+          const removeButton = await findElement(
+            driver,
+            'button:has-text("Remove"), button:has-text("Delete"), [data-testid="remove-item"]'
+          );
           await removeButton.click();
-          await page.waitForTimeout(1000);
+          await sleep(driver, 1000);
 
           // Verify item count decreased
-          const newCount = await cartItems.count();
+          const newCount = await countElements(driver, '[data-testid="cart-item"], .cart-item');
           expect(newCount).toBeLessThan(initialCount);
         }
       }
     });
 
-    test('Test 24: Should update product quantity in cart', async ({ page }) => {
-      await page.waitForTimeout(1000);
+    test('Test 24: Should update product quantity in cart', async () => {
+      const driver = getDriver();
+
+      await goto(driver, '/customer/cart');
+      await waitForLoadState(driver, 'networkidle');
+      await sleep(driver, 1000);
 
       // Look for quantity controls
-      const quantityInput = page.locator('input[type="number"], [data-testid="quantity"]').first();
+      const quantityInputCount = await countElements(driver, 'input[type="number"], [data-testid="quantity"]');
 
-      if (await quantityInput.count() > 0) {
-        const currentQty = await quantityInput.inputValue();
+      if (quantityInputCount > 0) {
+        const quantityInput = await findElement(driver, 'input[type="number"], [data-testid="quantity"]');
+        const currentQty = await getInputValue(driver, 'input[type="number"], [data-testid="quantity"]');
         const newQty = parseInt(currentQty || '1') + 1;
 
-        await quantityInput.fill(newQty.toString());
-        await page.waitForTimeout(1000);
+        await fill(driver, 'input[type="number"], [data-testid="quantity"]', newQty.toString());
+        await sleep(driver, 1000);
 
         // Verify quantity updated
-        const updatedQty = await quantityInput.inputValue();
+        const updatedQty = await getInputValue(driver, 'input[type="number"], [data-testid="quantity"]');
         expect(parseInt(updatedQty)).toBe(newQty);
       }
     });
 
-    test('Test 25: Should display correct cart total', async ({ page }) => {
-      await page.waitForTimeout(1000);
+    test('Test 25: Should display correct cart total', async () => {
+      const driver = getDriver();
+
+      await goto(driver, '/customer/cart');
+      await waitForLoadState(driver, 'networkidle');
+      await sleep(driver, 1000);
 
       // Look for total price display
-      const totalElement = page.locator('text=/total|subtotal/i, [data-testid="cart-total"]');
+      const totalElementCount = await countElements(driver, '*');
 
-      if (await totalElement.count() > 0) {
-        const totalText = await totalElement.first().textContent();
+      if (totalElementCount > 0) {
+        const elements = await findElements(driver, '*');
+        let totalText = '';
+        for (const element of elements) {
+          const text = await element.getText();
+          if (/total|subtotal/i.test(text)) {
+            totalText = text;
+            break;
+          }
+        }
 
-        // Verify total contains a price (dollar sign or number)
-        expect(totalText).toMatch(/\$|[0-9]+/);
+        if (totalText) {
+          // Verify total contains a price (dollar sign or number)
+          expect(totalText).toMatch(/\$|[0-9]+/);
+        }
       }
     });
 
-    test('Test 26: Should persist cart items across page refreshes', async ({ page }) => {
-      await page.waitForTimeout(1000);
+    test('Test 26: Should persist cart items across page refreshes', async () => {
+      const driver = getDriver();
 
-      const cartItems = page.locator('[data-testid="cart-item"], .cart-item');
-      const itemCount = await cartItems.count();
+      await goto(driver, '/customer/cart');
+      await waitForLoadState(driver, 'networkidle');
+      await sleep(driver, 1000);
+
+      const itemCount = await countElements(driver, '[data-testid="cart-item"], .cart-item');
 
       if (itemCount > 0) {
         // Reload the page
-        await page.reload();
-        await page.waitForLoadState('networkidle');
+        await reload(driver);
+        await waitForLoadState(driver, 'networkidle');
 
         // Verify cart items are still there
-        const newItemCount = await cartItems.count();
+        const newItemCount = await countElements(driver, '[data-testid="cart-item"], .cart-item');
         expect(newItemCount).toBe(itemCount);
       }
     });
   });
 
-  test.describe('Cart with Services and Products', () => {
-    test('Test 27: Should handle mixed cart (services + products)', async ({ page }) => {
-      await page.waitForTimeout(1000);
+  describe('Cart with Services and Products', () => {
+    test('Test 27: Should handle mixed cart (services + products)', async () => {
+      const driver = getDriver();
+
+      await goto(driver, '/customer/cart');
+      await waitForLoadState(driver, 'networkidle');
+      await sleep(driver, 1000);
 
       // Check if cart can contain both services and products
-      const serviceItems = page.locator('[data-testid="service-item"], text=/haircut|service|appointment/i');
-      const productItems = page.locator('[data-testid="product-item"], text=/product|shampoo|item/i');
+      const elements = await findElements(driver, '*');
+      let hasServices = false;
+      let hasProducts = false;
 
-      const hasServices = await serviceItems.count() > 0;
-      const hasProducts = await productItems.count() > 0;
+      for (const element of elements) {
+        const text = await element.getText();
+        if (/haircut|service|appointment/i.test(text)) {
+          hasServices = true;
+        }
+        if (/product|shampoo|item/i.test(text)) {
+          hasProducts = true;
+        }
+      }
 
       // Cart should be able to display either or both types
       expect(hasServices || hasProducts || true).toBeTruthy();
     });
 
-    test('Test 28: Should remove past appointments from cart', async ({ page }) => {
-      await page.waitForTimeout(1000);
+    test('Test 28: Should remove past appointments from cart', async () => {
+      const driver = getDriver();
+
+      await goto(driver, '/customer/cart');
+      await waitForLoadState(driver, 'networkidle');
+      await sleep(driver, 1000);
 
       // This test verifies that appointments with past dates are automatically removed
       // Look for any error messages or cleanup notifications
-      const pastAppointmentWarning = page.locator('text=/past.*appointment|removed.*past|expired/i');
+      const elements = await findElements(driver, '*');
+      let hasPastWarning = false;
+
+      for (const element of elements) {
+        const text = await element.getText();
+        if (/past.*appointment|removed.*past|expired/i.test(text)) {
+          hasPastWarning = true;
+          break;
+        }
+      }
 
       // If there are past appointments, they should be removed
       // This is more of a validation test
@@ -127,49 +206,75 @@ test.describe('Feature 3: Shopping Cart Management', () => {
     });
   });
 
-  test.describe('Cart Validation', () => {
-    test('Test 29: Should prevent proceeding to checkout with empty cart', async ({ page }) => {
-      await page.waitForTimeout(1000);
+  describe('Cart Validation', () => {
+    test('Test 29: Should prevent proceeding to checkout with empty cart', async () => {
+      const driver = getDriver();
 
-      const cartItems = page.locator('[data-testid="cart-item"], .cart-item');
-      const itemCount = await cartItems.count();
+      await goto(driver, '/customer/cart');
+      await waitForLoadState(driver, 'networkidle');
+      await sleep(driver, 1000);
+
+      const itemCount = await countElements(driver, '[data-testid="cart-item"], .cart-item');
 
       if (itemCount === 0) {
         // Try to find checkout button
-        const checkoutButton = page.locator('button:has-text("Checkout"), button:has-text("Proceed"), [data-testid="checkout-button"]');
+        const checkoutButtonCount = await countElements(
+          driver,
+          'button:has-text("Checkout"), button:has-text("Proceed"), [data-testid="checkout-button"]'
+        );
 
-        if (await checkoutButton.count() > 0) {
+        if (checkoutButtonCount > 0) {
           // Button should be disabled or clicking should show error
-          const isDisabled = await checkoutButton.first().isDisabled();
+          const isDisabled = !(await isEnabled(
+            driver,
+            'button:has-text("Checkout"), button:has-text("Proceed"), [data-testid="checkout-button"]'
+          ));
           expect(isDisabled).toBeTruthy();
         }
       }
     });
 
-    test('Test 30: Should clear entire cart successfully', async ({ page }) => {
-      await page.waitForTimeout(1000);
+    test('Test 30: Should clear entire cart successfully', async () => {
+      const driver = getDriver();
 
-      const cartItems = page.locator('[data-testid="cart-item"], .cart-item');
-      const initialCount = await cartItems.count();
+      await goto(driver, '/customer/cart');
+      await waitForLoadState(driver, 'networkidle');
+      await sleep(driver, 1000);
+
+      const initialCount = await countElements(driver, '[data-testid="cart-item"], .cart-item');
 
       if (initialCount > 0) {
         // Look for "Clear Cart" button
-        const clearButton = page.locator('button:has-text("Clear Cart"), button:has-text("Clear All"), [data-testid="clear-cart"]');
+        const clearButtonCount = await countElements(
+          driver,
+          'button:has-text("Clear Cart"), button:has-text("Clear All"), [data-testid="clear-cart"]'
+        );
 
-        if (await clearButton.count() > 0) {
-          await clearButton.click();
+        if (clearButtonCount > 0) {
+          await click(driver, 'button:has-text("Clear Cart"), button:has-text("Clear All"), [data-testid="clear-cart"]');
 
           // Confirm if there's a confirmation dialog
-          const confirmButton = page.locator('button:has-text("Confirm"), button:has-text("Yes"), button:has-text("OK")');
-          if (await confirmButton.count() > 0) {
-            await confirmButton.click();
+          const confirmButtonCount = await countElements(
+            driver,
+            'button:has-text("Confirm"), button:has-text("Yes"), button:has-text("OK")'
+          );
+          if (confirmButtonCount > 0) {
+            await click(driver, 'button:has-text("Confirm"), button:has-text("Yes"), button:has-text("OK")');
           }
 
-          await page.waitForTimeout(1000);
+          await sleep(driver, 1000);
 
           // Verify cart is empty
-          const emptyState = page.locator('text=/empty.*cart|no.*items/i');
-          expect(await emptyState.count()).toBeGreaterThan(0);
+          const elements = await findElements(driver, '*');
+          let hasEmptyState = false;
+          for (const element of elements) {
+            const text = await element.getText();
+            if (/empty.*cart|no.*items/i.test(text)) {
+              hasEmptyState = true;
+              break;
+            }
+          }
+          expect(hasEmptyState).toBeTruthy();
         }
       }
     });

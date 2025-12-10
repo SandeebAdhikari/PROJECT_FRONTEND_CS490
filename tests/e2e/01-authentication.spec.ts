@@ -1,193 +1,259 @@
-import { test, expect } from '@playwright/test';
-import { generateRandomEmail } from '../helpers/test-utils';
+import { describe, test, expect } from 'vitest';
+import { getDriver } from '../e2e-setup';
+import {
+  goto,
+  fill,
+  click,
+  waitForURL,
+  getCurrentUrl,
+  findByTextRegex,
+  getCookies,
+  sleep,
+  countElements,
+  setCheckbox,
+  generateRandomEmail,
+} from '../helpers/test-utils';
 
-test.describe('Feature 1: Authentication & Authorization', () => {
-  test.describe('User Sign-Up', () => {
-    test('Test 1: Should successfully register a new customer account', async ({ page }) => {
+describe('Feature 1: Authentication & Authorization', () => {
+  describe('User Sign-Up', () => {
+    test('Test 1: Should successfully register a new customer account', async () => {
+      const driver = getDriver();
       const testEmail = generateRandomEmail();
 
-      await page.goto('/sign-up');
+      await goto(driver, '/sign-up');
 
       // Verify we're on the sign-up page
-      await expect(page).toHaveURL(/.*sign-up/);
+      const url = await getCurrentUrl(driver);
+      expect(url).toMatch(/.*sign-up/);
 
       // Fill in the registration form
-      await page.fill('input[name="firstName"]', 'Test');
-      await page.fill('input[name="lastName"]', 'User');
-      await page.fill('input[name="email"]', testEmail);
-      await page.fill('input[name="phone"]', '+1234567890');
-      await page.fill('input[name="password"]', 'TestPassword123!');
+      await fill(driver, 'input[name="firstName"]', 'Test');
+      await fill(driver, 'input[name="lastName"]', 'User');
+      await fill(driver, 'input[name="email"]', testEmail);
+      await fill(driver, 'input[name="phone"]', '+1234567890');
+      await fill(driver, 'input[name="password"]', 'TestPassword123!');
 
       // Select customer role
-      await page.click('input[value="customer"]');
+      await click(driver, 'input[value="customer"]');
 
       // Submit the form
-      await page.click('button[type="submit"]');
+      await click(driver, 'button[type="submit"]');
 
       // Wait for successful registration (redirect or success message)
-      await page.waitForURL(/.*customer/, { timeout: 10000 });
+      await waitForURL(driver, /.*customer/, 10000);
 
       // Verify redirect to customer dashboard or home
-      expect(page.url()).toContain('customer');
+      const finalUrl = await getCurrentUrl(driver);
+      expect(finalUrl).toContain('customer');
     });
 
-    test('Test 2: Should prevent registration with invalid email format', async ({ page }) => {
-      await page.goto('/sign-up');
+    test('Test 2: Should prevent registration with invalid email format', async () => {
+      const driver = getDriver();
 
-      await page.fill('input[name="firstName"]', 'Test');
-      await page.fill('input[name="lastName"]', 'User');
-      await page.fill('input[name="email"]', 'invalid-email');
-      await page.fill('input[name="password"]', 'TestPassword123!');
+      await goto(driver, '/sign-up');
 
-      await page.click('button[type="submit"]');
+      await fill(driver, 'input[name="firstName"]', 'Test');
+      await fill(driver, 'input[name="lastName"]', 'User');
+      await fill(driver, 'input[name="email"]', 'invalid-email');
+      await fill(driver, 'input[name="password"]', 'TestPassword123!');
+
+      await click(driver, 'button[type="submit"]');
 
       // Should show validation error
-      const errorMessage = page.locator('text=/invalid.*email|email.*invalid/i');
-      await expect(errorMessage).toBeVisible({ timeout: 5000 });
+      const errorMessage = await findByTextRegex(driver, /invalid.*email|email.*invalid/i);
+      expect(await errorMessage.isDisplayed()).toBe(true);
     });
 
-    test('Test 3: Should prevent registration with weak password', async ({ page }) => {
-      await page.goto('/sign-up');
+    test('Test 3: Should prevent registration with weak password', async () => {
+      const driver = getDriver();
 
-      await page.fill('input[name="firstName"]', 'Test');
-      await page.fill('input[name="lastName"]', 'User');
-      await page.fill('input[name="email"]', generateRandomEmail());
-      await page.fill('input[name="password"]', '123'); // Weak password
+      await goto(driver, '/sign-up');
 
-      await page.click('button[type="submit"]');
+      await fill(driver, 'input[name="firstName"]', 'Test');
+      await fill(driver, 'input[name="lastName"]', 'User');
+      await fill(driver, 'input[name="email"]', generateRandomEmail());
+      await fill(driver, 'input[name="password"]', '123'); // Weak password
+
+      await click(driver, 'button[type="submit"]');
 
       // Should show password validation error
-      const errorMessage = page.locator('text=/password.*strong|weak.*password|password.*characters/i');
-      await expect(errorMessage).toBeVisible({ timeout: 5000 });
+      const errorMessage = await findByTextRegex(
+        driver,
+        /password.*strong|weak.*password|password.*characters/i
+      );
+      expect(await errorMessage.isDisplayed()).toBe(true);
     });
   });
 
-  test.describe('User Sign-In', () => {
-    test('Test 4: Should successfully sign in with valid credentials', async ({ page }) => {
-      await page.goto('/sign-in');
+  describe('User Sign-In', () => {
+    test('Test 4: Should successfully sign in with valid credentials', async () => {
+      const driver = getDriver();
+
+      await goto(driver, '/sign-in');
 
       // Verify we're on the sign-in page
-      await expect(page).toHaveURL(/.*sign-in/);
+      const url = await getCurrentUrl(driver);
+      expect(url).toMatch(/.*sign-in/);
 
       // Fill in login credentials (using test account)
-      await page.fill('input[name="email"]', 'test.customer@example.com');
-      await page.fill('input[name="password"]', 'TestPassword123!');
+      await fill(driver, 'input[name="email"]', 'test.customer@example.com');
+      await fill(driver, 'input[name="password"]', 'TestPassword123!');
 
       // Submit the form
-      await page.click('button[type="submit"]');
+      await click(driver, 'button[type="submit"]');
 
       // Wait for redirect after successful login
-      await page.waitForURL(/.*(?!sign-in)/, { timeout: 10000 });
+      await waitForURL(driver, /.*(?!sign-in)/, 10000);
 
       // Verify we're redirected away from sign-in page
-      expect(page.url()).not.toContain('sign-in');
+      const finalUrl = await getCurrentUrl(driver);
+      expect(finalUrl).not.toContain('sign-in');
     });
 
-    test('Test 5: Should show error with invalid credentials', async ({ page }) => {
-      await page.goto('/sign-in');
+    test('Test 5: Should show error with invalid credentials', async () => {
+      const driver = getDriver();
 
-      await page.fill('input[name="email"]', 'wrong@example.com');
-      await page.fill('input[name="password"]', 'WrongPassword123!');
+      await goto(driver, '/sign-in');
 
-      await page.click('button[type="submit"]');
+      await fill(driver, 'input[name="email"]', 'wrong@example.com');
+      await fill(driver, 'input[name="password"]', 'WrongPassword123!');
+
+      await click(driver, 'button[type="submit"]');
 
       // Should show error message
-      const errorMessage = page.locator('text=/invalid.*credentials|wrong.*password|login.*failed/i');
-      await expect(errorMessage).toBeVisible({ timeout: 5000 });
+      const errorMessage = await findByTextRegex(
+        driver,
+        /invalid.*credentials|wrong.*password|login.*failed/i
+      );
+      expect(await errorMessage.isDisplayed()).toBe(true);
     });
 
-    test('Test 6: Should maintain session with "Keep me signed in"', async ({ page }) => {
-      await page.goto('/sign-in');
+    test('Test 6: Should maintain session with "Keep me signed in"', async () => {
+      const driver = getDriver();
 
-      await page.fill('input[name="email"]', 'test.customer@example.com');
-      await page.fill('input[name="password"]', 'TestPassword123!');
+      await goto(driver, '/sign-in');
+
+      await fill(driver, 'input[name="email"]', 'test.customer@example.com');
+      await fill(driver, 'input[name="password"]', 'TestPassword123!');
 
       // Check "Keep me signed in"
-      const keepSignedInCheckbox = page.locator('input[type="checkbox"]').first();
-      await keepSignedInCheckbox.check();
+      await setCheckbox(driver, 'input[type="checkbox"]', true);
 
-      await page.click('button[type="submit"]');
+      await click(driver, 'button[type="submit"]');
 
       // Wait for successful login
-      await page.waitForURL(/.*(?!sign-in)/, { timeout: 10000 });
+      await waitForURL(driver, /.*(?!sign-in)/, 10000);
 
       // Verify session cookie is set
-      const cookies = await page.context().cookies();
-      const sessionCookie = cookies.find(c => c.name.includes('session') || c.name.includes('token'));
+      const cookies = await getCookies(driver);
+      const sessionCookie = cookies.find(
+        (c) => c.name.includes('session') || c.name.includes('token')
+      );
       expect(sessionCookie).toBeDefined();
     });
   });
 
-  test.describe('Password Reset', () => {
-    test('Test 7: Should send password reset email for valid account', async ({ page }) => {
-      await page.goto('/forgot-password');
+  describe('Password Reset', () => {
+    test('Test 7: Should send password reset email for valid account', async () => {
+      const driver = getDriver();
 
-      await page.fill('input[name="email"]', 'test.customer@example.com');
+      await goto(driver, '/forgot-password');
 
-      await page.click('button[type="submit"]');
+      await fill(driver, 'input[name="email"]', 'test.customer@example.com');
+
+      await click(driver, 'button[type="submit"]');
 
       // Should show success message
-      const successMessage = page.locator('text=/reset.*sent|check.*email|email.*sent/i');
-      await expect(successMessage).toBeVisible({ timeout: 5000 });
+      const successMessage = await findByTextRegex(
+        driver,
+        /reset.*sent|check.*email|email.*sent/i
+      );
+      expect(await successMessage.isDisplayed()).toBe(true);
     });
 
-    test('Test 8: Should handle non-existent email in password reset', async ({ page }) => {
-      await page.goto('/forgot-password');
+    test('Test 8: Should handle non-existent email in password reset', async () => {
+      const driver = getDriver();
 
-      await page.fill('input[name="email"]', 'nonexistent@example.com');
+      await goto(driver, '/forgot-password');
 
-      await page.click('button[type="submit"]');
+      await fill(driver, 'input[name="email"]', 'nonexistent@example.com');
+
+      await click(driver, 'button[type="submit"]');
 
       // Should show appropriate message (success for security or error)
-      await page.waitForTimeout(2000);
-      const hasMessage = await page.locator('text=/email|sent|found/i').count();
+      await sleep(driver, 2000);
+      const hasMessage = await countElements(driver, 'text=/email|sent|found/i');
       expect(hasMessage).toBeGreaterThan(0);
     });
   });
 
-  test.describe('Role-Based Access Control', () => {
-    test('Test 9: Should redirect customer to customer dashboard after login', async ({ page }) => {
-      await page.goto('/sign-in');
+  describe('Role-Based Access Control', () => {
+    test('Test 9: Should redirect customer to customer dashboard after login', async () => {
+      const driver = getDriver();
+
+      await goto(driver, '/sign-in');
 
       // Login as customer
-      await page.fill('input[name="email"]', 'test.customer@example.com');
-      await page.fill('input[name="password"]', 'TestPassword123!');
-      await page.click('button[type="submit"]');
+      await fill(driver, 'input[name="email"]', 'test.customer@example.com');
+      await fill(driver, 'input[name="password"]', 'TestPassword123!');
+      await click(driver, 'button[type="submit"]');
 
       // Should redirect to customer area
-      await page.waitForURL(/.*customer/, { timeout: 10000 });
-      expect(page.url()).toContain('customer');
+      await waitForURL(driver, /.*customer/, 10000);
+      const url = await getCurrentUrl(driver);
+      expect(url).toContain('customer');
     });
 
-    test('Test 10: Should prevent unauthorized access to admin routes', async ({ page }) => {
+    test('Test 10: Should prevent unauthorized access to admin routes', async () => {
+      const driver = getDriver();
+
       // Try to access admin route without authentication
-      await page.goto('/admin/salon-dashboard/overview');
+      await goto(driver, '/admin/salon-dashboard/overview');
 
       // Should redirect to sign-in or show unauthorized
-      await page.waitForURL(/.*sign-in|unauthorized/, { timeout: 5000 });
-      const url = page.url();
+      await waitForURL(driver, /.*sign-in|unauthorized/, 5000);
+      const url = await getCurrentUrl(driver);
       expect(url.includes('sign-in') || url.includes('unauthorized')).toBeTruthy();
     });
   });
 
-  test.describe('Session Management', () => {
-    test('Test 11: Should logout successfully and clear session', async ({ page }) => {
+  describe('Session Management', () => {
+    test('Test 11: Should logout successfully and clear session', async () => {
+      const driver = getDriver();
+
       // First login
-      await page.goto('/sign-in');
-      await page.fill('input[name="email"]', 'test.customer@example.com');
-      await page.fill('input[name="password"]', 'TestPassword123!');
-      await page.click('button[type="submit"]');
-      await page.waitForURL(/.*(?!sign-in)/, { timeout: 10000 });
+      await goto(driver, '/sign-in');
+      await fill(driver, 'input[name="email"]', 'test.customer@example.com');
+      await fill(driver, 'input[name="password"]', 'TestPassword123!');
+      await click(driver, 'button[type="submit"]');
+      await waitForURL(driver, /.*(?!sign-in)/, 10000);
 
       // Find and click logout button (look for common logout patterns)
-      const logoutButton = page.locator('button:has-text("Logout"), button:has-text("Sign Out"), a:has-text("Logout"), a:has-text("Sign Out")').first();
-      if (await logoutButton.count() > 0) {
-        await logoutButton.click();
+      const logoutButtonCount = await countElements(
+        driver,
+        'button:has-text("Logout"), button:has-text("Sign Out"), a:has-text("Logout"), a:has-text("Sign Out")'
+      );
+
+      if (logoutButtonCount > 0) {
+        try {
+          // Try multiple selector patterns for logout button
+          await click(driver, 'button:has-text("Logout")');
+        } catch {
+          try {
+            await click(driver, 'button:has-text("Sign Out")');
+          } catch {
+            try {
+              await click(driver, 'a:has-text("Logout")');
+            } catch {
+              await click(driver, 'a:has-text("Sign Out")');
+            }
+          }
+        }
 
         // Should redirect to home or sign-in
-        await page.waitForTimeout(2000);
-        const url = page.url();
-        expect(url.includes('sign-in') || url === page.url().split('/')[0]).toBeTruthy();
+        await sleep(driver, 2000);
+        const url = await getCurrentUrl(driver);
+        expect(url.includes('sign-in') || url === url.split('/').slice(0, 3).join('/')).toBeTruthy();
       }
     });
   });

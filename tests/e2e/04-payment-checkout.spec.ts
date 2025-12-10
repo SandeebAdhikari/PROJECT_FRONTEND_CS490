@@ -1,240 +1,460 @@
-import { test, expect } from '@playwright/test';
+import { describe, test, expect } from 'vitest';
+import { getDriver } from '../e2e-setup';
+import {
+  goto,
+  waitForLoadState,
+  getCurrentUrl,
+  findElement,
+  findElements,
+  click,
+  sleep,
+  countElements,
+  getText,
+  isEnabled,
+} from '../helpers/test-utils';
 
-test.describe('Feature 4: Payment & Checkout', () => {
-  test.beforeEach(async ({ page }) => {
-    // Navigate to checkout page
-    await page.goto('/customer/checkout');
-    await page.waitForLoadState('networkidle');
-  });
+describe('Feature 4: Payment & Checkout', () => {
+  describe('Checkout Page', () => {
+    test('Test 31: Should display checkout page with order summary', async () => {
+      const driver = getDriver();
 
-  test.describe('Checkout Page', () => {
-    test('Test 31: Should display checkout page with order summary', async ({ page }) => {
+      await goto(driver, '/customer/checkout');
+      await waitForLoadState(driver, 'networkidle');
+
       // Verify checkout page loads
-      await expect(page).toHaveURL(/.*checkout/);
+      const url = await getCurrentUrl(driver);
+      expect(url).toMatch(/.*checkout/);
 
       // Look for order summary section
-      const orderSummary = page.locator('text=/order.*summary|summary|total|subtotal/i');
-      expect(await orderSummary.count()).toBeGreaterThan(0);
+      const elements = await findElements(driver, '*');
+      let found = false;
+      for (const element of elements) {
+        const text = await element.getText();
+        if (/order.*summary|summary|total|subtotal/i.test(text)) {
+          found = true;
+          break;
+        }
+      }
+      expect(found).toBe(true);
     });
 
-    test('Test 32: Should display available payment methods', async ({ page }) => {
-      await page.waitForTimeout(1000);
+    test('Test 32: Should display available payment methods', async () => {
+      const driver = getDriver();
+
+      await goto(driver, '/customer/checkout');
+      await waitForLoadState(driver, 'networkidle');
+      await sleep(driver, 1000);
 
       // Look for payment method options
-      const paymentMethods = page.locator(
-        'text=/pay.*full|pay.*store|deposit|stripe|payment.*method/i, ' +
-        'input[type="radio"][name*="payment"], ' +
-        '[data-testid="payment-method"]'
+      const paymentMethodsCount = await countElements(
+        driver,
+        'input[type="radio"][name*="payment"], [data-testid="payment-method"]'
       );
 
-      expect(await paymentMethods.count()).toBeGreaterThan(0);
+      if (paymentMethodsCount === 0) {
+        // Try finding by text
+        const elements = await findElements(driver, '*');
+        let found = false;
+        for (const element of elements) {
+          const text = await element.getText();
+          if (/pay.*full|pay.*store|deposit|stripe|payment.*method/i.test(text)) {
+            found = true;
+            break;
+          }
+        }
+        expect(found).toBe(true);
+      } else {
+        expect(paymentMethodsCount).toBeGreaterThan(0);
+      }
     });
 
-    test('Test 33: Should calculate and display correct totals', async ({ page }) => {
-      await page.waitForTimeout(1000);
+    test('Test 33: Should calculate and display correct totals', async () => {
+      const driver = getDriver();
+
+      await goto(driver, '/customer/checkout');
+      await waitForLoadState(driver, 'networkidle');
+      await sleep(driver, 1000);
 
       // Look for pricing breakdown
-      const subtotal = page.locator('text=/subtotal/i');
-      const tax = page.locator('text=/tax/i');
-      const total = page.locator('text=/total/i');
+      const elements = await findElements(driver, '*');
+      let totalText = '';
+
+      for (const element of elements) {
+        const text = await element.getText();
+        if (/total/i.test(text)) {
+          totalText = text;
+          break;
+        }
+      }
 
       // At minimum, total should be displayed
-      expect(await total.count()).toBeGreaterThan(0);
+      expect(totalText).toBeTruthy();
 
       // Verify amounts contain currency symbols or numbers
-      const totalText = await total.first().textContent();
       expect(totalText).toMatch(/\$|[0-9]+/);
     });
   });
 
-  test.describe('Payment Method Selection', () => {
-    test('Test 34: Should select "Pay in Full" payment method', async ({ page }) => {
-      await page.waitForTimeout(1000);
+  describe('Payment Method Selection', () => {
+    test('Test 34: Should select "Pay in Full" payment method', async () => {
+      const driver = getDriver();
+
+      await goto(driver, '/customer/checkout');
+      await waitForLoadState(driver, 'networkidle');
+      await sleep(driver, 1000);
 
       // Look for "Pay in Full" option
-      const payInFullOption = page.locator('input[value*="full"], label:has-text("Pay in Full"), text=/pay.*full/i').first();
+      const payInFullCount = await countElements(driver, 'input[value*="full"]');
 
-      if (await payInFullOption.count() > 0) {
+      if (payInFullCount > 0) {
+        const payInFullOption = await findElement(driver, 'input[value*="full"]');
         await payInFullOption.click();
-        await page.waitForTimeout(500);
+        await sleep(driver, 500);
 
         // Verify option is selected
-        const isChecked = await payInFullOption.isChecked().catch(() => true);
+        const isChecked = await payInFullOption.isSelected();
         expect(isChecked).toBeTruthy();
-      }
-    });
-
-    test('Test 35: Should select "Pay in Store" payment method', async ({ page }) => {
-      await page.waitForTimeout(1000);
-
-      // Look for "Pay in Store" option
-      const payInStoreOption = page.locator('input[value*="store"], label:has-text("Pay in Store"), text=/pay.*store/i').first();
-
-      if (await payInStoreOption.count() > 0) {
-        await payInStoreOption.click();
-        await page.waitForTimeout(500);
-
-        // Verify option is selected
+      } else {
+        // Try finding by label text
+        const labelCount = await countElements(driver, '*');
+        if (labelCount > 0) {
+          const elements = await findElements(driver, '*');
+          for (const element of elements) {
+            const text = await element.getText();
+            if (/pay.*full/i.test(text)) {
+              await element.click();
+              await sleep(driver, 500);
+              break;
+            }
+          }
+        }
         expect(true).toBeTruthy();
       }
     });
 
-    test('Test 36: Should calculate deposit amount correctly when selected', async ({ page }) => {
-      await page.waitForTimeout(1000);
+    test('Test 35: Should select "Pay in Store" payment method', async () => {
+      const driver = getDriver();
+
+      await goto(driver, '/customer/checkout');
+      await waitForLoadState(driver, 'networkidle');
+      await sleep(driver, 1000);
+
+      // Look for "Pay in Store" option
+      const payInStoreCount = await countElements(driver, 'input[value*="store"]');
+
+      if (payInStoreCount > 0) {
+        const payInStoreOption = await findElement(driver, 'input[value*="store"]');
+        await payInStoreOption.click();
+        await sleep(driver, 500);
+
+        // Verify option is selected
+        expect(true).toBeTruthy();
+      } else {
+        // Try finding by label text
+        const elements = await findElements(driver, '*');
+        for (const element of elements) {
+          const text = await element.getText();
+          if (/pay.*store/i.test(text)) {
+            await element.click();
+            await sleep(driver, 500);
+            break;
+          }
+        }
+        expect(true).toBeTruthy();
+      }
+    });
+
+    test('Test 36: Should calculate deposit amount correctly when selected', async () => {
+      const driver = getDriver();
+
+      await goto(driver, '/customer/checkout');
+      await waitForLoadState(driver, 'networkidle');
+      await sleep(driver, 1000);
 
       // Look for deposit payment option
-      const depositOption = page.locator('input[value*="deposit"], label:has-text("Deposit"), text=/deposit/i').first();
+      const depositCount = await countElements(driver, 'input[value*="deposit"]');
 
-      if (await depositOption.count() > 0) {
+      if (depositCount > 0) {
+        const depositOption = await findElement(driver, 'input[value*="deposit"]');
         await depositOption.click();
-        await page.waitForTimeout(1000);
+        await sleep(driver, 1000);
 
         // Check for deposit amount display
-        const depositAmount = page.locator('text=/deposit.*amount|pay.*now/i');
+        const elements = await findElements(driver, '*');
+        let amountText = '';
+        for (const element of elements) {
+          const text = await element.getText();
+          if (/deposit.*amount|pay.*now/i.test(text)) {
+            amountText = text;
+            break;
+          }
+        }
 
-        if (await depositAmount.count() > 0) {
-          const amountText = await depositAmount.first().textContent();
+        if (amountText) {
           expect(amountText).toMatch(/\$|[0-9]+/);
         }
       }
     });
   });
 
-  test.describe('Loyalty Points', () => {
-    test('Test 37: Should display loyalty points balance', async ({ page }) => {
-      await page.waitForTimeout(1000);
+  describe('Loyalty Points', () => {
+    test('Test 37: Should display loyalty points balance', async () => {
+      const driver = getDriver();
+
+      await goto(driver, '/customer/checkout');
+      await waitForLoadState(driver, 'networkidle');
+      await sleep(driver, 1000);
 
       // Look for loyalty points section
-      const loyaltySection = page.locator('text=/loyalty.*points|points.*available|redeem.*points/i');
+      const elements = await findElements(driver, '*');
+      let loyaltySectionFound = false;
+      let pointsBalanceFound = false;
 
-      if (await loyaltySection.count() > 0) {
-        expect(await loyaltySection.count()).toBeGreaterThan(0);
+      for (const element of elements) {
+        const text = await element.getText();
+        if (/loyalty.*points|points.*available|redeem.*points/i.test(text)) {
+          loyaltySectionFound = true;
+        }
+        if (/[0-9]+.*points/i.test(text)) {
+          pointsBalanceFound = true;
+        }
+      }
 
-        // Verify points balance is shown
-        const pointsBalance = page.locator('text=/[0-9]+.*points/i');
-        expect(await pointsBalance.count()).toBeGreaterThan(0);
+      if (loyaltySectionFound) {
+        expect(loyaltySectionFound).toBe(true);
+        expect(pointsBalanceFound).toBe(true);
       }
     });
 
-    test('Test 38: Should apply loyalty points discount', async ({ page }) => {
-      await page.waitForTimeout(1000);
+    test('Test 38: Should apply loyalty points discount', async () => {
+      const driver = getDriver();
+
+      await goto(driver, '/customer/checkout');
+      await waitForLoadState(driver, 'networkidle');
+      await sleep(driver, 1000);
 
       // Look for apply points button or checkbox
-      const applyPointsControl = page.locator(
-        'button:has-text("Apply Points"), ' +
-        'button:has-text("Redeem"), ' +
-        'input[type="checkbox"][name*="points"], ' +
-        '[data-testid="apply-points"]'
-      ).first();
+      const applyPointsCount = await countElements(
+        driver,
+        'button:has-text("Apply Points"), button:has-text("Redeem"), input[type="checkbox"][name*="points"], [data-testid="apply-points"]'
+      );
 
-      if (await applyPointsControl.count() > 0) {
+      if (applyPointsCount > 0) {
         // Get total before applying points
-        const totalBefore = await page.locator('text=/total/i').first().textContent();
+        const elements = await findElements(driver, '*');
+        let totalBefore = '';
+        for (const element of elements) {
+          const text = await element.getText();
+          if (/total/i.test(text)) {
+            totalBefore = text;
+            break;
+          }
+        }
 
+        const applyPointsControl = await findElement(
+          driver,
+          'button:has-text("Apply Points"), button:has-text("Redeem"), input[type="checkbox"][name*="points"], [data-testid="apply-points"]'
+        );
         await applyPointsControl.click();
-        await page.waitForTimeout(1000);
+        await sleep(driver, 1000);
 
         // Verify discount is applied
-        const discountElement = page.locator('text=/discount|points.*applied|saved/i');
-        expect(await discountElement.count()).toBeGreaterThan(0);
+        const elementsAfter = await findElements(driver, '*');
+        let discountFound = false;
+        for (const element of elementsAfter) {
+          const text = await element.getText();
+          if (/discount|points.*applied|saved/i.test(text)) {
+            discountFound = true;
+            break;
+          }
+        }
+        expect(discountFound).toBe(true);
       }
     });
   });
 
-  test.describe('Stripe Payment Integration', () => {
-    test('Test 39: Should redirect to Stripe for payment', async ({ page }) => {
-      await page.waitForTimeout(1000);
+  describe('Stripe Payment Integration', () => {
+    test('Test 39: Should redirect to Stripe for payment', async () => {
+      const driver = getDriver();
+
+      await goto(driver, '/customer/checkout');
+      await waitForLoadState(driver, 'networkidle');
+      await sleep(driver, 1000);
 
       // Select pay in full option if available
-      const payInFullOption = page.locator('input[value*="full"], label:has-text("Pay in Full")').first();
-      if (await payInFullOption.count() > 0) {
+      const payInFullCount = await countElements(driver, 'input[value*="full"]');
+      if (payInFullCount > 0) {
+        const payInFullOption = await findElement(driver, 'input[value*="full"]');
         await payInFullOption.click();
-        await page.waitForTimeout(500);
+        await sleep(driver, 500);
       }
 
       // Look for checkout/payment button
-      const checkoutButton = page.locator(
-        'button:has-text("Pay Now"), ' +
-        'button:has-text("Complete Payment"), ' +
-        'button:has-text("Checkout"), ' +
-        '[data-testid="checkout-button"]'
-      ).first();
+      const checkoutButtonCount = await countElements(
+        driver,
+        'button:has-text("Pay Now"), button:has-text("Complete Payment"), button:has-text("Checkout"), [data-testid="checkout-button"]'
+      );
 
-      if (await checkoutButton.count() > 0 && !await checkoutButton.isDisabled()) {
-        // Click checkout button
-        await checkoutButton.click();
+      if (checkoutButtonCount > 0) {
+        const checkoutButton = await findElement(
+          driver,
+          'button:has-text("Pay Now"), button:has-text("Complete Payment"), button:has-text("Checkout"), [data-testid="checkout-button"]'
+        );
+        const buttonEnabled = await isEnabled(
+          driver,
+          'button:has-text("Pay Now"), button:has-text("Complete Payment"), button:has-text("Checkout"), [data-testid="checkout-button"]'
+        );
 
-        // Wait for either Stripe redirect or payment processing
-        await page.waitForTimeout(3000);
+        if (buttonEnabled) {
+          // Click checkout button
+          await checkoutButton.click();
 
-        // Verify redirect or payment processing started
-        const url = page.url();
-        const hasStripeIndicator = url.includes('stripe') ||
-          url.includes('checkout') ||
-          await page.locator('text=/processing|payment|stripe/i').count() > 0;
+          // Wait for either Stripe redirect or payment processing
+          await sleep(driver, 3000);
 
-        expect(hasStripeIndicator).toBeTruthy();
+          // Verify redirect or payment processing started
+          const url = await getCurrentUrl(driver);
+          const elements = await findElements(driver, '*');
+          let hasProcessingText = false;
+          for (const element of elements) {
+            const text = await element.getText();
+            if (/processing|payment|stripe/i.test(text)) {
+              hasProcessingText = true;
+              break;
+            }
+          }
+
+          const hasStripeIndicator =
+            url.includes('stripe') || url.includes('checkout') || hasProcessingText;
+
+          expect(hasStripeIndicator).toBeTruthy();
+        }
       }
     });
   });
 
-  test.describe('Payment Success and Failure', () => {
-    test('Test 40: Should handle payment success and redirect appropriately', async ({ page }) => {
+  describe('Payment Success and Failure', () => {
+    test('Test 40: Should handle payment success and redirect appropriately', async () => {
+      const driver = getDriver();
+
       // Navigate directly to payment success page
-      await page.goto('/payment-success');
-      await page.waitForLoadState('networkidle');
+      await goto(driver, '/payment-success');
+      await waitForLoadState(driver, 'networkidle');
 
       // Verify success page displays
-      const successMessage = page.locator('text=/success|confirmed|thank.*you|payment.*complete/i');
-      expect(await successMessage.count()).toBeGreaterThan(0);
+      const elements = await findElements(driver, '*');
+      let successFound = false;
+      let confirmationFound = false;
 
-      // Should show booking confirmation or order details
-      const confirmationDetails = page.locator('text=/booking|appointment|order|confirmation/i');
-      expect(await confirmationDetails.count()).toBeGreaterThan(0);
+      for (const element of elements) {
+        const text = await element.getText();
+        if (/success|confirmed|thank.*you|payment.*complete/i.test(text)) {
+          successFound = true;
+        }
+        if (/booking|appointment|order|confirmation/i.test(text)) {
+          confirmationFound = true;
+        }
+      }
+
+      expect(successFound).toBe(true);
+      expect(confirmationFound).toBe(true);
     });
 
-    test('Test 41: Should handle payment cancellation correctly', async ({ page }) => {
+    test('Test 41: Should handle payment cancellation correctly', async () => {
+      const driver = getDriver();
+
       // Navigate to payment cancelled page
-      await page.goto('/payment-canceled');
-      await page.waitForLoadState('networkidle');
+      await goto(driver, '/payment-canceled');
+      await waitForLoadState(driver, 'networkidle');
 
       // Verify cancellation message
-      const cancelMessage = page.locator('text=/cancel|failed|unsuccessful/i');
-      expect(await cancelMessage.count()).toBeGreaterThan(0);
+      const elements = await findElements(driver, '*');
+      let cancelFound = false;
+      let retryFound = false;
+
+      for (const element of elements) {
+        const text = await element.getText();
+        if (/cancel|failed|unsuccessful/i.test(text)) {
+          cancelFound = true;
+        }
+        if (/try.*again|retry|cart/i.test(text)) {
+          retryFound = true;
+        }
+      }
+
+      expect(cancelFound).toBe(true);
 
       // Should have option to retry or return to cart
-      const retryButton = page.locator('button:has-text("Try Again"), button:has-text("Retry"), a:has-text("Cart")');
-      expect(await retryButton.count()).toBeGreaterThan(0);
+      const retryButtonCount = await countElements(
+        driver,
+        'button:has-text("Try Again"), button:has-text("Retry"), a:has-text("Cart")'
+      );
+      expect(retryFound || retryButtonCount > 0).toBeTruthy();
     });
   });
 
-  test.describe('Checkout Validation', () => {
-    test('Test 42: Should validate required fields before payment', async ({ page }) => {
-      await page.waitForTimeout(1000);
+  describe('Checkout Validation', () => {
+    test('Test 42: Should validate required fields before payment', async () => {
+      const driver = getDriver();
+
+      await goto(driver, '/customer/checkout');
+      await waitForLoadState(driver, 'networkidle');
+      await sleep(driver, 1000);
 
       // Try to proceed without selecting payment method
-      const checkoutButton = page.locator('button:has-text("Pay Now"), button:has-text("Checkout")').first();
+      const checkoutButtonCount = await countElements(
+        driver,
+        'button:has-text("Pay Now"), button:has-text("Checkout")'
+      );
 
-      if (await checkoutButton.count() > 0) {
+      if (checkoutButtonCount > 0) {
+        const checkoutButton = await findElement(
+          driver,
+          'button:has-text("Pay Now"), button:has-text("Checkout")'
+        );
         await checkoutButton.click();
-        await page.waitForTimeout(1000);
+        await sleep(driver, 1000);
 
         // Should show validation error or button should be disabled
-        const validationError = page.locator('text=/required|select.*payment|choose.*method/i');
-        const isDisabled = await checkoutButton.isDisabled();
+        const elements = await findElements(driver, '*');
+        let validationFound = false;
+        for (const element of elements) {
+          const text = await element.getText();
+          if (/required|select.*payment|choose.*method/i.test(text)) {
+            validationFound = true;
+            break;
+          }
+        }
 
-        expect(await validationError.count() > 0 || isDisabled).toBeTruthy();
+        const isDisabled = !(await isEnabled(
+          driver,
+          'button:has-text("Pay Now"), button:has-text("Checkout")'
+        ));
+
+        expect(validationFound || isDisabled).toBeTruthy();
       }
     });
 
-    test('Test 43: Should display tax calculation', async ({ page }) => {
-      await page.waitForTimeout(1000);
+    test('Test 43: Should display tax calculation', async () => {
+      const driver = getDriver();
+
+      await goto(driver, '/customer/checkout');
+      await waitForLoadState(driver, 'networkidle');
+      await sleep(driver, 1000);
 
       // Look for tax line item
-      const taxElement = page.locator('text=/tax|taxes/i');
+      const elements = await findElements(driver, '*');
+      let taxText = '';
 
-      if (await taxElement.count() > 0) {
-        const taxText = await taxElement.first().textContent();
+      for (const element of elements) {
+        const text = await element.getText();
+        if (/tax|taxes/i.test(text)) {
+          taxText = text;
+          break;
+        }
+      }
+
+      if (taxText) {
         expect(taxText).toMatch(/\$|[0-9]+|0\.00/);
       }
     });

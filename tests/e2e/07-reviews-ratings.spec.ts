@@ -1,211 +1,339 @@
-import { test, expect } from '@playwright/test';
+import { describe, test, expect } from 'vitest';
+import { getDriver } from '../e2e-setup';
+import {
+  goto,
+  waitForLoadState,
+  findElement,
+  findElements,
+  click,
+  fill,
+  sleep,
+  countElements,
+} from '../helpers/test-utils';
 
-test.describe('Feature 7: Reviews & Ratings', () => {
-  test.describe('View Reviews', () => {
-    test('Test 61: Should display salon reviews on salon details page', async ({ page }) => {
+describe('Feature 7: Reviews & Ratings', () => {
+  describe('View Reviews', () => {
+    test('Test 61: Should display salon reviews on salon details page', async () => {
+      const driver = getDriver();
+
       // Navigate to a salon details page
-      await page.goto('/customer/salon-details?salonId=1');
-      await page.waitForLoadState('networkidle');
+      await goto(driver, '/customer/salon-details?salonId=1');
+      await waitForLoadState(driver, 'networkidle');
 
       // Look for reviews section
-      const reviewsSection = page.locator(
-        'text=/reviews|ratings|customer.*reviews/i, ' +
-        '[data-testid="reviews"], ' +
-        '.reviews'
-      );
+      const elements = await findElements(driver, '*');
+      let reviewsFound = false;
 
-      expect(await reviewsSection.count()).toBeGreaterThan(0);
+      for (const element of elements) {
+        const text = await element.getText();
+        if (/reviews|ratings|customer.*reviews/i.test(text)) {
+          reviewsFound = true;
+          break;
+        }
+      }
+
+      const reviewsDataCount = await countElements(driver, '[data-testid="reviews"], .reviews');
+
+      expect(reviewsFound || reviewsDataCount > 0).toBeTruthy();
     });
 
-    test('Test 62: Should display average rating', async ({ page }) => {
-      await page.goto('/customer/salon-details?salonId=1');
-      await page.waitForLoadState('networkidle');
+    test('Test 62: Should display average rating', async () => {
+      const driver = getDriver();
+
+      await goto(driver, '/customer/salon-details?salonId=1');
+      await waitForLoadState(driver, 'networkidle');
 
       // Look for average rating display
-      const averageRating = page.locator(
-        'text=/average|rating|[0-9]\\.[0-9]|★|stars/i, ' +
-        '[data-testid="average-rating"]'
-      );
+      const elements = await findElements(driver, '*');
+      let ratingFound = false;
 
-      expect(await averageRating.count()).toBeGreaterThan(0);
+      for (const element of elements) {
+        const text = await element.getText();
+        if (/average|rating|[0-9]\.[0-9]|★|stars/i.test(text)) {
+          ratingFound = true;
+          break;
+        }
+      }
+
+      const ratingDataCount = await countElements(driver, '[data-testid="average-rating"]');
+
+      expect(ratingFound || ratingDataCount > 0).toBeTruthy();
     });
 
-    test('Test 63: Should display individual review details', async ({ page }) => {
-      await page.goto('/customer/salon-details?salonId=1');
-      await page.waitForLoadState('networkidle');
+    test('Test 63: Should display individual review details', async () => {
+      const driver = getDriver();
+
+      await goto(driver, '/customer/salon-details?salonId=1');
+      await waitForLoadState(driver, 'networkidle');
 
       // Look for individual reviews
-      const reviews = page.locator(
-        '[data-testid="review"], ' +
-        '.review, ' +
-        '[class*="review-item"]'
+      const reviewCount = await countElements(
+        driver,
+        '[data-testid="review"], .review, [class*="review-item"]'
       );
-
-      const reviewCount = await reviews.count();
 
       if (reviewCount > 0) {
         // Verify review shows rating, comment, date
-        const reviewDetails = page.locator('text=/★|stars|[0-9].*stars/i');
-        expect(await reviewDetails.count()).toBeGreaterThan(0);
+        const elements = await findElements(driver, '*');
+        let detailsFound = false;
+        for (const element of elements) {
+          const text = await element.getText();
+          if (/★|stars|[0-9].*stars/i.test(text)) {
+            detailsFound = true;
+            break;
+          }
+        }
+        expect(detailsFound).toBe(true);
       }
     });
   });
 
-  test.describe('Add Review', () => {
-    test('Test 64: Should open add review modal', async ({ page }) => {
-      await page.goto('/customer/salon-details?salonId=1');
-      await page.waitForLoadState('networkidle');
+  describe('Add Review', () => {
+    test('Test 64: Should open add review modal', async () => {
+      const driver = getDriver();
+
+      await goto(driver, '/customer/salon-details?salonId=1');
+      await waitForLoadState(driver, 'networkidle');
 
       // Look for "Add Review" or "Write Review" button
-      const addReviewButton = page.locator(
-        'button:has-text("Add Review"), ' +
-        'button:has-text("Write Review"), ' +
-        '[data-testid="add-review"]'
-      ).first();
+      const addReviewButtonCount = await countElements(
+        driver,
+        'button:has-text("Add Review"), button:has-text("Write Review"), [data-testid="add-review"]'
+      );
 
-      if (await addReviewButton.count() > 0) {
-        await addReviewButton.click();
-        await page.waitForTimeout(1000);
+      if (addReviewButtonCount > 0) {
+        await click(
+          driver,
+          'button:has-text("Add Review"), button:has-text("Write Review"), [data-testid="add-review"]'
+        );
+        await sleep(driver, 1000);
 
         // Verify review form/modal opens
-        const reviewForm = page.locator(
-          '[data-testid="review-form"], ' +
-          'textarea[name*="comment"], ' +
-          'textarea[placeholder*="review"]'
+        const reviewFormCount = await countElements(
+          driver,
+          '[data-testid="review-form"], textarea[name*="comment"], textarea[placeholder*="review"]'
         );
 
-        expect(await reviewForm.count()).toBeGreaterThan(0);
+        expect(reviewFormCount).toBeGreaterThan(0);
       }
     });
 
-    test('Test 65: Should submit a review with rating and comment', async ({ page }) => {
-      await page.goto('/customer/salon-details?salonId=1');
-      await page.waitForLoadState('networkidle');
+    test('Test 65: Should submit a review with rating and comment', async () => {
+      const driver = getDriver();
 
-      const addReviewButton = page.locator('button:has-text("Add Review"), button:has-text("Write Review")').first();
+      await goto(driver, '/customer/salon-details?salonId=1');
+      await waitForLoadState(driver, 'networkidle');
 
-      if (await addReviewButton.count() > 0) {
-        await addReviewButton.click();
-        await page.waitForTimeout(1000);
+      const addReviewButtonCount = await countElements(
+        driver,
+        'button:has-text("Add Review"), button:has-text("Write Review")'
+      );
+
+      if (addReviewButtonCount > 0) {
+        await click(driver, 'button:has-text("Add Review"), button:has-text("Write Review")');
+        await sleep(driver, 1000);
 
         // Select rating (look for star ratings)
-        const starRatings = page.locator(
-          '[data-testid="star-rating"], ' +
-          'button[aria-label*="star"], ' +
-          'input[type="radio"][name*="rating"]'
+        const starRatingsCount = await countElements(
+          driver,
+          '[data-testid="star-rating"], button[aria-label*="star"], input[type="radio"][name*="rating"]'
         );
 
-        if (await starRatings.count() > 0) {
-          await starRatings.nth(4).click(); // Select 5 stars
+        if (starRatingsCount > 0) {
+          const stars = await findElements(
+            driver,
+            '[data-testid="star-rating"], button[aria-label*="star"], input[type="radio"][name*="rating"]'
+          );
+          if (stars.length >= 5) {
+            await stars[4].click(); // Select 5 stars
+          }
         }
 
         // Enter review comment
-        const commentTextarea = page.locator('textarea[name*="comment"], textarea[placeholder*="review"]').first();
+        const commentTextareaCount = await countElements(
+          driver,
+          'textarea[name*="comment"], textarea[placeholder*="review"]'
+        );
 
-        if (await commentTextarea.count() > 0) {
-          await commentTextarea.fill('Excellent service! Highly recommended.');
+        if (commentTextareaCount > 0) {
+          await fill(
+            driver,
+            'textarea[name*="comment"], textarea[placeholder*="review"]',
+            'Excellent service! Highly recommended.'
+          );
 
           // Submit review
-          const submitButton = page.locator('button[type="submit"], button:has-text("Submit"), button:has-text("Post")').first();
+          const submitButtonCount = await countElements(
+            driver,
+            'button[type="submit"], button:has-text("Submit"), button:has-text("Post")'
+          );
 
-          if (await submitButton.count() > 0) {
-            await submitButton.click();
-            await page.waitForTimeout(2000);
+          if (submitButtonCount > 0) {
+            await click(driver, 'button[type="submit"], button:has-text("Submit"), button:has-text("Post")');
+            await sleep(driver, 2000);
 
             // Verify success message
-            const successMessage = page.locator('text=/success|thank.*you|review.*submitted/i');
-            expect(await successMessage.count()).toBeGreaterThan(0);
+            const elements = await findElements(driver, '*');
+            let successFound = false;
+            for (const element of elements) {
+              const text = await element.getText();
+              if (/success|thank.*you|review.*submitted/i.test(text)) {
+                successFound = true;
+                break;
+              }
+            }
+            expect(successFound).toBe(true);
           }
         }
       }
     });
 
-    test('Test 66: Should validate required fields in review form', async ({ page }) => {
-      await page.goto('/customer/salon-details?salonId=1');
-      await page.waitForLoadState('networkidle');
+    test('Test 66: Should validate required fields in review form', async () => {
+      const driver = getDriver();
 
-      const addReviewButton = page.locator('button:has-text("Add Review"), button:has-text("Write Review")').first();
+      await goto(driver, '/customer/salon-details?salonId=1');
+      await waitForLoadState(driver, 'networkidle');
 
-      if (await addReviewButton.count() > 0) {
-        await addReviewButton.click();
-        await page.waitForTimeout(1000);
+      const addReviewButtonCount = await countElements(
+        driver,
+        'button:has-text("Add Review"), button:has-text("Write Review")'
+      );
+
+      if (addReviewButtonCount > 0) {
+        await click(driver, 'button:has-text("Add Review"), button:has-text("Write Review")');
+        await sleep(driver, 1000);
 
         // Try to submit without rating or comment
-        const submitButton = page.locator('button[type="submit"], button:has-text("Submit")').first();
+        const submitButtonCount = await countElements(
+          driver,
+          'button[type="submit"], button:has-text("Submit")'
+        );
 
-        if (await submitButton.count() > 0) {
-          await submitButton.click();
-          await page.waitForTimeout(1000);
+        if (submitButtonCount > 0) {
+          await click(driver, 'button[type="submit"], button:has-text("Submit")');
+          await sleep(driver, 1000);
 
           // Should show validation error
-          const validationError = page.locator('text=/required|rating.*required|comment.*required/i');
-          expect(await validationError.count()).toBeGreaterThan(0);
+          const elements = await findElements(driver, '*');
+          let validationFound = false;
+          for (const element of elements) {
+            const text = await element.getText();
+            if (/required|rating.*required|comment.*required/i.test(text)) {
+              validationFound = true;
+              break;
+            }
+          }
+          expect(validationFound).toBe(true);
         }
       }
     });
   });
 
-  test.describe('Owner Response to Reviews', () => {
-    test('Test 67: Should allow salon owner to respond to reviews', async ({ page }) => {
+  describe('Owner Response to Reviews', () => {
+    test('Test 67: Should allow salon owner to respond to reviews', async () => {
+      const driver = getDriver();
+
       // Navigate to reviews page as salon owner
-      await page.goto('/admin/salon-dashboard/reviews');
-      await page.waitForLoadState('networkidle');
+      await goto(driver, '/admin/salon-dashboard/reviews');
+      await waitForLoadState(driver, 'networkidle');
 
       // Look for respond button
-      const respondButton = page.locator(
-        'button:has-text("Respond"), ' +
-        'button:has-text("Reply"), ' +
-        '[data-testid="respond-review"]'
-      ).first();
+      const respondButtonCount = await countElements(
+        driver,
+        'button:has-text("Respond"), button:has-text("Reply"), [data-testid="respond-review"]'
+      );
 
-      if (await respondButton.count() > 0) {
-        await respondButton.click();
-        await page.waitForTimeout(1000);
+      if (respondButtonCount > 0) {
+        await click(
+          driver,
+          'button:has-text("Respond"), button:has-text("Reply"), [data-testid="respond-review"]'
+        );
+        await sleep(driver, 1000);
 
         // Verify response form opens
-        const responseTextarea = page.locator('textarea[name*="response"], textarea[placeholder*="response"]');
+        const responseTextareaCount = await countElements(
+          driver,
+          'textarea[name*="response"], textarea[placeholder*="response"]'
+        );
 
-        if (await responseTextarea.count() > 0) {
-          await responseTextarea.fill('Thank you for your feedback!');
+        if (responseTextareaCount > 0) {
+          await fill(
+            driver,
+            'textarea[name*="response"], textarea[placeholder*="response"]',
+            'Thank you for your feedback!'
+          );
 
           // Submit response
-          const submitButton = page.locator('button[type="submit"], button:has-text("Submit"), button:has-text("Send")').first();
+          const submitButtonCount = await countElements(
+            driver,
+            'button[type="submit"], button:has-text("Submit"), button:has-text("Send")'
+          );
 
-          if (await submitButton.count() > 0) {
-            await submitButton.click();
-            await page.waitForTimeout(2000);
+          if (submitButtonCount > 0) {
+            await click(driver, 'button[type="submit"], button:has-text("Submit"), button:has-text("Send")');
+            await sleep(driver, 2000);
 
             // Verify success
-            const successMessage = page.locator('text=/success|response.*sent|replied/i');
-            expect(await successMessage.count()).toBeGreaterThan(0);
+            const elements = await findElements(driver, '*');
+            let successFound = false;
+            for (const element of elements) {
+              const text = await element.getText();
+              if (/success|response.*sent|replied/i.test(text)) {
+                successFound = true;
+                break;
+              }
+            }
+            expect(successFound).toBe(true);
           }
         }
       }
     });
 
-    test('Test 68: Should display owner responses with reviews', async ({ page }) => {
-      await page.goto('/customer/salon-details?salonId=1');
-      await page.waitForLoadState('networkidle');
+    test('Test 68: Should display owner responses with reviews', async () => {
+      const driver = getDriver();
+
+      await goto(driver, '/customer/salon-details?salonId=1');
+      await waitForLoadState(driver, 'networkidle');
 
       // Look for owner responses
-      const ownerResponse = page.locator('text=/owner.*response|salon.*response|replied/i');
+      const elements = await findElements(driver, '*');
+      let responseFound = false;
 
-      if (await ownerResponse.count() > 0) {
-        expect(await ownerResponse.count()).toBeGreaterThan(0);
+      for (const element of elements) {
+        const text = await element.getText();
+        if (/owner.*response|salon.*response|replied/i.test(text)) {
+          responseFound = true;
+          break;
+        }
+      }
+
+      if (responseFound) {
+        expect(responseFound).toBe(true);
       }
     });
   });
 
-  test.describe('Review Statistics', () => {
-    test('Test 69: Should display rating breakdown', async ({ page }) => {
-      await page.goto('/admin/salon-dashboard/reviews');
-      await page.waitForLoadState('networkidle');
+  describe('Review Statistics', () => {
+    test('Test 69: Should display rating breakdown', async () => {
+      const driver = getDriver();
+
+      await goto(driver, '/admin/salon-dashboard/reviews');
+      await waitForLoadState(driver, 'networkidle');
 
       // Look for rating distribution (5 stars, 4 stars, etc.)
-      const ratingBreakdown = page.locator('text=/5.*stars|4.*stars|rating.*distribution/i');
+      const elements = await findElements(driver, '*');
+      let breakdownFound = false;
 
-      if (await ratingBreakdown.count() > 0) {
-        expect(await ratingBreakdown.count()).toBeGreaterThan(0);
+      for (const element of elements) {
+        const text = await element.getText();
+        if (/5.*stars|4.*stars|rating.*distribution/i.test(text)) {
+          breakdownFound = true;
+          break;
+        }
+      }
+
+      if (breakdownFound) {
+        expect(breakdownFound).toBe(true);
       }
     });
   });
