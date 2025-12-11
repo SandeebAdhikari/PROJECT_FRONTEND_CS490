@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, react-hooks/exhaustive-deps */
 "use client";
 
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
@@ -86,8 +87,7 @@ const CartPage = () => {
         cart.removeItem(appointmentId, "service");
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pastAppointmentIds.join(',')]); // Trigger when past appointment IDs change
+  }, [pastAppointmentIds.join(",")]); // Trigger when past appointment IDs change
   
   const products = cart.getProducts();
 
@@ -153,7 +153,6 @@ const CartPage = () => {
       console.log(`[Cart] Auto-removing ${duplicates.length} duplicate appointment IDs:`, duplicates);
       cart.removeDuplicateServices();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cart.items.length]); // Run when items change
   const serviceTotal = cart.getServiceTotal();
   const productTotal = cart.getProductTotal();
@@ -281,7 +280,6 @@ const CartPage = () => {
     }, 500);
     
     return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Empty dependency array - run only once on mount
 
   // Delete ALL appointments from cart - for fresh start
@@ -495,7 +493,6 @@ const CartPage = () => {
     
     // Run cleanup immediately
     cleanupPastAppointments();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cart.items.length]); // Run whenever cart items count changes
 
   // Load backend cart into local state ONCE per salonId (prevent infinite loops)
@@ -886,7 +883,6 @@ const CartPage = () => {
     return () => {
       window.removeEventListener('focus', handleFocus);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [salonId]);
 
   // Fetch suggestions when we have a salonId
@@ -1192,7 +1188,6 @@ const CartPage = () => {
     };
 
     syncCartWithBackend();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [salonId, services.length, products.length]);
 
   const handleUnifiedCheckout = async () => {

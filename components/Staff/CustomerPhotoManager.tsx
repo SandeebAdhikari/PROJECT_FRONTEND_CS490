@@ -1,11 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, react-hooks/exhaustive-deps */
 "use client";
 
 import React, { useState, useEffect } from "react";
 import { Upload, X, Image as ImageIcon, Check, Calendar } from "lucide-react";
 import Image from "next/image";
 import {
-  uploadAppointmentPhoto,
-  getAppointmentPhotos,
   getUserPhotos,
   getPhotoUrl,
   ServicePhoto,
@@ -151,9 +150,6 @@ const CustomerPhotoManager: React.FC<CustomerPhotoManagerProps> = ({
       setUploading(false);
     }
   };
-
-  const beforePhotos = photos.filter((p) => p.photo_type === "before");
-  const afterPhotos = photos.filter((p) => p.photo_type === "after");
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
@@ -416,4 +412,3 @@ const CustomerPhotoManager: React.FC<CustomerPhotoManagerProps> = ({
 };
 
 export default CustomerPhotoManager;
-

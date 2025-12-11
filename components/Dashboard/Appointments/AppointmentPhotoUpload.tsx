@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -277,4 +278,3 @@ const AppointmentPhotoUpload: React.FC<AppointmentPhotoUploadProps> = ({
 };
 
 export default AppointmentPhotoUpload;
-

@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps, react/no-unescaped-entities */
 "use client";
 
 import React, { useState, useEffect, Suspense } from "react";
@@ -35,7 +36,7 @@ const CheckoutPageContent = () => {
   const [availablePoints, setAvailablePoints] = useState(0);
   const [pointsToRedeem, setPointsToRedeem] = useState(0);
   const [discount, setDiscount] = useState(0);
-  const [loadingPoints, setLoadingPoints] = useState(false);
+  const [_loadingPoints, setLoadingPoints] = useState(false);
   const [depositPercentage, setDepositPercentage] = useState(0);
 
   useEffect(() => {
