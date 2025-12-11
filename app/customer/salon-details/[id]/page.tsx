@@ -4,7 +4,9 @@ export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
 
 import React, { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
 import { API_ENDPOINTS } from "@/libs/api/config";
+import data from "@/data/data.json";
 
 import SalonDetailNavbar from "@/components/Salon/SalonDetailNavBar";
 import SalonDetailHero from "@/components/Salon/SalonDetailHero";
@@ -42,9 +44,12 @@ interface Salon {
   owner_id?: number;
 }
 
-const SalonDetailsPage: React.FC<{ params: Promise<{ id: string }> }> = ({
-  params,
-}) => {
+const mockSalons = Array.isArray((data as { salons?: Salon[] }).salons)
+  ? ((data as { salons?: Salon[] }).salons as Salon[])
+  : [];
+
+const SalonDetailsPage: React.FC = () => {
+  const params = useParams();
   const [salonId, setSalonId] = useState<string>("");
   const [salon, setSalon] = useState<Salon | null>(null);
   const [businessHours, setBusinessHours] = useState<BusinessHours | null>(
@@ -58,12 +63,31 @@ const SalonDetailsPage: React.FC<{ params: Promise<{ id: string }> }> = ({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    params.then((resolvedParams) => {
-      setSalonId(resolvedParams.id);
-    });
+    const paramId = Array.isArray(params?.id) ? params.id[0] : params?.id;
+    setSalonId(paramId || "");
   }, [params]);
 
   useEffect(() => {
+    const fallbackToMockSalon = (id: string) => {
+      if (!id) return false;
+      const mockSalon =
+        mockSalons.find(
+          (s) =>
+            s.id === id ||
+            s.salon_id?.toString() === id ||
+            (s.id && s.id.toString() === id)
+        ) || null;
+
+      if (mockSalon) {
+        setSalon(mockSalon);
+        setBusinessHours(null);
+        setBookingSettings(null);
+        setErrorMessage(null);
+        return true;
+      }
+      return false;
+    };
+
     const fetchSalon = async () => {
       try {
         // Fetch from backend public endpoint
@@ -81,6 +105,10 @@ const SalonDetailsPage: React.FC<{ params: Promise<{ id: string }> }> = ({
           const errorData = await response
             .json()
             .catch(() => ({ error: response.statusText }));
+          // Use mock data when the salon does not exist in the backend (common during demos)
+          if (fallbackToMockSalon(salonId)) {
+            return;
+          }
           console.error(
             "Failed to fetch salon:",
             errorData.error || response.statusText
@@ -95,8 +123,11 @@ const SalonDetailsPage: React.FC<{ params: Promise<{ id: string }> }> = ({
           setSalon(null);
         }
       } catch (error) {
-        console.error("Error fetching salon:", error);
-        setSalon(null);
+        // If backend call fails (e.g., mock/demo salon), try local fallback before showing error
+        if (!fallbackToMockSalon(salonId)) {
+          console.error("Error fetching salon:", error);
+          setSalon(null);
+        }
       } finally {
         setLoading(false);
       }
