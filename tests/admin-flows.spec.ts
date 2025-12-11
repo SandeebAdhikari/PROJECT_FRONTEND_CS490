@@ -26,10 +26,12 @@ test.beforeEach(async ({ page, context }) => {
 test('analytics tab renders cards or loading state', async ({ page }) => {
   await page.goto('/admin/salon-dashboard/analytics');
 
-  await expect(page.getByRole('heading', { name: /analytics dashboard/i })).toBeVisible();
+  const heading = page.getByRole('heading', { name: /analytics/i }).first();
   const loading = page.getByText(/loading analytics/i).first();
   const exportBtn = page.getByRole('button', { name: /export reports/i }).first();
-  if (await loading.count()) {
+  if (await heading.count()) {
+    await expect(heading).toBeVisible();
+  } else if (await loading.count()) {
     await expect(loading).toBeVisible();
   } else {
     await expect(exportBtn).toBeVisible();

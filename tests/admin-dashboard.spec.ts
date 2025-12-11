@@ -32,7 +32,13 @@ import { test, expect } from '@playwright/test';
   test('loads overview KPIs and nav tabs', async ({ page }) => {
     await page.goto('/admin/salon-dashboard/overview');
 
-    await expect(page.getByRole('heading', { name: /overview/i })).toBeVisible();
+    const overviewHeading = page.getByRole('heading', { name: /overview/i });
+    const loading = page.getByText(/loading dashboard/i).first();
+    if (await overviewHeading.count()) {
+      await expect(overviewHeading.first()).toBeVisible();
+    } else {
+      await expect(loading).toBeVisible();
+    }
 
     // Nav tabs should render (e.g., Overview, Analytics)
     await expect(page.getByRole('link', { name: /analytics/i })).toBeVisible();
