@@ -80,7 +80,16 @@ const NewAppointmentModal = ({
     // Use user's salon_id from localStorage, or fall back to prop, or try staffUser
     const staffUserData = typeof window !== "undefined" ? localStorage.getItem("staffUser") : null;
     const staffUser = staffUserData ? JSON.parse(staffUserData) : null;
-    const currentSalonId = user?.salon_id || salonId || staffUser?.salon_id;
+    // Also check for salon.id in case salon_id is nested
+    const currentSalonId = user?.salon_id || salonId || staffUser?.salon_id || staffUser?.salon?.id;
+    
+    console.log("[NewAppointmentModal] salonId resolution:", {
+      propSalonId: salonId,
+      userSalonId: user?.salon_id,
+      staffUserSalonId: staffUser?.salon_id,
+      staffUserNestedSalonId: staffUser?.salon?.id,
+      resolved: currentSalonId
+    });
     
     if (!currentSalonId) {
       console.warn("No salonId available for fetching services");
@@ -105,13 +114,19 @@ const NewAppointmentModal = ({
     };
 
     const fetchServices = async () => {
-      const res = await fetchWithRefresh(
-        API_ENDPOINTS.SALONS.SERVICES(currentSalonId),
-        { credentials: "include" }
-      );
-      const data = await res.json();
-      if (res.ok && Array.isArray(data))
-        setServices(data.map((s) => ({ ...s, price: Number(s.price) })));
+      console.log("[NewAppointmentModal] Fetching services for salonId:", currentSalonId);
+      try {
+        const res = await fetchWithRefresh(
+          API_ENDPOINTS.SALONS.SERVICES(currentSalonId),
+          { credentials: "include" }
+        );
+        const data = await res.json();
+        console.log("[NewAppointmentModal] Services response:", { ok: res.ok, data });
+        if (res.ok && Array.isArray(data))
+          setServices(data.map((s) => ({ ...s, price: Number(s.price) })));
+      } catch (err) {
+        console.error("[NewAppointmentModal] Failed to fetch services:", err);
+      }
     };
 
     fetchStaff();
