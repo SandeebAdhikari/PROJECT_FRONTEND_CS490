@@ -24,11 +24,10 @@ test('payment success page renders confirmation', async ({ page, context }) => {
   await context.addCookies([{ name: 'token', value: 'mock', url: 'http://localhost:3000' }]);
   await page.goto('/payment-success?session_id=mock');
 
+  expect(page.url()).toContain('/payment-success');
   await expect(
     page
       .getByRole('heading', { name: /payment successful/i })
-      .or(page.getByText(/payment verification failed/i))
-      .or(page.getByText(/no payment information/i))
       .or(page.getByText(/payment/i))
   ).toBeVisible({ timeout: 10000 });
 });

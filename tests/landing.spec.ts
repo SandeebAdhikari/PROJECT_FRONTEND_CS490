@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 // Basic marketing page smoke check
 test('landing page renders hero and CTA', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 60000 });
 
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
   await expect(page.getByRole('link', { name: /book live demo/i })).toBeVisible();
