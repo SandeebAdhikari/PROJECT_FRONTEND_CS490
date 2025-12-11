@@ -280,8 +280,17 @@ const StaffPortalTabsAvailability: React.FC = () => {
         ) : (
           <div className="space-y-3">
             {blockedSlots.map((slot) => {
-              const startDate = new Date(slot.start_datetime);
-              const endDate = new Date(slot.end_datetime);
+              // Parse dates - handle both with and without Z suffix
+              // If the datetime ends with Z, it's UTC; otherwise treat as local
+              const parseLocalDate = (dateStr: string) => {
+                if (dateStr.endsWith('Z')) {
+                  // Remove Z and parse as local time (the database stores local time)
+                  return new Date(dateStr.slice(0, -1));
+                }
+                return new Date(dateStr);
+              };
+              const startDate = parseLocalDate(slot.start_datetime);
+              const endDate = parseLocalDate(slot.end_datetime);
               const isSameDay = startDate.toDateString() === endDate.toDateString();
               const isDeleting = deleting === slot.timeoff_id;
               
@@ -328,8 +337,19 @@ const StaffPortalTabsAvailability: React.FC = () => {
                     <button
                       onClick={() => {
                         setEditingSlot(slot);
-                        setEditStart(new Date(slot.start_datetime).toISOString().slice(0, 16));
-                        setEditEnd(new Date(slot.end_datetime).toISOString().slice(0, 16));
+                        // Format dates for datetime-local input (local timezone, not UTC)
+                        const start = new Date(slot.start_datetime);
+                        const end = new Date(slot.end_datetime);
+                        const formatForInput = (d: Date) => {
+                          const year = d.getFullYear();
+                          const month = String(d.getMonth() + 1).padStart(2, '0');
+                          const day = String(d.getDate()).padStart(2, '0');
+                          const hours = String(d.getHours()).padStart(2, '0');
+                          const minutes = String(d.getMinutes()).padStart(2, '0');
+                          return `${year}-${month}-${day}T${hours}:${minutes}`;
+                        };
+                        setEditStart(formatForInput(start));
+                        setEditEnd(formatForInput(end));
                         setEditReason(slot.reason || "");
                       }}
                       className="p-2 text-primary hover:bg-primary/10 rounded-lg transition"
