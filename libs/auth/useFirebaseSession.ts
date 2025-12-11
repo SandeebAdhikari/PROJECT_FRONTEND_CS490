@@ -11,6 +11,39 @@ export function useFirebaseSession() {
     const user = auth.currentUser;
     if (user) {
       user.getIdToken(true).then(async (idToken) => {
+        try {
+          const res = await fetch(
+            API_ENDPOINTS.AUTH.VERIFY_FIREBASE,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${idToken}`,
+              },
+            }
+          );
+
+          if (res.ok) {
+            const data = await res.json();
+            // Refresh the backend JWT cookie for middleware
+            setAuthCookie(data.token);
+          } else {
+            console.error("Firebase token verification failed:", res.status);
+          }
+        } catch (error) {
+          console.error("Error verifying Firebase token:", error);
+        }
+      }).catch((error) => {
+        console.error("Error getting Firebase ID token:", error);
+      });
+    }
+
+    // it will set up a listener for future token refreshes/ auto-refreshes every hours
+    const unsubscribe = auth.onIdTokenChanged(async (user) => {
+      if (!user) return;
+
+      try {
+        const idToken = await user.getIdToken(true);
         const res = await fetch(
           API_ENDPOINTS.AUTH.VERIFY_FIREBASE,
           {
@@ -24,32 +57,13 @@ export function useFirebaseSession() {
 
         if (res.ok) {
           const data = await res.json();
-          // Refresh the backend JWT cookie for middleware
+          // Update cookie again whenever Firebase refreshes token
           setAuthCookie(data.token);
+        } else {
+          console.error("Firebase token refresh verification failed:", res.status);
         }
-      });
-    }
-
-    // it will set up a listener for future token refreshes/ auto-refreshes every hours
-    const unsubscribe = auth.onIdTokenChanged(async (user) => {
-      if (!user) return;
-
-      const idToken = await user.getIdToken(true);
-      const res = await fetch(
-        API_ENDPOINTS.AUTH.VERIFY_FIREBASE,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${idToken}`,
-          },
-        }
-      );
-
-      if (res.ok) {
-        const data = await res.json();
-        // Update cookie again whenever Firebase refreshes token
-        setAuthCookie(data.token);
+      } catch (error) {
+        console.error("Error refreshing Firebase token:", error);
       }
     });
 

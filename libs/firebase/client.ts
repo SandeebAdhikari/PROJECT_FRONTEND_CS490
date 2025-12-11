@@ -19,8 +19,16 @@ const firebaseConfig = {
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);
 
+// Set up persistence with proper error handling
 setPersistence(auth, browserLocalPersistence).catch((err) => {
   console.error("Firebase persistence setup failed:", err);
+  console.warn("⚠️ Auth state will not persist across page reloads. User may need to log in again.");
+
+  // Attempt to notify user if in browser environment
+  if (typeof window !== "undefined") {
+    // Store error state for components to check
+    sessionStorage.setItem("firebase_persistence_failed", "true");
+  }
 });
 
 const googleProvider = new GoogleAuthProvider();

@@ -17,6 +17,7 @@ export function getDriver(): ThenableWebDriver {
 beforeAll(async () => {
   const headed = process.env.HEADED === 'true';
 
+  
   // Configure Chrome options
   const chromeOptions = new chrome.Options();
 

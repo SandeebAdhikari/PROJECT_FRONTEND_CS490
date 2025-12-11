@@ -10,6 +10,15 @@ import { addAppointmentToCart, addToCart, getUnifiedCart, removeFromCart } from 
 import { createUnifiedCheckout } from "@/libs/api/payments";
 import { getMyPoints, calculateDiscount } from "@/libs/api/loyalty";
 
+// Helper function to safely parse appointment ID from notes
+const parseAppointmentId = (notes: string | undefined | null): number => {
+  if (!notes) return 0;
+  const match = notes.match(/Appointment #(\d+)/);
+  if (!match || !match[1]) return 0;
+  const id = parseInt(match[1], 10);
+  return isNaN(id) ? 0 : id;
+};
+
 const CartPage = () => {
   const router = useRouter();
   const cart = useCart();
@@ -236,7 +245,7 @@ const CartPage = () => {
             
             for (const item of backendCart.cart.items) {
               if (item.type === 'service') {
-                const appointmentId = parseInt(item.notes?.match(/Appointment #(\d+)/)?.[1] || '0');
+                const appointmentId = parseAppointmentId(item.notes);
                 if (appointmentId > 0) {
                   // Check if appointment is past
                   try {
@@ -379,7 +388,7 @@ const CartPage = () => {
       const itemsToRemove: number[] = [];
       for (const item of backendCart.cart.items) {
         if (item.type === 'service') {
-          const appointmentId = parseInt(item.notes?.match(/Appointment #(\d+)/)?.[1] || '0');
+          const appointmentId = parseAppointmentId(item.notes);
           if (appointmentId > 0 && paidAppointmentIds.has(appointmentId)) {
             itemsToRemove.push(item.item_id);
             console.log(`[Cart] Marking paid appointment ${appointmentId} (item ${item.item_id}) for removal`);
@@ -545,7 +554,7 @@ const CartPage = () => {
           const serviceItems = backendCart.cart.items.filter((item: any) => item.type === 'service');
           if (serviceItems.length > 0) {
             const appointmentIds = serviceItems
-              .map((item: any) => parseInt(item.notes?.match(/Appointment #(\d+)/)?.[1] || '0'))
+              .map((item: any) => parseAppointmentId(item.notes))
               .filter(id => id > 0);
             
             // Check which appointments have completed payments
@@ -571,7 +580,7 @@ const CartPage = () => {
                 if (paidAppointmentIds.size > 0) {
                   console.log(`[Cart] Found ${paidAppointmentIds.size} paid appointments - removing from backend cart`);
                   for (const item of serviceItems) {
-                    const appointmentId = parseInt(item.notes?.match(/Appointment #(\d+)/)?.[1] || '0');
+                    const appointmentId = parseAppointmentId(item.notes);
                     if (paidAppointmentIds.has(appointmentId)) {
                       try {
                         await removeFromCart(item.item_id);
@@ -643,7 +652,7 @@ const CartPage = () => {
         // For services, use appointment_id; for products, use product_id
         const backendItemIds = new Set(backendItems.map((item: any) => {
           if (item.type === 'service') {
-            const appointmentId = parseInt(item.notes?.match(/Appointment #(\d+)/)?.[1] || '0');
+            const appointmentId = parseAppointmentId(item.notes);
             return `service-${appointmentId}`;
           }
           return `product-${item.product_id}`;
@@ -666,7 +675,7 @@ const CartPage = () => {
           // Deduplicate services by appointment_id and validate
           for (const item of backendItems) {
             if (item.type === 'service') {
-              const appointmentId = parseInt(item.notes?.match(/Appointment #(\d+)/)?.[1] || '0');
+              const appointmentId = parseAppointmentId(item.notes);
               if (appointmentId > 0) {
                 if (!seenServiceIds.has(appointmentId)) {
                   seenServiceIds.add(appointmentId);
@@ -696,7 +705,7 @@ const CartPage = () => {
           // Fetch appointment details for services to get scheduled_time and validate
           const appointmentIds = deduplicatedBackendItems
             .filter(item => item.type === 'service')
-            .map(item => parseInt(item.notes?.match(/Appointment #(\d+)/)?.[1] || '0'))
+            .map(item => parseAppointmentId(item.notes))
             .filter(id => id > 0);
           
           // Fetch appointment details in batch
@@ -809,7 +818,7 @@ const CartPage = () => {
           // Add deduplicated backend items to local cart (only if appointment is valid and in the future)
           for (const item of deduplicatedBackendItems) {
             if (item.type === 'service') {
-              const appointmentId = parseInt(item.notes?.match(/Appointment #(\d+)/)?.[1] || '0');
+              const appointmentId = parseAppointmentId(item.notes);
               const appointment = appointmentDetailsMap.get(appointmentId);
               
               // Only add if appointment exists, is valid, and is in the future
@@ -856,7 +865,7 @@ const CartPage = () => {
                   description: item.item_description || '',
                   price: parseFloat(String(item.price || 0)) || 0,
                   quantity: item.quantity || 1,
-                  salon_id: numericSalonId || undefined,
+                  salon_id: numericSalonId && !isNaN(numericSalonId) && numericSalonId > 0 ? numericSalonId : 0,
                   salon_name: '',
                 });
               }
@@ -1461,7 +1470,7 @@ const CartPage = () => {
                               description: suggestion.description || "",
                               price: parseFloat(suggestion.price) || 0,
                               quantity: 1,
-                              salon_id: salonId || 0,
+                              salon_id: salonId && !isNaN(Number(salonId)) && Number(salonId) > 0 ? Number(salonId) : 0,
                               salon_name: "",
                             });
                           }}
@@ -1483,7 +1492,7 @@ const CartPage = () => {
                                   description: suggestion.description || "",
                                   price: parseFloat(suggestion.price) || 0,
                                   quantity: 1,
-                                  salon_id: salonId || 0,
+                                  salon_id: salonId && !isNaN(Number(salonId)) && Number(salonId) > 0 ? Number(salonId) : 0,
                                   salon_name: "",
                                 });
                               }}
@@ -1746,7 +1755,7 @@ const CartPage = () => {
                               description: suggestion.description || "",
                               price: parseFloat(suggestion.price) || 0,
                               quantity: 1,
-                              salon_id: salonId || 0,
+                              salon_id: salonId && !isNaN(Number(salonId)) && Number(salonId) > 0 ? Number(salonId) : 0,
                               salon_name: "",
                             });
                             // Refresh suggestions after adding

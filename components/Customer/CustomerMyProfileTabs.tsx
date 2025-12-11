@@ -10,6 +10,10 @@ import {
   getProfile,
   deleteAccount,
 } from "@/libs/api/auth";
+import {
+  updateAccountSettings,
+  changePassword,
+} from "@/libs/api/account";
 import AppointmentHistory from "@/components/History/AppointmentHistory";
 import { useFavorites } from "@/hooks/useFavorites";
 import SalonCard from "@/components/Salon/SalonCard";
@@ -387,27 +391,56 @@ const SettingsContent = () => {
     }, 5000);
   };
 
-  const handleUpdateProfile = (e: React.FormEvent) => {
+  const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // update localStorage with new profile data
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      const user = JSON.parse(storedUser);
-      const updatedUser = {
-        ...user,
-        full_name: profileData.fullName,
-        phone: profileData.phone,
-        email: profileData.email,
-      };
-      localStorage.setItem("user", JSON.stringify(updatedUser));
-    }
+    setLoading(true);
+    setError("");
+    setMessage("");
 
-    setMessage("Profile updated successfully!");
-    setTimeout(() => setMessage(""), 3000);
+    try {
+      const result = await updateAccountSettings({
+        full_name: profileData.fullName,
+        email: profileData.email,
+        phone: profileData.phone,
+      });
+
+      if (result.error) {
+        setError(result.error);
+      } else {
+        setMessage("Profile updated successfully!");
+
+        // Update localStorage with new profile data
+        const storedUser = localStorage.getItem("user");
+        if (storedUser) {
+          try {
+            const user = JSON.parse(storedUser);
+            const updatedUser = {
+              ...user,
+              full_name: profileData.fullName,
+              phone: profileData.phone,
+              email: profileData.email,
+            };
+            localStorage.setItem("user", JSON.stringify(updatedUser));
+          } catch (parseError) {
+            console.error("Failed to update localStorage:", parseError);
+            // Clear corrupted localStorage
+            localStorage.removeItem("user");
+          }
+        }
+      }
+    } catch {
+      setError("Failed to update profile. Please try again.");
+    } finally {
+      setLoading(false);
+      setTimeout(() => {
+        setMessage("");
+        setError("");
+      }, 3000);
+    }
   };
 
-  const handleChangePassword = (e: React.FormEvent) => {
+  const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (passwordData.newPassword !== passwordData.confirmPassword) {
@@ -422,13 +455,35 @@ const SettingsContent = () => {
       return;
     }
 
-    setMessage("Password changed successfully!");
-    setPasswordData({
-      currentPassword: "",
-      newPassword: "",
-      confirmPassword: "",
-    });
-    setTimeout(() => setMessage(""), 3000);
+    setLoading(true);
+    setError("");
+    setMessage("");
+
+    try {
+      const result = await changePassword({
+        current_password: passwordData.currentPassword,
+        new_password: passwordData.newPassword,
+      });
+
+      if (result.error) {
+        setError(result.error);
+      } else {
+        setMessage("Password changed successfully!");
+        setPasswordData({
+          currentPassword: "",
+          newPassword: "",
+          confirmPassword: "",
+        });
+      }
+    } catch {
+      setError("Failed to change password. Please try again.");
+    } finally {
+      setLoading(false);
+      setTimeout(() => {
+        setMessage("");
+        setError("");
+      }, 3000);
+    }
   };
 
   const handleDeleteAccount = async () => {

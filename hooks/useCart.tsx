@@ -155,8 +155,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
       localStorage.setItem("cart", JSON.stringify(deduplicatedItems));
       isDeduplicating.current = true;
       setItems(deduplicatedItems);
-      // Reset flag immediately (synchronous)
-      isDeduplicating.current = false;
+      // Reset flag after state update has been processed
+      // Use queueMicrotask to ensure state update is batched first
+      queueMicrotask(() => {
+        isDeduplicating.current = false;
+      });
     }
   }, [items]);
 

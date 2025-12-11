@@ -18,7 +18,18 @@ const NotificationBell: React.FC = () => {
     const token = localStorage.getItem("token");
     if (token) {
       loadNotifications();
-      const interval = setInterval(loadNotifications, 30000); // Refresh every 30s
+      // Interval with token validation before each poll
+      const interval = setInterval(() => {
+        // Re-check token validity before each poll
+        const currentToken = localStorage.getItem("token");
+        if (currentToken) {
+          loadNotifications();
+        } else {
+          // Token is gone, clear notifications and stop polling
+          setNotifications([]);
+          clearInterval(interval);
+        }
+      }, 30000); // Refresh every 30s
       return () => clearInterval(interval);
     }
   }, []);
