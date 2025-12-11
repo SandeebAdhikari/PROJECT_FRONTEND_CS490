@@ -491,6 +491,9 @@ const NewAppointmentModal = ({
               Services <span className="text-red-500">*</span>
             </label>
             <div className="border border-border rounded-lg p-3 space-y-2 max-h-40 overflow-y-auto scrollbar-hide">
+              {services.length === 0 && (
+                <p className="text-sm text-muted-foreground">Loading services...</p>
+              )}
               {services.map((s) => {
                 const checked = form.service_ids.includes(s.service_id);
                 return (
