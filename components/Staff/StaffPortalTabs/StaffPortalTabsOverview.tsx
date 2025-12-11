@@ -19,10 +19,12 @@ interface StaffPortalTabsOverviewProps {
 
 const formatTime = (value?: string) => {
   if (!value) return "--";
+  // Remove Z suffix to treat as local time (database stores local time, not UTC)
+  const localValue = value.endsWith('Z') ? value.slice(0, -1) : value;
   return new Intl.DateTimeFormat("en", {
     hour: "numeric",
     minute: "2-digit",
-  }).format(new Date(value));
+  }).format(new Date(localValue));
 };
 
 const StaffPortalTabsOverview: React.FC<StaffPortalTabsOverviewProps> = ({

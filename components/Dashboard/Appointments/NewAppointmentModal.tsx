@@ -73,11 +73,19 @@ const NewAppointmentModal = ({
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!isOpen || !salonId) return;
+    if (!isOpen) return;
     const userData =
       typeof window !== "undefined" ? localStorage.getItem("user") : null;
     const user = userData ? JSON.parse(userData) : null;
-    const currentSalonId = user?.salon_id || salonId;
+    // Use user's salon_id from localStorage, or fall back to prop, or try staffUser
+    const staffUserData = typeof window !== "undefined" ? localStorage.getItem("staffUser") : null;
+    const staffUser = staffUserData ? JSON.parse(staffUserData) : null;
+    const currentSalonId = user?.salon_id || salonId || staffUser?.salon_id;
+    
+    if (!currentSalonId) {
+      console.warn("No salonId available for fetching services");
+      return;
+    }
 
     const fetchStaff = async () => {
       const res = await fetchWithRefresh(
