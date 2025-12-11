@@ -119,7 +119,7 @@ const CustomerPhotoManager: React.FC<CustomerPhotoManagerProps> = ({
         formData.append("staff_id", staffId.toString());
       }
 
-      const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
       const response = await fetch(
         `${API_BASE_URL}/api/photos/add`,
         {
