@@ -68,7 +68,7 @@ const AuthHeader: React.FC<AuthHeaderProps> = ({ title, subtitle }) => {
         if (role === "admin") {
           window.location.href = "/sidra/overview";
         } else if (role === "owner") {
-          window.location.href = "/admin/salon-dashboard/overview";
+          window.location.href = "/salonPortal/salon-dashboard/overview";
         } else {
           window.location.href = "/customer";
         }
@@ -134,7 +134,7 @@ const AuthHeader: React.FC<AuthHeaderProps> = ({ title, subtitle }) => {
       if (userRole === "admin") {
         window.location.href = "/sidra/overview";
       } else if (userRole === "owner") {
-        window.location.href = "/admin/salon-dashboard/overview";
+        window.location.href = "/salonPortal/salon-dashboard/overview";
       } else {
         window.location.href = "/customer";
       }
