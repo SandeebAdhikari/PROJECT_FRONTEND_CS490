@@ -9,15 +9,11 @@ import { test, expect } from '@playwright/test';
     const payload = Buffer.from(JSON.stringify({ exp })).toString('base64url');
     const token = `${header}.${payload}.`;
 
-    await context.route('**/api/salons/check-owner**', async (route) => {
-      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ salon: { salon_id: 1 } }) });
-    });
-
     await context.addCookies([
       {
         name: 'token',
         value: token,
-        url: 'http://localhost:3000/admin',
+        url: 'http://localhost:3000',
       },
     ]);
 
@@ -30,7 +26,7 @@ import { test, expect } from '@playwright/test';
   });
 
   test('loads overview KPIs and nav tabs', async ({ page }) => {
-    await page.goto('/admin/salon-dashboard/overview');
+    await page.goto('/salonPortal/salon-dashboard/overview');
 
     const overviewHeading = page.getByRole('heading', { name: /overview/i });
     const loading = page.getByText(/loading dashboard/i).first();

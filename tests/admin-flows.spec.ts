@@ -12,7 +12,7 @@ test.beforeEach(async ({ page, context }) => {
   });
 
   await context.addCookies([
-    { name: 'token', value: token, url: 'http://localhost:3000/admin' },
+    { name: 'token', value: token, url: 'http://localhost:3000' },
   ]);
 
   await page.addInitScript(() => {
@@ -24,7 +24,7 @@ test.beforeEach(async ({ page, context }) => {
 });
 
 test('analytics tab renders cards or loading state', async ({ page }) => {
-  await page.goto('/admin/salon-dashboard/analytics');
+  await page.goto('/salonPortal/salon-dashboard/analytics');
 
   const heading = page.getByRole('heading', { name: /analytics/i }).first();
   const loading = page.getByText(/loading analytics/i).first();
@@ -39,14 +39,14 @@ test('analytics tab renders cards or loading state', async ({ page }) => {
 });
 
  test('appointments tab shows list shell', async ({ page }) => {
- await page.goto('/admin/salon-dashboard/appointments');
+ await page.goto('/salonPortal/salon-dashboard/appointments');
 
   await expect(page.getByRole('heading', { name: /appointments/i })).toBeVisible();
   await expect(page.getByText(/today's appointments/i)).toBeVisible();
 });
 
  test('staff tab renders staff grid', async ({ page }) => {
-  await page.goto('/admin/salon-dashboard/staff');
+  await page.goto('/salonPortal/salon-dashboard/staff');
 
   await expect(page.getByRole('heading', { name: /staff/i })).toBeVisible();
   await expect(page.getByText(/add staff/i).or(page.getByRole('button', { name: /add/i }))).toBeVisible();

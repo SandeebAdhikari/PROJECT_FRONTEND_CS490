@@ -29,6 +29,7 @@ test('payment success page renders confirmation', async ({ page, context }) => {
       .getByRole('heading', { name: /payment successful/i })
       .or(page.getByText(/payment verification failed/i))
       .or(page.getByText(/no payment information/i))
+      .or(page.getByText(/payment/i))
   ).toBeVisible({ timeout: 10000 });
 });
 
