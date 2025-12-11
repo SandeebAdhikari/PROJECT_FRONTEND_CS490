@@ -2006,7 +2006,7 @@ const CartPage = () => {
                               }
                               className="mt-2 p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
                             >
-                              <Trash2 className="w-4 h-4" aria-label="Remove service from cart" title="Remove service from cart" />
+                              <Trash2 className="w-4 h-4" />
                             </button>
                           </div>
                         </div>
