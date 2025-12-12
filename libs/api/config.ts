@@ -225,6 +225,7 @@ export const API_ENDPOINTS = {
       return `${API_BASE_URL}/api/admins/salon-revenues${params.toString() ? "?" + params.toString() : ""}`;
     },
     LOYALTY_USAGE: `${API_BASE_URL}/api/admins/loyalty-usage`,
+    LOYALTY_SUMMARY: `${API_BASE_URL}/api/admins/loyalty-summary`,
     USER_DEMOGRAPHICS: `${API_BASE_URL}/api/admins/user-demographics`,
     CUSTOMER_RETENTION: `${API_BASE_URL}/api/admins/customer-retention`,
     REPORTS: (startDate?: string, endDate?: string, format?: string) => {

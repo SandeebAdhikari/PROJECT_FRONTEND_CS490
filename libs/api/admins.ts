@@ -248,6 +248,24 @@ export interface CustomerRetention {
   retained_customers: number;
 }
 
+export interface LoyaltySummary {
+  total_points: number;
+  active_salons: number;
+  active_members: number;
+  by_salon: Array<{
+    salon_id: number;
+    salon_name?: string;
+    total_points: number;
+    member_count: number;
+  }>;
+  top_salon?: {
+    salon_id: number;
+    salon_name?: string;
+    total_points: number;
+    member_count: number;
+  } | null;
+}
+
 /**
  * Get user engagement stats
  */
@@ -287,6 +305,35 @@ export async function getUserEngagement(): Promise<{ engagement?: EngagementResp
 export interface DemographicsResponse {
   gender: UserDemographicBucket[];
   age: UserDemographicBucket[];
+}
+
+export async function getLoyaltySummary(): Promise<{ summary?: LoyaltySummary; error?: string }> {
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      return { error: "Not authenticated" };
+    }
+
+    const response = await fetch(API_ENDPOINTS.ADMINS.LOYALTY_SUMMARY, {
+      ...fetchConfig,
+      cache: "no-store",
+      headers: {
+        ...fetchConfig.headers,
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok && response.status !== 304) {
+      const result = await response.json().catch(() => ({}));
+      return { error: result.error || "Failed to get loyalty summary" };
+    }
+
+    const data = response.status === 304 ? {} : await response.json();
+    return { summary: data as LoyaltySummary };
+  } catch (error) {
+    console.error("Get loyalty summary error:", error);
+    return { error: "Network error. Please try again." };
+  }
 }
 
 export async function getLoyaltyUsage(): Promise<{ usage?: LoyaltyUsage[]; error?: string }> {
