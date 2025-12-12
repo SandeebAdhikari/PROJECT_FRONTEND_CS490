@@ -3,16 +3,7 @@
 import React, { useState, useEffect } from "react";
 import ChartCard from "@/components/Admin/ChartCard";
 import { Download } from "lucide-react";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  LineChart,
-  Line,
-} from "recharts";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts";
 import {
   getAdminReports,
   getSalonRevenues,
@@ -22,7 +13,6 @@ import {
   getRetentionSummary,
   RetentionSummary,
 } from "@/libs/api/admins";
-import { BarChart, Bar, XAxis, YAxis, Tooltip } from "recharts";
 
 export default function ReportsPage() {
   const [reports, setReports] = useState<AdminReport[]>([]);

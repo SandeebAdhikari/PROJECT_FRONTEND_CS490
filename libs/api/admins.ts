@@ -265,6 +265,11 @@ export interface RetentionSummary {
   trend: RetentionTrend[];
 }
 
+export interface DailyActivityPoint {
+  day: string;
+  sessions: number;
+}
+
 export interface LoyaltySummary {
   total_points: number;
   active_salons: number;
@@ -322,6 +327,38 @@ export async function getUserEngagement(): Promise<{ engagement?: EngagementResp
 export interface DemographicsResponse {
   gender: UserDemographicBucket[];
   age: UserDemographicBucket[];
+}
+
+export async function getDailyActivity(): Promise<{ activity?: DailyActivityPoint[]; error?: string }> {
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      return { error: "Not authenticated" };
+    }
+
+    const response = await fetch(API_ENDPOINTS.ADMINS.DAILY_ACTIVITY, {
+      ...fetchConfig,
+      cache: "no-store",
+      headers: {
+        ...fetchConfig.headers,
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok && response.status !== 304) {
+      const result = await response.json().catch(() => ({}));
+      return { error: result.error || "Failed to get daily activity" };
+    }
+
+    const data = response.status === 304 ? [] : await response.json();
+    const activity = Array.isArray((data as any).activity)
+      ? (data as any).activity
+      : (data as any).activity || data || [];
+    return { activity: activity as DailyActivityPoint[] };
+  } catch (error) {
+    console.error("Get daily activity error:", error);
+    return { error: "Network error. Please try again." };
+  }
 }
 
 export async function getRetentionSummary(): Promise<{ retention?: RetentionSummary; error?: string }> {

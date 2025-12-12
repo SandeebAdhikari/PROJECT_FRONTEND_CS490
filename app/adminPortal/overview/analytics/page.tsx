@@ -19,15 +19,18 @@ import {
   getAppointmentTrends,
   getUserEngagement,
   getUserDemographics,
+  getDailyActivity,
   AppointmentTrend,
   DemographicsResponse,
   EngagementResponse,
+  DailyActivityPoint,
 } from "@/libs/api/admins";
 
 export default function AnalyticsPage() {
   const [appointmentTrends, setAppointmentTrends] = useState<AppointmentTrend[]>([]);
   const [demographics, setDemographics] = useState<DemographicsResponse | null>(null);
   const [engagement, setEngagement] = useState<EngagementResponse | null>(null);
+  const [activity, setActivity] = useState<DailyActivityPoint[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [startDate, setStartDate] = useState<string>("");
@@ -43,6 +46,7 @@ export default function AnalyticsPage() {
         getUserEngagement(),
         getUserDemographics(),
       ]);
+      const activityResult = await getDailyActivity();
 
       if (trendsResult.error) {
         console.error("Failed to load trends:", trendsResult.error);
@@ -60,6 +64,12 @@ export default function AnalyticsPage() {
         console.error("Failed to load demographics:", demographicsResult.error);
       } else {
         setDemographics(demographicsResult.demographics || null);
+      }
+
+      if (activityResult.error) {
+        console.error("Failed to load activity:", activityResult.error);
+      } else {
+        setActivity(activityResult.activity || []);
       }
     } catch (err) {
       console.error("Error loading analytics:", err);
@@ -96,20 +106,14 @@ export default function AnalyticsPage() {
     users: d.count || 0,
   }));
 
-  // Format activity data (sessions per day - estimated based on total users)
-  // Note: Backend doesn't provide session data, so we show a flat estimate
-  // This is a placeholder visualization - in production, you'd want a backend endpoint that tracks sessions
-  const totalUsersCount = engagement?.customers?.total_users ?? 0;
-  const estimatedDailySessions =
-    totalUsersCount > 0 ? Math.floor(totalUsersCount * 0.3) : 0; // Estimate 30% of users are active daily
-  const activityData = Array.from({ length: 7 }, (_, i) => {
-    const date = new Date();
-    date.setDate(date.getDate() - (6 - i));
-    return {
-      day: date.toLocaleDateString("en-US", { weekday: "short" }),
-      sessions: estimatedDailySessions,
-    };
-  });
+  // Format activity data (sessions per day) from backend
+  const activityData =
+    activity.length > 0
+      ? activity.map((a) => ({
+          day: new Date(a.day).toLocaleDateString("en-US", { weekday: "short" }),
+          sessions: a.sessions,
+        }))
+      : [];
 
   if (loading) {
     return (
