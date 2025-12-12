@@ -202,10 +202,8 @@ const BookingContent = () => {
             servicesStatus: servicesResponse.status,
           });
 
-          // Show empty arrays if fetch fails
           setAvailableStaff([]);
           setAvailableServices([]);
-          setError("Unable to load salon data. Please try again later.");
         }
       } catch (error) {
         console.error("Error fetching salon data:", error);
@@ -215,7 +213,6 @@ const BookingContent = () => {
           setError(`Failed to load salon data: ${error.message}`);
         }
 
-        // Show empty arrays if fetch fails
         setAvailableStaff([]);
         setAvailableServices([]);
       }

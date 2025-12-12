@@ -4,21 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { icons } from "@/libs/dashboard/dashboard.icons";
-
-// Static menu configuration - no need for external JSON
-const DASHBOARD_MENU = [
-  { id: 1, label: "Overview", shortLabel: "Home", icon: "BarChart3" },
-  { id: 2, label: "Appointments", shortLabel: "Appts", icon: "CalendarDays" },
-  { id: 3, label: "Staff", shortLabel: "Staff", icon: "Users" },
-  { id: 4, label: "Customers", shortLabel: "Clients", icon: "UserCircle2" },
-  { id: 5, label: "Analytics", shortLabel: "Stats", icon: "Clock" },
-  { id: 6, label: "Gallery", shortLabel: "Photos", icon: "Image" },
-  { id: 7, label: "Reviews", shortLabel: "Reviews", icon: "Star" },
-  { id: 10, label: "Promotions", shortLabel: "Promos", icon: "Tag" },
-  { id: 11, label: "Payments", shortLabel: "Payments", icon: "CreditCard" },
-  { id: 8, label: "Salon Settings", shortLabel: "Salon", icon: "Building2" },
-  { id: 9, label: "Account Settings", shortLabel: "Account", icon: "Settings" },
-];
+import { dashboardMenu } from "@/libs/dashboard/dashboard.menu";
 
 const SalonDashboardTabs = ({ activeTab }: { activeTab?: string }) => {
   const pathname = usePathname();
@@ -26,17 +12,14 @@ const SalonDashboardTabs = ({ activeTab }: { activeTab?: string }) => {
   return (
     <div className="p-4 sm:p-8">
       <div className="flex w-full bg-secondary rounded-2xl p-1 sm:p-2 scrollbar-hide overflow-x-auto">
-        {DASHBOARD_MENU.map((tab) => {
-          const Icon = icons[tab.icon as keyof typeof icons];
-          const urlPath = tab.label.toLowerCase().replace(/\s+/g, "-");
-          const isActive =
-            pathname.endsWith(urlPath) ||
-            activeTab === tab.label;
+        {dashboardMenu.map((tab) => {
+          const Icon = icons[tab.icon];
+          const isActive = pathname.endsWith(tab.path) || activeTab === tab.label;
 
           return (
             <Link
               key={tab.id}
-              href={`/salonPortal/salon-dashboard/${urlPath}`}
+              href={`/salonPortal/salon-dashboard/${tab.path}`}
               className={`flex items-center justify-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-xl font-inter text-xs sm:text-sm font-medium transition-smooth cursor-pointer flex-1 min-w-fit whitespace-nowrap ${
                 isActive
                   ? "bg-white text-black shadow-soft-br"

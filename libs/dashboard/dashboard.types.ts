@@ -1,22 +1,8 @@
 import { LucideIcon } from "lucide-react";
+import type { icons } from "./dashboard.icons";
 
-export type IconName =
-  | "DollarSign"
-  | "CalendarDays"
-  | "Users"
-  | "Star"
-  | "Activity"
-  | "UserCheck"
-  | "TrendingUp"
-  | "TrendingDown";
-
-export type IconNameSwitch =
-  | "BarChart3"
-  | "CalendarDays"
-  | "Users"
-  | "UserCircle2"
-  | "Clock"
-  | "Settings";
+export type IconName = keyof typeof icons;
+export type IconNameSwitch = IconName;
 
 export type DashboardItem = {
   id: number;
@@ -32,6 +18,7 @@ export type MenuItem = {
   id: number;
   label: string;
   shortLabel: string;
+  path: string;
   icon: IconName;
 };
 
