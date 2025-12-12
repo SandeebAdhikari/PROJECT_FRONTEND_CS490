@@ -30,6 +30,17 @@ const DAYS = [
   "Sunday",
 ];
 
+// Convert 24-hour time (e.g., "09:00" or "18:00") to 12-hour format (e.g., "9:00 AM" or "6:00 PM")
+const formatTo12Hour = (time24: string): string => {
+  if (!time24) return "";
+  const [hourStr, minuteStr] = time24.split(":");
+  let hour = parseInt(hourStr, 10);
+  const minute = minuteStr || "00";
+  const ampm = hour >= 12 ? "PM" : "AM";
+  hour = hour % 12 || 12; // Convert 0 to 12 for midnight, and 13-23 to 1-11
+  return `${hour}:${minute} ${ampm}`;
+};
+
 const SidebarOpeningHours: React.FC<SidebarOpeningHoursProps> = ({
   salonId,
   businessHours: propBusinessHours,
@@ -130,7 +141,7 @@ const SidebarOpeningHours: React.FC<SidebarOpeningHoursProps> = ({
             const closeTime = dayHours?.end || dayHours?.close;
             const timeDisplay =
               dayHours?.enabled && openTime && closeTime
-                ? `${openTime} - ${closeTime}`
+                ? `${formatTo12Hour(openTime)} - ${formatTo12Hour(closeTime)}`
                 : "Closed";
 
             return (

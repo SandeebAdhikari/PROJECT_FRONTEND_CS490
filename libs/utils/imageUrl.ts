@@ -9,9 +9,14 @@ export function getImageUrl(imagePath: string | null | undefined): string {
     return "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=1200&h=600&fit=crop&auto=format";
   }
 
-  // If it's already a full URL (http:// or https://), return as is
-  if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
+  // If it's already a full URL, ensure we use HTTPS for security
+  if (imagePath.startsWith("https://")) {
     return imagePath;
+  }
+  
+  // Convert HTTP to HTTPS for mixed content issues
+  if (imagePath.startsWith("http://")) {
+    return imagePath.replace("http://", "https://");
   }
 
   // If it's a relative path starting with /, prepend API_BASE_URL

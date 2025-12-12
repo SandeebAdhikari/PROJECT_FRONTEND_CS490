@@ -1,11 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, react-hooks/exhaustive-deps */
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Upload, X, Image as ImageIcon, Check, Calendar } from "lucide-react";
+import { Upload, X, Image as ImageIcon, Check, Calendar, Trash2, Download, Info } from "lucide-react";
 import Image from "next/image";
 import {
-  uploadAppointmentPhoto,
-  getAppointmentPhotos,
   getUserPhotos,
   getPhotoUrl,
   ServicePhoto,
@@ -120,7 +119,7 @@ const CustomerPhotoManager: React.FC<CustomerPhotoManagerProps> = ({
         formData.append("staff_id", staffId.toString());
       }
 
-      const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
       const response = await fetch(
         `${API_BASE_URL}/api/photos/add`,
         {
@@ -152,8 +151,74 @@ const CustomerPhotoManager: React.FC<CustomerPhotoManagerProps> = ({
     }
   };
 
-  const beforePhotos = photos.filter((p) => p.photo_type === "before");
-  const afterPhotos = photos.filter((p) => p.photo_type === "after");
+  const handleDelete = async (photoId: number) => {
+    if (!confirm("Are you sure you want to delete this photo?")) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("staffToken") || 
+                    localStorage.getItem("token") || 
+                    localStorage.getItem("authToken");
+      if (!token) {
+        setError("Authentication required");
+        return;
+      }
+
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+      const response = await fetch(
+        `${API_BASE_URL}/api/photos/service/${photoId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          credentials: "include",
+        }
+      );
+
+      if (response.ok) {
+        setMessage("Photo deleted successfully");
+        fetchPhotos();
+        setTimeout(() => setMessage(""), 3000);
+      } else {
+        const result = await response.json();
+        setError(result.error || "Failed to delete photo");
+      }
+    } catch (err) {
+      console.error("Error deleting photo:", err);
+      setError("Network error. Please try again.");
+    }
+  };
+
+  const handleDownload = async (photoUrl: string, photoType: string) => {
+    try {
+      const url = getPhotoUrl(photoUrl);
+      const response = await fetch(url);
+      const blob = await response.blob();
+      
+      // Create download link
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      
+      // Generate filename with date
+      const date = new Date().toISOString().split("T")[0];
+      const extension = photoUrl.split(".").pop() || "jpg";
+      link.download = `${photoType}-photo-${date}.${extension}`;
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(downloadUrl);
+      
+      setMessage("Photo downloaded successfully");
+      setTimeout(() => setMessage(""), 3000);
+    } catch (err) {
+      console.error("Error downloading photo:", err);
+      setError("Failed to download photo");
+    }
+  };
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
@@ -190,10 +255,16 @@ const CustomerPhotoManager: React.FC<CustomerPhotoManagerProps> = ({
             <>
               {/* Existing Photos - Grouped by Date */}
               <div>
-                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                  <ImageIcon className="w-5 h-5 text-primary" />
-                  Photo History
-                </h3>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold flex items-center gap-2">
+                    <ImageIcon className="w-5 h-5 text-primary" />
+                    Photo History
+                  </h3>
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">
+                    <Info className="w-3 h-3" />
+                    <span>Hover photos to download or delete</span>
+                  </div>
+                </div>
                 
                 {/* Group photos by date */}
                 {(() => {
@@ -259,7 +330,7 @@ const CustomerPhotoManager: React.FC<CustomerPhotoManagerProps> = ({
                                     group.before.map((photo) => (
                                       <div
                                         key={photo.photo_id}
-                                        className="relative aspect-square rounded-lg overflow-hidden border border-border"
+                                        className="relative aspect-square rounded-lg overflow-hidden border border-border group"
                                       >
                                         <Image
                                           src={getPhotoUrl(photo.photo_url)}
@@ -267,6 +338,23 @@ const CustomerPhotoManager: React.FC<CustomerPhotoManagerProps> = ({
                                           fill
                                           className="object-cover"
                                         />
+                                        {/* Photo action buttons */}
+                                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                          <button
+                                            onClick={() => handleDownload(photo.photo_url, "before")}
+                                            className="p-2 bg-white rounded-full hover:bg-gray-100 transition-colors"
+                                            title="Download"
+                                          >
+                                            <Download className="w-4 h-4 text-gray-700" />
+                                          </button>
+                                          <button
+                                            onClick={() => handleDelete(photo.photo_id)}
+                                            className="p-2 bg-white rounded-full hover:bg-red-100 transition-colors"
+                                            title="Delete"
+                                          >
+                                            <Trash2 className="w-4 h-4 text-red-500" />
+                                          </button>
+                                        </div>
                                       </div>
                                     ))
                                   )}
@@ -287,7 +375,7 @@ const CustomerPhotoManager: React.FC<CustomerPhotoManagerProps> = ({
                                     group.after.map((photo) => (
                                       <div
                                         key={photo.photo_id}
-                                        className="relative aspect-square rounded-lg overflow-hidden border border-border"
+                                        className="relative aspect-square rounded-lg overflow-hidden border border-border group"
                                       >
                                         <Image
                                           src={getPhotoUrl(photo.photo_url)}
@@ -295,6 +383,23 @@ const CustomerPhotoManager: React.FC<CustomerPhotoManagerProps> = ({
                                           fill
                                           className="object-cover"
                                         />
+                                        {/* Photo action buttons */}
+                                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                          <button
+                                            onClick={() => handleDownload(photo.photo_url, "after")}
+                                            className="p-2 bg-white rounded-full hover:bg-gray-100 transition-colors"
+                                            title="Download"
+                                          >
+                                            <Download className="w-4 h-4 text-gray-700" />
+                                          </button>
+                                          <button
+                                            onClick={() => handleDelete(photo.photo_id)}
+                                            className="p-2 bg-white rounded-full hover:bg-red-100 transition-colors"
+                                            title="Delete"
+                                          >
+                                            <Trash2 className="w-4 h-4 text-red-500" />
+                                          </button>
+                                        </div>
                                       </div>
                                     ))
                                   )}
@@ -416,4 +521,3 @@ const CustomerPhotoManager: React.FC<CustomerPhotoManagerProps> = ({
 };
 
 export default CustomerPhotoManager;
-

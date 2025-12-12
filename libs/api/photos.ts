@@ -1,4 +1,4 @@
-import { API_ENDPOINTS, API_BASE_URL } from "./config";
+import { API_BASE_URL } from "./config";
 
 export interface ServicePhoto {
   photo_id: number;

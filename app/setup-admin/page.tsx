@@ -220,7 +220,7 @@ export default function SetupAdminPage() {
 
             <p className="text-xs text-center text-muted-foreground">
               This will create the first admin account. If an admin already
-              exists, you&apos;ll need to use the setup token or contact support.
+              exists, you'll need to use the setup token or contact support.
             </p>
           </form>
         )}

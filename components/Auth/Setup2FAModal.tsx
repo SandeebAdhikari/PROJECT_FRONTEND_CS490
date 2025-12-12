@@ -93,7 +93,7 @@ const Setup2FAModal: React.FC<Setup2FAModalProps> = ({
       const result = await enable2FA("sms", phoneNumber);
       if (!result.error) {
         alert(
-          "2FA enabled successfully! You&apos;ll receive a verification code on your next login."
+          "2FA enabled successfully! You'll receive a verification code on your next login."
         );
         localStorage.setItem("2fa_setup_completed", "true");
         onClose();

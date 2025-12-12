@@ -216,7 +216,7 @@ const SalonBusinessInformation = forwardRef<
       {isNewSalon && (
         <div className="p-4 bg-primary/10 border border-primary/20 rounded-lg">
           <p className="text-foreground text-sm">
-            <strong>Welcome!</strong> Let&apos;s set up your salon profile. Fill
+            <strong>Welcome!</strong> Let{"'"}s set up your salon profile. Fill
             in the information below to get started.
           </p>
         </div>

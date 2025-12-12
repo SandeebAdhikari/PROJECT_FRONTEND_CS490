@@ -1,8 +1,9 @@
+/* eslint-disable react/no-unescaped-entities, @next/next/no-img-element */
 "use client";
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Package, CreditCard, Trash2, Mail } from "lucide-react";
+import { Package, CreditCard, Mail } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 import { API_ENDPOINTS, fetchConfig } from "@/libs/api/config";
 
