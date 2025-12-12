@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { MessageCircle, PhoneCall, Camera } from "lucide-react";
+import React, { useState, useEffect, useCallback } from "react";
+import { Camera, Calendar, DollarSign, User } from "lucide-react";
 import { StaffPortalCustomer } from "@/components/Staff/staffPortalTypes";
 import CustomerPhotoManager from "../CustomerPhotoManager";
 import { getUserPhotos } from "@/libs/api/photos";
@@ -25,27 +25,33 @@ const StaffPortalTabsCustomer: React.FC<StaffPortalTabsCustomerProps> = ({
   const [photoCounts, setPhotoCounts] = useState<CustomerPhotoCount>({});
 
   // Fetch photo counts for all customers
-  useEffect(() => {
-    const fetchPhotoCounts = async () => {
-      const counts: CustomerPhotoCount = {};
-      for (const customer of customers) {
-        try {
-          const result = await getUserPhotos(customer.id, salonId);
-          if (result.photos) {
-            counts[customer.id] = result.photos.length;
-          }
-        } catch (err) {
-          console.error(`Error fetching photos for customer ${customer.id}:`, err);
-          counts[customer.id] = 0;
+  const fetchPhotoCounts = useCallback(async () => {
+    const counts: CustomerPhotoCount = {};
+    for (const customer of customers) {
+      try {
+        const result = await getUserPhotos(customer.id, salonId);
+        if (result.photos) {
+          counts[customer.id] = result.photos.length;
         }
+      } catch (err) {
+        console.error(`Error fetching photos for customer ${customer.id}:`, err);
+        counts[customer.id] = 0;
       }
-      setPhotoCounts(counts);
-    };
+    }
+    setPhotoCounts(counts);
+  }, [customers, salonId]);
 
+  useEffect(() => {
     if (customers.length > 0) {
       fetchPhotoCounts();
     }
-  }, [customers, salonId]);
+  }, [customers, salonId, fetchPhotoCounts]);
+
+  // Refresh counts when photo manager closes
+  const handlePhotoManagerClose = () => {
+    setSelectedCustomerId(null);
+    fetchPhotoCounts(); // Refresh counts after closing
+  };
 
   if (customers.length === 0) {
     return (
@@ -57,6 +63,7 @@ const StaffPortalTabsCustomer: React.FC<StaffPortalTabsCustomerProps> = ({
           <h3 className="text-xl font-semibold">Customer loyalty</h3>
         </div>
         <div className="flex flex-col items-center justify-center py-12">
+          <User className="w-12 h-12 text-muted-foreground mb-4" />
           <p className="text-muted-foreground">No customers yet</p>
           <p className="text-sm text-muted-foreground mt-2">
             Customers will appear here after they book appointments
@@ -76,81 +83,68 @@ const StaffPortalTabsCustomer: React.FC<StaffPortalTabsCustomerProps> = ({
           <h3 className="text-xl font-semibold">Customer loyalty</h3>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {customers.map((customer) => (
             <article
               key={customer.id}
-              className="rounded-2xl border border-border bg-white p-5 shadow-soft-br"
+              className="border border-border rounded-xl sm:rounded-2xl overflow-hidden shadow-soft-br hover:shadow-premium transition-smooth bg-card group cursor-pointer relative font-inter h-full flex flex-col"
             >
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <p className="text-lg font-semibold">{customer.name}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {customer.favoriteService}
-                  </p>
+              {/* Customer Avatar/Header */}
+              <div className="relative bg-gradient-to-br from-primary/20 to-primary/5 p-6 flex items-center justify-center">
+                <div className="w-20 h-20 rounded-full bg-white shadow-md flex items-center justify-center">
+                  <span className="text-2xl font-bold text-primary">
+                    {customer.name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'NA'}
+                  </span>
                 </div>
-                <span className="rounded-full bg-primary/5 px-3 py-1 text-xs font-semibold text-primary">
+                {/* Visit count badge */}
+                <div className="absolute top-3 right-3 bg-primary text-white text-xs font-semibold px-2.5 py-1 rounded-full shadow-sm">
                   {customer.visits} visits
-                </span>
-              </div>
-              <div className="mt-4 grid gap-2 text-sm text-muted-foreground">
-                <p>
-                  Last visit:{" "}
-                  <span className="font-semibold text-foreground">
-                    {customer.lastVisit && !isNaN(new Date(customer.lastVisit).getTime()) && new Date(customer.lastVisit).getTime() > 0
-                      ? new Date(customer.lastVisit).toLocaleDateString()
-                      : "Never"}
-                  </span>
-                </p>
-                <p>
-                  Lifetime value:{" "}
-                  <span className="font-semibold text-foreground">
-                    ${(Number(customer.lifetimeValue) || 0).toLocaleString()}
-                  </span>
-                </p>
-                {customer.phone && (
-                  <p>
-                    Phone:{" "}
-                    <span className="font-semibold text-foreground">
-                      {customer.phone}
-                    </span>
-                  </p>
-                )}
+                </div>
               </div>
 
-              <div className="mt-4 flex flex-wrap gap-2">
+              {/* Customer Info */}
+              <div className="p-4 sm:p-5 space-y-3 flex-1 flex flex-col">
+                <div className="text-center">
+                  <h3 className="text-base sm:text-lg font-bold line-clamp-1">
+                    {customer.name}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    {customer.favoriteService || "No favorite service yet"}
+                  </p>
+                </div>
+
+                <div className="space-y-2 text-sm flex-1">
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Calendar className="w-4 h-4" />
+                    <span>Last visit: </span>
+                    <span className="font-semibold text-foreground">
+                      {customer.lastVisit && !isNaN(new Date(customer.lastVisit).getTime()) && new Date(customer.lastVisit).getTime() > 0
+                        ? new Date(customer.lastVisit).toLocaleDateString()
+                        : "Never"}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <DollarSign className="w-4 h-4" />
+                    <span>Lifetime value: </span>
+                    <span className="font-semibold text-foreground">
+                      ${(Number(customer.lifetimeValue) || 0).toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+
+                {/* View Photos Button */}
                 <button
                   type="button"
                   onClick={() => setSelectedCustomerId(customer.id)}
-                  className="inline-flex items-center gap-2 rounded-full border-2 border-primary bg-primary/5 text-primary px-4 py-2 text-xs font-semibold hover:bg-primary/10 transition-colors"
+                  className="w-full py-2.5 rounded-lg font-semibold cursor-pointer transition-smooth flex justify-center items-center gap-2 text-sm active:scale-95 bg-primary-light hover:bg-primary text-white"
                 >
                   <Camera className="h-4 w-4" />
-                  {photoCounts[customer.id] !== undefined ? (
-                    <>
-                      View Photos
-                      {photoCounts[customer.id] > 0 && (
-                        <span className="ml-1 bg-primary text-white rounded-full px-1.5 py-0.5 text-[10px] font-bold">
-                          {photoCounts[customer.id]}
-                        </span>
-                      )}
-                    </>
-                  ) : (
-                    "View Photos"
+                  View Photos
+                  {photoCounts[customer.id] !== undefined && photoCounts[customer.id] > 0 && (
+                    <span className="bg-white/20 rounded-full px-2 py-0.5 text-xs">
+                      {photoCounts[customer.id]}
+                    </span>
                   )}
-                </button>
-                <button
-                  type="button"
-                  className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-xs font-semibold hover:bg-muted/50 transition-colors"
-                >
-                  <MessageCircle className="h-4 w-4" />
-                  Send check-in
-                </button>
-                <button
-                  type="button"
-                  className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-xs font-semibold hover:bg-muted/50 transition-colors"
-                >
-                  <PhoneCall className="h-4 w-4" />
-                  Call guest
                 </button>
               </div>
             </article>
@@ -163,7 +157,7 @@ const StaffPortalTabsCustomer: React.FC<StaffPortalTabsCustomerProps> = ({
           customerId={selectedCustomerId}
           staffId={staffId}
           salonId={salonId}
-          onClose={() => setSelectedCustomerId(null)}
+          onClose={handlePhotoManagerClose}
         />
       )}
     </>
