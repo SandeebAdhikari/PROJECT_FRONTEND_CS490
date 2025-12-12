@@ -15,6 +15,7 @@ import {
 export default function ReportsPage() {
   const [reports, setReports] = useState<AdminReport[]>([]);
   const [revenues, setRevenues] = useState<SalonRevenue[]>([]);
+  const [reportSummary, setReportSummary] = useState<any>(null);
   const [retention, setRetention] = useState<RetentionSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -34,6 +35,7 @@ export default function ReportsPage() {
         setError(reportsResult.error);
       } else {
         setReports(reportsResult.reports || []);
+        setReportSummary(reportsResult.summary || null);
       }
 
       if (revenuesResult.error) {
@@ -64,6 +66,11 @@ export default function ReportsPage() {
   const totalSales = reports.reduce((sum, r) => sum + Number(r.total_sales || 0), 0);
   const totalSalons = reports.length;
   const averageSales = totalSalons > 0 ? totalSales / totalSalons : 0;
+  const totalBookings = reportSummary?.total_bookings || 0;
+  const completedBookings = reportSummary?.completed_bookings || 0;
+  const cancelledBookings = reportSummary?.cancelled_bookings || 0;
+  const completionRate =
+    totalBookings > 0 ? Math.round((completedBookings / totalBookings) * 100) : 0;
 
   const retentionRate =
     (retention?.active_customers_90d ?? 0) > 0
@@ -160,6 +167,14 @@ export default function ReportsPage() {
           <h3 className="text-primary text-lg font-medium mb-2">Average Sales</h3>
           <p className="text-4xl font-bold text-foreground">
             ${averageSales.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </p>
+        </div>
+
+        <div className="bg-card p-6 rounded-xl shadow-sm border border-border">
+          <h3 className="text-primary text-lg font-medium mb-2">Bookings (30d)</h3>
+          <p className="text-4xl font-bold text-foreground">{totalBookings.toLocaleString()}</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            Completed: {completedBookings.toLocaleString()} • Cancelled: {cancelledBookings.toLocaleString()} • Completion: {completionRate}%
           </p>
         </div>
       </div>

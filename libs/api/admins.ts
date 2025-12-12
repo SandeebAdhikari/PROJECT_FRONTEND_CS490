@@ -108,7 +108,7 @@ export async function exportAdminReports(
 export async function getAdminReports(
   startDate?: string,
   endDate?: string
-): Promise<{ reports?: AdminReport[]; error?: string }> {
+): Promise<{ reports?: AdminReport[]; summary?: any; error?: string }> {
   try {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -131,8 +131,11 @@ export async function getAdminReports(
       return { error: result.error || "Failed to get reports" };
     }
 
-    const reports = await response.json();
-    return { reports: Array.isArray(reports) ? reports : [] };
+    const data = await response.json();
+    return {
+      reports: Array.isArray(data.reports) ? data.reports : [],
+      summary: data.summary,
+    };
   } catch (error) {
     console.error("Get reports error:", error);
     return { error: "Network error. Please try again." };
