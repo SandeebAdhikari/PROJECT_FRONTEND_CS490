@@ -23,7 +23,7 @@ const SalonDashboardTabs = ({ activeTab }: { activeTab?: string }) => {
           return (
             <Link
               key={tab.id}
-              href={`/admin/salon-dashboard/${tab.label.toLowerCase()}`}
+              href={`/salonPortal/salon-dashboard/${tab.label.toLowerCase()}`}
               className={`flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-1 rounded-xl font-inter text-sm sm:text-base font-medium transition-smooth cursor-pointer ${
                 isActive
                   ? "bg-white text-black shadow-soft-br"

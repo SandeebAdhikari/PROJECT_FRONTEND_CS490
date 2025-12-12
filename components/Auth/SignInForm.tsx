@@ -87,9 +87,9 @@ const SignInForm = () => {
         const role = userRole?.toLowerCase();
 
         if (role === "admin") {
-          router.push("/sidra/overview");
+          router.push("/adminPortal/overview");
         } else if (role === "owner" || role === "salon_owner") {
-          router.push("/admin/salon-dashboard/overview");
+          router.push("/salonPortal/salon-dashboard/overview");
         } else if (role === "staff") {
           router.push("/staff/dashboard");
         } else {
@@ -150,11 +150,11 @@ const SignInForm = () => {
         console.log("Detected role:", role);
 
         if (role === "admin") {
-          console.log("Redirecting → /sidra/overview");
-          router.push("/sidra/overview");
+          console.log("Redirecting → /adminPortal/overview");
+          router.push("/adminPortal/overview");
         } else if (role === "owner" || role === "salon_owner") {
-          console.log("Redirecting → /admin/salon-dashboard/overview");
-          router.push("/admin/salon-dashboard/overview");
+          console.log("Redirecting → /salonPortal/salon-dashboard/overview");
+          router.push("/salonPortal/salon-dashboard/overview");
         } else if (role === "staff") {
           console.log("Redirecting → /staff/dashboard");
           router.push("/staff/dashboard");

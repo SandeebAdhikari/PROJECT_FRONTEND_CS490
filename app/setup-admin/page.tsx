@@ -46,7 +46,7 @@ export default function SetupAdminPage() {
       setSuccess(true);
       // Redirect to admin portal after successful setup
       setTimeout(() => {
-        router.push("/sidra/overview");
+        router.push("/adminPortal/overview");
       }, 2000);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
@@ -228,4 +228,3 @@ export default function SetupAdminPage() {
     </div>
   );
 }
-

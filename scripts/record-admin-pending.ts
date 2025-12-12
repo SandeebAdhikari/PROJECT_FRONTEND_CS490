@@ -32,7 +32,7 @@ async function main() {
 
   // Navigate directly to pending approvals (try sidra path first, then adminPortal)
   let reached = false;
-  for (const path of ["/sidra/overview/pending-approvals", "/adminPortal/overview/pending-approvals"]) {
+  for (const path of ["/adminPortal/overview/pending-approvals"]) {
     await page.goto(`${baseURL}${path}`, { waitUntil: "domcontentloaded" });
     const heading = page.getByText(/pending salon approvals/i).first();
     if (await heading.count()) {

@@ -17,6 +17,33 @@ export interface SalonRevenue {
   total_revenue: number;
 }
 
+export interface SystemHealth {
+  uptime_percent: number;
+  avg_latency_ms: number;
+  error_rate_per_min: number;
+  total_errors_24h?: number;
+  last_up?: string;
+  last_down?: string;
+  sentry_enabled?: boolean;
+  incidents?: Array<{
+    id?: number | string;
+    title?: string;
+    summary?: string;
+    started_at?: string;
+    resolved_at?: string | null;
+    status?: string;
+    severity?: string;
+  }>;
+  recent_errors?: Array<{
+    id: number | string;
+    service: string;
+    message: string;
+    timestamp: string;
+    severity: "info" | "warn" | "error" | "critical";
+  }>;
+  error_trend?: Array<{ minute: string; count: number }>;
+}
+
 /**
  * Export admin reports as CSV
  */
@@ -371,3 +398,33 @@ export async function verifySalon(
   }
 }
 
+/**
+ * Get platform system health (uptime/errors)
+ */
+export async function getSystemHealth(): Promise<{ health?: SystemHealth; error?: string }> {
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      return { error: "Not authenticated" };
+    }
+
+    const response = await fetch(API_ENDPOINTS.ADMINS.SYSTEM_HEALTH, {
+      ...fetchConfig,
+      headers: {
+        ...fetchConfig.headers,
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const result = await response.json().catch(() => ({}));
+      return { error: result.error || "Failed to fetch system health" };
+    }
+
+    const data = await response.json();
+    return { health: data };
+  } catch (error) {
+    console.error("Get system health error:", error);
+    return { error: "Network error. Please try again." };
+  }
+}

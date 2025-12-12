@@ -113,13 +113,10 @@ export default function SidraDashboard() {
         appointmentTrends[0]
       )
     : { hour: 0, appointments: 0 };
-  const engagementPercent = engagement && engagement.totalUsers.total_user_count > 0
-    ? Math.round(
-        (engagement.activeUsers.active_user_count /
-          engagement.totalUsers.total_user_count) *
-          100
-      )
-    : 0;
+  const activeCount = engagement?.activeUsers?.active_user_count ?? 0;
+  const totalCount = engagement?.totalUsers?.total_user_count ?? 0;
+  const engagementPercent =
+    totalCount > 0 ? Math.round((activeCount / totalCount) * 100) : 0;
 
   const stats = {
     engagement: engagementPercent,
@@ -220,11 +217,11 @@ export default function SidraDashboard() {
         <ChartCard title="Platform Overview">
           <div className="flex flex-col items-center justify-center h-[250px] text-center">
             <p className="text-2xl font-bold text-foreground mb-2">
-              {engagement?.totalUsers.total_user_count || 0}
+              {engagement?.totalUsers?.total_user_count ?? 0}
             </p>
             <p className="text-muted-foreground">Total Users</p>
             <p className="text-sm text-muted-foreground mt-4">
-              {engagement?.activeUsers.active_user_count || 0} active in last 30 days
+              {engagement?.activeUsers?.active_user_count ?? 0} active in last 30 days
             </p>
           </div>
         </ChartCard>
@@ -232,4 +229,3 @@ export default function SidraDashboard() {
     </div>
   );
 }
-

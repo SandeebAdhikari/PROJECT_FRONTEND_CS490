@@ -76,7 +76,7 @@ async function main() {
     localStorage.setItem("salon_id", "1");
   });
   await context.addCookies([{ name: "token", value: jwtStub(), url: "http://localhost:3000/admin" }]);
-  await page.goto("http://localhost:3000/admin/salon-dashboard/verification");
+  await page.goto("http://localhost:3000/salonPortal/salon-dashboard/verification");
 
   const approveButton = page.getByRole("button", { name: /approve/i }).first();
   if (await approveButton.count()) {

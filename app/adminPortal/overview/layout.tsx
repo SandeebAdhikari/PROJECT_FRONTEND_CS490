@@ -32,7 +32,7 @@ export default function AdminLayout({
         if (userRole !== "admin") {
           // Not an admin, redirect to appropriate page
           if (userRole === "owner") {
-            router.push("/admin/salon-dashboard");
+            router.push("/salonPortal/salon-dashboard");
           } else {
             router.push("/customer");
           }

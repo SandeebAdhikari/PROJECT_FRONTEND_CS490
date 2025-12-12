@@ -66,9 +66,9 @@ const AuthHeader: React.FC<AuthHeaderProps> = ({ title, subtitle }) => {
         setAuthCookie(data.token);
         const role = data.role.toLowerCase();
         if (role === "admin") {
-          window.location.href = "/sidra/overview";
+          window.location.href = "/adminPortal/overview";
         } else if (role === "owner") {
-          window.location.href = "/admin/salon-dashboard/overview";
+          window.location.href = "/salonPortal/salon-dashboard/overview";
         } else {
           window.location.href = "/customer";
         }
@@ -132,9 +132,9 @@ const AuthHeader: React.FC<AuthHeaderProps> = ({ title, subtitle }) => {
       setAuthCookie(data.token || "");
       const userRole = data.role?.toLowerCase();
       if (userRole === "admin") {
-        window.location.href = "/sidra/overview";
+        window.location.href = "/adminPortal/overview";
       } else if (userRole === "owner") {
-        window.location.href = "/admin/salon-dashboard/overview";
+        window.location.href = "/salonPortal/salon-dashboard/overview";
       } else {
         window.location.href = "/customer";
       }

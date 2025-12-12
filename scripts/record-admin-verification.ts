@@ -31,7 +31,7 @@ async function main() {
   await context.addCookies([{ name: "token", value: adminToken, url: "http://localhost:3001" }]);
 
   // Navigate to the admin verification page
-  await page.goto("http://localhost:3001/admin/salon-dashboard/verification");
+  await page.goto("http://localhost:3001/salonPortal/salon-dashboard/verification");
   console.log("Navigated to:", page.url());
   await page.getByText(/salon verification/i).first().waitFor({ state: "visible", timeout: 10000 });
 

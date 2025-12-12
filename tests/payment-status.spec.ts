@@ -28,7 +28,8 @@ test('payment success page renders confirmation', async ({ page, context }) => {
   await expect(
     page
       .getByRole('heading', { name: /payment successful/i })
-      .or(page.getByText(/payment/i))
+      .or(page.getByText(/payment successful/i))
+      .or(page.getByText(/payment/i).first())
   ).toBeVisible({ timeout: 10000 });
 });
 

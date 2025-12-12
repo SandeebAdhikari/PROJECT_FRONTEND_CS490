@@ -237,6 +237,7 @@ export const API_ENDPOINTS = {
     SYSTEM_LOGS: `${API_BASE_URL}/api/admins/system-logs`,
     PENDING_SALONS: `${API_BASE_URL}/api/admins/pending-salons`,
     VERIFY_SALON: (salonId: number | string) => `${API_BASE_URL}/api/admins/verify/${salonId}`,
+    SYSTEM_HEALTH: `${API_BASE_URL}/api/admins/system-health`,
   },
 };
 
