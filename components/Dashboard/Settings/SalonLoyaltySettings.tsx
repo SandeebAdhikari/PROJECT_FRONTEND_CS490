@@ -141,12 +141,13 @@ const SalonLoyaltySettings = forwardRef<
       console.log('[Rewards] Result:', result);
       
       if (result.reward_id) {
-        const newRewardItem = { 
-          ...newReward, 
+        const newRewardItem: Reward = { 
           reward_id: result.reward_id, 
           salon_id: salonId, 
-          is_active: true,
-          created_at: new Date().toISOString()
+          name: newReward.name,
+          description: newReward.description,
+          points_required: newReward.points_required,
+          is_active: true
         };
         setRewards([...rewards, newRewardItem]);
         setNewReward({ name: "", description: "", points_required: 100 });
@@ -188,17 +189,16 @@ const SalonLoyaltySettings = forwardRef<
       console.log('[Promo] Result:', result);
       
       if (result.promo_id) {
-        const newPromoItem = { 
+        const newPromoItem: PromoCode = { 
           promo_id: result.promo_id, 
           salon_id: salonId, 
           code: newPromo.code.toUpperCase(), 
-          discount_type: newPromo.discount_type === "percent" ? "percentage" : "fixed", 
+          discount_type: (newPromo.discount_type === "percent" ? "percentage" : "fixed") as "percentage" | "fixed", 
           discount_value: newPromo.discount_value, 
           usage_limit: 0, 
           used_count: 0, 
           end_date: null, 
-          is_active: true,
-          created_at: new Date().toISOString()
+          is_active: true
         };
         setPromoCodes([...promoCodes, newPromoItem]);
         setNewPromo({ code: "", discount_type: "percent", discount_value: 10 });
