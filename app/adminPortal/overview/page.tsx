@@ -169,6 +169,7 @@ export default function AdminDashboard() {
     .slice()
     .sort((a, b) => Number(b.total_points || 0) - Number(a.total_points || 0))
     .slice(0, 5);
+  const topLoyaltySalon = topLoyaltySalons[0];
 
   const formatCurrency = (val: number) =>
     `$${val.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
@@ -339,34 +340,78 @@ export default function AdminDashboard() {
       </div>
 
       <div className="mt-8">
-        <ChartCard title="Loyalty Program Usage (last 30 days)">
-          <div className="flex flex-col gap-3">
-            <div className="text-xl font-semibold text-foreground">
-              Total points earned: {loyaltyTotalPoints.toLocaleString()}
+        <ChartCard title="Loyalty Program Effectiveness (last 30 days)">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+            <div className="p-3 rounded-lg border border-border bg-muted/40">
+              <p className="text-sm text-muted-foreground">Total points earned</p>
+              <p className="text-2xl font-semibold text-foreground">
+                {loyaltyTotalPoints.toLocaleString()}
+              </p>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {topLoyaltySalons.map((s) => (
-                <div
-                  key={s.salon_id}
-                  className="p-3 rounded-lg border border-border bg-muted/40 flex items-center justify-between"
-                >
-                  <div>
-                    <p className="text-sm text-muted-foreground">Salon</p>
+            <div className="p-3 rounded-lg border border-border bg-muted/40">
+              <p className="text-sm text-muted-foreground">Active loyalty salons</p>
+              <p className="text-2xl font-semibold text-foreground">
+                {loyaltyUsage.length}
+              </p>
+            </div>
+            <div className="p-3 rounded-lg border border-border bg-muted/40">
+              <p className="text-sm text-muted-foreground">Top salon</p>
+              <p className="text-2xl font-semibold text-foreground truncate">
+                {topLoyaltySalon
+                  ? `${topLoyaltySalon.salon_name || `Salon ${topLoyaltySalon.salon_id}`}`
+                  : "—"}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                {topLoyaltySalon
+                  ? `${Number(topLoyaltySalon.total_points || 0).toLocaleString()} pts`
+                  : "No data"}
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">Top salons by points</p>
+              <div className="space-y-2">
+                {topLoyaltySalons.map((s) => (
+                  <div
+                    key={s.salon_id}
+                    className="p-3 rounded-lg border border-border bg-muted/30 flex items-center justify-between"
+                  >
+                    <div className="truncate">
+                      <p className="font-semibold text-foreground truncate">
+                        {s.salon_name || `Salon ${s.salon_id}`}
+                      </p>
+                      <p className="text-xs text-muted-foreground">ID: {s.salon_id}</p>
+                    </div>
                     <p className="font-semibold text-foreground">
-                      {s.salon_name || `Salon ${s.salon_id}`}
+                      {Number(s.total_points || 0).toLocaleString()} pts
                     </p>
                   </div>
-                  <div className="text-right">
-                    <p className="text-sm text-muted-foreground">Points</p>
-                    <p className="font-semibold text-foreground">
-                      {Number(s.total_points || 0).toLocaleString()}
-                    </p>
-                  </div>
-                </div>
-              ))}
-              {topLoyaltySalons.length === 0 && (
-                <p className="text-muted-foreground">No loyalty activity in the last 30 days.</p>
-              )}
+                ))}
+                {topLoyaltySalons.length === 0 && (
+                  <p className="text-muted-foreground">No loyalty activity in the last 30 days.</p>
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">Points by top salons</p>
+              <div className="p-3 rounded-lg border border-border bg-muted/30">
+                <ResponsiveContainer width="100%" height={220}>
+                  <BarChart
+                    data={topLoyaltySalons.map((s) => ({
+                      name: s.salon_name || `Salon ${s.salon_id}`,
+                      points: Number(s.total_points || 0),
+                    }))}
+                  >
+                    <XAxis dataKey="name" stroke="#999" angle={-30} textAnchor="end" height={80} />
+                    <YAxis stroke="#999" />
+                    <Tooltip formatter={(v: number) => `${v.toLocaleString()} pts`} />
+                    <Bar dataKey="points" fill="hsl(var(--primary))" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
             </div>
           </div>
         </ChartCard>
