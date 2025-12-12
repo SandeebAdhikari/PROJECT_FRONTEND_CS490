@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { CalendarPlus, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import {
   StaffPortalAppointment,
   StaffPortalCustomer,
@@ -32,7 +32,7 @@ const StaffPortalTabsOverview: React.FC<StaffPortalTabsOverviewProps> = ({
   nextAppointment: _nextAppointment,
   customers,
   teamMembers: _teamMembers,
-  onCreateAppointment,
+  onCreateAppointment: _onCreateAppointment,
   onAddStaff: _onAddStaff,
   onEditStaff: _onEditStaff,
 }) => {
@@ -104,17 +104,7 @@ const StaffPortalTabsOverview: React.FC<StaffPortalTabsOverviewProps> = ({
 
 
       <div className="rounded-2xl border border-border bg-muted/30 p-5">
-        <div className="flex items-center justify-between">
-          <p className="text-sm font-medium text-muted-foreground">Upcoming Appointments</p>
-          <button
-            type="button"
-            onClick={onCreateAppointment}
-            className="inline-flex items-center gap-2 rounded-xl bg-primary text-primary-foreground px-4 py-2 text-sm font-semibold hover:bg-primary/90 transition-smooth"
-          >
-            <CalendarPlus className="h-4 w-4" />
-            New appointment
-          </button>
-        </div>
+        <p className="text-sm font-medium text-muted-foreground">Upcoming Appointments</p>
         {upcoming.length > 0 ? (
           <div className="mt-4 grid gap-4 md:grid-cols-3">
             {upcoming.map((item) => (
