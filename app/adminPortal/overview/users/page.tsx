@@ -8,13 +8,16 @@ import DashboardCards from "@/components/Admin/DashboardCards";
 import {
   getUserEngagement,
   getUserDemographics,
+  getLoyaltyUsage,
   EngagementResponse,
   DemographicsResponse,
+  LoyaltyUsage,
 } from "@/libs/api/admins";
 
 const AdminUsersPage = () => {
   const [engagement, setEngagement] = useState<EngagementResponse | null>(null);
   const [demographics, setDemographics] = useState<DemographicsResponse | null>(null);
+  const [loyaltyUsage, setLoyaltyUsage] = useState<LoyaltyUsage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -23,9 +26,10 @@ const AdminUsersPage = () => {
       setLoading(true);
       setError(null);
       try {
-        const [engagementRes, demographicsRes] = await Promise.all([
+        const [engagementRes, demographicsRes, loyaltyRes] = await Promise.all([
           getUserEngagement(),
           getUserDemographics(),
+          getLoyaltyUsage(),
         ]);
 
         if (engagementRes.error) {
@@ -38,6 +42,12 @@ const AdminUsersPage = () => {
           setError((prev) => prev || demographicsRes.error || null);
         } else {
           setDemographics(demographicsRes.demographics || null);
+        }
+
+        if (loyaltyRes.error) {
+          setError((prev) => prev || loyaltyRes.error || null);
+        } else {
+          setLoyaltyUsage(loyaltyRes.usage || []);
         }
       } catch (err) {
         console.error("Failed to load user overview:", err);
@@ -102,6 +112,15 @@ const AdminUsersPage = () => {
     group: d.bucket || "Unknown",
     users: d.count || 0,
   }));
+
+  const loyaltyTotalPoints = loyaltyUsage.reduce(
+    (sum, item) => sum + Number(item.total_points || 0),
+    0
+  );
+  const topLoyaltySalons = loyaltyUsage
+    .slice()
+    .sort((a, b) => Number(b.total_points || 0) - Number(a.total_points || 0))
+    .slice(0, 5);
 
   if (loading) {
     return (
@@ -212,6 +231,38 @@ const AdminUsersPage = () => {
               <Tooltip />
             </PieChart>
           </ResponsiveContainer>
+        </ChartCard>
+
+        <ChartCard title="Loyalty Program Usage (last 30 days)">
+          <div className="flex flex-col gap-3">
+            <div className="text-xl font-semibold text-foreground">
+              Total points earned: {loyaltyTotalPoints.toLocaleString()}
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {topLoyaltySalons.map((s) => (
+                <div
+                  key={s.salon_id}
+                  className="p-3 rounded-lg border border-border bg-muted/40 flex items-center justify-between"
+                >
+                  <div>
+                    <p className="text-sm text-muted-foreground">Salon</p>
+                    <p className="font-semibold text-foreground">
+                      {s.salon_name || `Salon ${s.salon_id}`}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm text-muted-foreground">Points</p>
+                    <p className="font-semibold text-foreground">
+                      {Number(s.total_points || 0).toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+              ))}
+              {topLoyaltySalons.length === 0 && (
+                <p className="text-muted-foreground">No loyalty activity in the last 30 days.</p>
+              )}
+            </div>
+          </div>
         </ChartCard>
 
         <ChartCard title="User Demographics — Age (customers)">

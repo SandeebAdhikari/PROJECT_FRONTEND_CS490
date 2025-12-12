@@ -23,10 +23,12 @@ import {
   getSalonRevenues,
   getUserEngagement,
   getUserDemographics,
+  getLoyaltyUsage,
   AppointmentTrend,
   SalonRevenue,
   EngagementResponse,
   DemographicsResponse,
+  LoyaltyUsage,
 } from "@/libs/api/admins";
 
 export default function AdminDashboard() {
@@ -34,6 +36,7 @@ export default function AdminDashboard() {
   const [appointmentTrends, setAppointmentTrends] = useState<AppointmentTrend[]>([]);
   const [revenues, setRevenues] = useState<SalonRevenue[]>([]);
   const [demographics, setDemographics] = useState<DemographicsResponse | null>(null);
+  const [loyaltyUsage, setLoyaltyUsage] = useState<LoyaltyUsage[]>([]);
   const [engagement, setEngagement] = useState<EngagementResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -47,11 +50,12 @@ export default function AdminDashboard() {
     setError(null);
 
     try {
-      const [trendsResult, revenuesResult, engagementResult, demographicsResult] = await Promise.all([
+      const [trendsResult, revenuesResult, engagementResult, demographicsResult, loyaltyResult] = await Promise.all([
         getAppointmentTrends(),
         getSalonRevenues(),
         getUserEngagement(),
         getUserDemographics(),
+        getLoyaltyUsage(),
       ]);
 
       if (trendsResult.error) {
@@ -76,6 +80,12 @@ export default function AdminDashboard() {
         console.error("Failed to load demographics:", demographicsResult.error);
       } else {
         setDemographics(demographicsResult.demographics || null);
+      }
+
+      if (loyaltyResult.error) {
+        console.error("Failed to load loyalty usage:", loyaltyResult.error);
+      } else {
+        setLoyaltyUsage(loyaltyResult.usage || []);
       }
     } catch (err) {
       console.error("Error loading dashboard:", err);
@@ -150,6 +160,15 @@ export default function AdminDashboard() {
     peakHours: peakHour.appointments > 0 ? `${peakHour.hour}:00` : "N/A",
     revenue: totalRevenue,
   };
+
+  const loyaltyTotalPoints = loyaltyUsage.reduce(
+    (sum, item) => sum + Number(item.total_points || 0),
+    0
+  );
+  const topLoyaltySalons = loyaltyUsage
+    .slice()
+    .sort((a, b) => Number(b.total_points || 0) - Number(a.total_points || 0))
+    .slice(0, 5);
 
   const formatCurrency = (val: number) =>
     `$${val.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
@@ -317,6 +336,40 @@ export default function AdminDashboard() {
           </ResponsiveContainer>
         </ChartCard>
 
+      </div>
+
+      <div className="mt-8">
+        <ChartCard title="Loyalty Program Usage (last 30 days)">
+          <div className="flex flex-col gap-3">
+            <div className="text-xl font-semibold text-foreground">
+              Total points earned: {loyaltyTotalPoints.toLocaleString()}
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {topLoyaltySalons.map((s) => (
+                <div
+                  key={s.salon_id}
+                  className="p-3 rounded-lg border border-border bg-muted/40 flex items-center justify-between"
+                >
+                  <div>
+                    <p className="text-sm text-muted-foreground">Salon</p>
+                    <p className="font-semibold text-foreground">
+                      {s.salon_name || `Salon ${s.salon_id}`}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm text-muted-foreground">Points</p>
+                    <p className="font-semibold text-foreground">
+                      {Number(s.total_points || 0).toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+              ))}
+              {topLoyaltySalons.length === 0 && (
+                <p className="text-muted-foreground">No loyalty activity in the last 30 days.</p>
+              )}
+            </div>
+          </div>
+        </ChartCard>
       </div>
 
       <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">

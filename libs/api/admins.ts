@@ -17,6 +17,12 @@ export interface SalonRevenue {
   total_revenue: number;
 }
 
+export interface LoyaltyUsage {
+  salon_id: number;
+  salon_name?: string;
+  total_points: number;
+}
+
 export interface SystemHealth {
   uptime_percent: number;
   avg_latency_ms: number;
@@ -281,6 +287,36 @@ export async function getUserEngagement(): Promise<{ engagement?: EngagementResp
 export interface DemographicsResponse {
   gender: UserDemographicBucket[];
   age: UserDemographicBucket[];
+}
+
+export async function getLoyaltyUsage(): Promise<{ usage?: LoyaltyUsage[]; error?: string }> {
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      return { error: "Not authenticated" };
+    }
+
+    const response = await fetch(API_ENDPOINTS.ADMINS.LOYALTY_USAGE, {
+      ...fetchConfig,
+      cache: "no-store",
+      headers: {
+        ...fetchConfig.headers,
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok && response.status !== 304) {
+      const result = await response.json().catch(() => ({}));
+      return { error: result.error || "Failed to get loyalty usage" };
+    }
+
+    const data = response.status === 304 ? [] : await response.json();
+    const usage = Array.isArray(data) ? data : (data.usage || []);
+    return { usage };
+  } catch (error) {
+    console.error("Get loyalty usage error:", error);
+    return { error: "Network error. Please try again." };
+  }
 }
 
 export async function getUserDemographics(): Promise<{ demographics?: DemographicsResponse; error?: string }> {
