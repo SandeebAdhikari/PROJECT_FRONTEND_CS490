@@ -112,19 +112,6 @@ const StaffPortal = () => {
     };
   };
 
-  // Map backend product to frontend type
-  const mapProduct = (product: StaffPortalProductBackend): StaffPortalProduct => {
-    return {
-      id: product.product_id,
-      name: product.name,
-      brand: product.brand || "",
-      retailPrice: parseFloat(String(product.price)) || 0,
-      stock: product.stock || 0,
-      attachRate: product.attach_rate || 0,
-      hero: false,
-    };
-  };
-
   // Fetch all data
   useEffect(() => {
     const fetchData = async () => {

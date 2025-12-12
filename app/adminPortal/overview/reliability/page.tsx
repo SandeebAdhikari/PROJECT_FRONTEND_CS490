@@ -37,7 +37,7 @@ export default function ReliabilityPage() {
 
   const incidents = health?.incidents || [];
   const errors = useMemo(() => health?.recent_errors || [], [health]);
-  const trend = health?.error_trend || [];
+  const trend = useMemo(() => health?.error_trend || [], [health]);
 
   // Fallback trend: if DB trend is empty but we have recent errors, build a per-minute series
   const trendData = useMemo(() => {

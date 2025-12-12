@@ -62,7 +62,7 @@ const PaymentSuccessPageContent = () => {
       }
 
       // Fetch payment details using the session ID
-      // This endpoint will also trigger payment confirmation if webhook hasn't fired
+      // This endpoint will also trigger payment confirmation if webhook hasn&apos;t fired
       const response = await fetch(
         `${API_ENDPOINTS.PAYMENTS.GET_BY_SESSION}?session_id=${sessionId}`,
         {
@@ -416,7 +416,7 @@ const PaymentSuccessPageContent = () => {
               <div>
                 <p className="font-semibold">Confirmation Email</p>
                 <p className="text-sm text-muted-foreground">
-                  You'll receive a confirmation email with your appointment details and receipt.
+                  You&apos;ll receive a confirmation email with your appointment details and receipt.
                 </p>
               </div>
             </div>
@@ -427,7 +427,7 @@ const PaymentSuccessPageContent = () => {
               <div>
                 <p className="font-semibold">Appointment Reminder</p>
                 <p className="text-sm text-muted-foreground">
-                  We'll send you a reminder 24 hours before your appointment.
+                  We&apos;ll send you a reminder 24 hours before your appointment.
                 </p>
               </div>
             </div>
