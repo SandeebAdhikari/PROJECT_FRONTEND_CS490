@@ -2437,7 +2437,7 @@ const CartPage = () => {
                             2
                           )}{" "}
                           will be required to confirm your appointment.
-                          You'll pay the remaining $
+                          You&apos;ll pay the remaining $
                           {(
                             serviceTotal -
                             (serviceTotal * depositPercentage) / 100

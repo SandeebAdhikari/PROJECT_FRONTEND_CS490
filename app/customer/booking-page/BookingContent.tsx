@@ -383,6 +383,47 @@ const BookingContent = () => {
     if (!formData.date || !formData.time)
       return setError("Please select date and time");
 
+    // Check if user has email and phone before booking
+    let userEmail = "";
+    let userPhone = "";
+    
+    // First try the user object in localStorage
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      try {
+        const userData = JSON.parse(storedUser);
+        userEmail = userData.email || "";
+        userPhone = userData.phone || "";
+      } catch {
+        // Ignore parse errors
+      }
+    }
+    
+    // If not found, try JWT token
+    if (!userEmail || !userPhone) {
+      const token = localStorage.getItem("token") || localStorage.getItem("authToken");
+      if (token) {
+        try {
+          const tokenParts = token.split(".");
+          if (tokenParts.length === 3) {
+            const payload = JSON.parse(atob(tokenParts[1]));
+            userEmail = userEmail || payload.email || payload.user_email || "";
+            userPhone = userPhone || payload.phone || payload.user_phone || "";
+          }
+        } catch {
+          // Ignore parse errors
+        }
+      }
+    }
+    
+    // Final fallback to direct localStorage items
+    userEmail = userEmail || localStorage.getItem("userEmail") || "";
+    userPhone = userPhone || localStorage.getItem("userPhone") || "";
+
+    if (!userEmail || !userPhone) {
+      return setError("Please update your profile with email and phone number before booking. Go to Settings to update your profile.");
+    }
+
     setLoading(true);
 
     try {

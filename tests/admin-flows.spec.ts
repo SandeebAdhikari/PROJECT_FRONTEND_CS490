@@ -43,7 +43,9 @@ test('analytics tab renders cards or loading state', async ({ page }) => {
 
   expect(page.url()).toContain('/appointments');
   await expect(
-    page.getByRole('heading', { name: /appointments/i }).or(page.getByText(/appointments/i))
+    page.getByRole('heading', { name: /appointments/i }).first().or(
+      page.getByText(/appointments/i).first()
+    )
   ).toBeVisible();
 });
 

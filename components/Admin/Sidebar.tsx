@@ -15,19 +15,19 @@ import { usePathname } from "next/navigation";
 import NextImage from "next/image";
 
 const navItems = [
-    { href: "/overview", icon: <LayoutDashboard size={18} />, label: "Dashboard" },
+    { href: "/adminPortal/overview", icon: <LayoutDashboard size={18} />, label: "Dashboard" },
 
-    { href: "/overview/salons", icon: <Store size={18} />, label: "Salons" },
+    { href: "/adminPortal/overview/salons", icon: <Store size={18} />, label: "Salons" },
 
-    { href: "/overview/analytics", icon: <BarChart2 size={18} />, label: "Users" },
+    { href: "/adminPortal/overview/analytics", icon: <BarChart2 size={18} />, label: "Users" },
 
-    { href: "/overview/reports", icon: <Users size={18} />, label: "Customers" },
+    { href: "/adminPortal/overview/reports", icon: <Users size={18} />, label: "Customers" },
 
-    { href: "/overview/reliability", icon: <Download size={18} />, label: "Reports" },
+    { href: "/adminPortal/overview/reliability", icon: <Download size={18} />, label: "Reports" },
 
-    { href: "/overview/settings", icon: <Activity size={18} />, label: "System Health" },
+    { href: "/adminPortal/overview/settings", icon: <Activity size={18} />, label: "System Health" },
 
-    { href: "/overview/pending-approvals", icon: <ClipboardCheck size={18} />, label: "Approvals" },
+    { href: "/adminPortal/overview/pending-approvals", icon: <ClipboardCheck size={18} />, label: "Approvals" },
 ];
 
 

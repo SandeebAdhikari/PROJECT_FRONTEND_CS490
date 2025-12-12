@@ -26,7 +26,7 @@ import {
 } from "@/libs/api/staffPortal";
 
 
-type TabKey = "overview" | "appointments" | "schedule" | "customers" | "availability";
+type TabKey = "overview" | "appointments" | "schedule" | "customers" | "reviews" | "availability";
 
 interface StaffProfile {
   fullName: string;
@@ -56,7 +56,6 @@ const StaffPortal = () => {
 
   const [appointments, setAppointments] = useState<StaffPortalAppointment[]>([]);
   const [customers, setCustomers] = useState<StaffPortalCustomer[]>([]);
-  const [_products, setProducts] = useState<StaffPortalProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [dashboard, setDashboard] = useState<StaffPortalDashboard | null>(null);
@@ -110,19 +109,6 @@ const StaffPortal = () => {
       lifetimeValue: Number(customer.lifetime_value) || 0,
       phone: customer.phone,
       notes: customer.notes,
-    };
-  };
-
-  // Map backend product to frontend type
-  const mapProduct = (product: StaffPortalProductBackend): StaffPortalProduct => {
-    return {
-      id: product.product_id,
-      name: product.name,
-      brand: product.brand || "",
-      retailPrice: parseFloat(String(product.price)) || 0,
-      stock: product.stock || 0,
-      attachRate: product.attach_rate || 0,
-      hero: false,
     };
   };
 
@@ -252,9 +238,8 @@ const StaffPortal = () => {
         });
         setCustomers(customersData.customers.map(mapCustomer));
 
-        // Fetch products
-        const productsData = await listStaffRetail({ limit: 20 });
-        setProducts(productsData.products.map(mapProduct));
+        // Fetch products (currently unused in UI)
+        await listStaffRetail({ limit: 20 });
       } catch (err) {
         console.error("Error fetching staff portal data:", err);
         setError(

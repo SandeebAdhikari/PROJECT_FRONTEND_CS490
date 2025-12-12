@@ -1,353 +1,328 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import ChartCard from "@/components/Admin/ChartCard";
-import { Activity, AlertCircle, CheckCircle, Clock, TrendingUp, Database, Zap } from "lucide-react";
-import {
-  getSystemHealth,
-  getSystemLogs,
-  getPlatformReliability,
-  SystemHealth,
-  SystemLogsResponse,
-  PlatformReliabilityResponse,
-} from "@/libs/api/admins";
+import React, { useEffect, useMemo, useState } from "react";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import AdminHeader from "@/components/Admin/AdminHeader";
+import { AlertTriangle, CheckCircle, Clock, ServerCrash } from "lucide-react";
+import { getSystemHealth, SystemHealth } from "@/libs/api/admins";
 
 export default function ReliabilityPage() {
   const [health, setHealth] = useState<SystemHealth | null>(null);
-  const [logs, setLogs] = useState<SystemLogsResponse | null>(null);
-  const [reliability, setReliability] = useState<PlatformReliabilityResponse | null>(null);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadReliabilityData();
-    // Refresh every 30 seconds
-    const interval = setInterval(loadReliabilityData, 30000);
-    return () => clearInterval(interval);
+    let timer: NodeJS.Timeout | null = null;
+
+    const load = async () => {
+      setLoading(true);
+      const result = await getSystemHealth();
+      if (result.error || !result.health) {
+        setError(result.error || "Failed to fetch system health");
+        setHealth(null);
+      } else {
+        setError(null);
+        setHealth(result.health);
+      }
+      setLoading(false);
+    };
+
+    load();
+    timer = setInterval(load, 30_000); // auto-refresh every 30s
+
+    return () => {
+      if (timer) clearInterval(timer);
+    };
   }, []);
 
-  const loadReliabilityData = async () => {
-    setLoading(true);
-    setError(null);
+  const incidents = health?.incidents || [];
+  const errors = useMemo(() => health?.recent_errors || [], [health]);
+  const trend = useMemo(() => health?.error_trend || [], [health]);
 
-    try {
-      const [healthResult, logsResult, reliabilityResult] = await Promise.all([
-        getSystemHealth(),
-        getSystemLogs(50),
-        getPlatformReliability(),
-      ]);
+  // Fallback trend: if DB trend is empty but we have recent errors, build a per-minute series
+  const trendData = useMemo(() => {
+    if (trend.length > 0) return trend;
+    if (!errors.length) return [];
+    const counts = new Map<string, number>();
+    errors.forEach((err) => {
+      if (!err.timestamp) return;
+      const d = new Date(err.timestamp);
+      if (Number.isNaN(d.getTime())) return;
+      const key = d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      counts.set(key, (counts.get(key) || 0) + 1);
+    });
+    return Array.from(counts.entries())
+      .map(([minute, count]) => ({ minute, count }))
+      .sort((a, b) => a.minute.localeCompare(b.minute));
+  }, [trend, errors]);
+  const latencyMs = health?.avg_latency_ms;
+  const uptimePercent = health?.uptime_percent;
+  const errorRate = health?.error_rate_per_min;
+  const totalErrors24h = health?.total_errors_24h ?? 0;
+  const lastUp = health?.last_up ? new Date(health.last_up) : null;
+  const lastDown = health?.last_down ? new Date(health.last_down) : null;
+  const sentryEnabled = health?.sentry_enabled;
 
-      if (healthResult.error) {
-        console.error("Failed to load health:", healthResult.error);
-        setError(healthResult.error);
-      } else {
-        setHealth(healthResult.health || null);
-      }
-
-      if (logsResult.error) {
-        console.error("Failed to load logs:", logsResult.error);
-      } else {
-        setLogs(logsResult.logs || null);
-      }
-
-      if (reliabilityResult.error) {
-        console.error("Failed to load reliability:", reliabilityResult.error);
-      } else {
-        setReliability(reliabilityResult.reliability || null);
-      }
-    } catch (err) {
-      console.error("Error loading reliability data:", err);
-      setError("Failed to load reliability data");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case "healthy":
-      case "ok":
-        return "text-green-600";
-      case "degraded":
-        return "text-yellow-600";
-      case "down":
-      case "error":
-        return "text-red-600";
-      default:
-        return "text-gray-600";
-    }
-  };
-
-  const getEventTypeColor = (eventType: string) => {
-    switch (eventType.toUpperCase()) {
-      case "REJECTED":
-      case "BLOCKED":
-        return "bg-red-100 text-red-800 border-red-200";
-      case "APPROVED":
-        return "bg-green-100 text-green-800 border-green-200";
-      case "CREATED":
-      case "UPDATED":
-        return "bg-blue-100 text-blue-800 border-blue-200";
-      default:
-        return "bg-gray-100 text-gray-800 border-gray-200";
-    }
-  };
-
-  if (loading && !health) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading reliability data...</p>
-        </div>
-      </div>
-    );
-  }
+  const latencyDisplay = Number.isFinite(latencyMs) ? `${Math.round(latencyMs!)} ms` : "N/A";
+  const uptimeDisplay = Number.isFinite(uptimePercent) ? `${uptimePercent!.toFixed(2)}%` : "--";
+  const statusDisplay =
+    Number.isFinite(uptimePercent) && uptimePercent! > 0 ? "Up" : "Down";
+  const errorRateDisplay = Number.isFinite(errorRate)
+    ? `${errorRate!.toFixed(2)}/min`
+    : "--";
 
   return (
-    <div>
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
-        <div>
-          <h1 className="text-3xl font-bold mb-2">Platform Reliability</h1>
-          <p className="text-lg text-muted-foreground">
-            Monitor system health, uptime, and error logs
-          </p>
-        </div>
-        <button
-          onClick={loadReliabilityData}
-          className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium"
-        >
-          Refresh
-        </button>
-      </div>
+    <div className="pb-10">
+      <AdminHeader adminName="Admin" />
+      <h1 className="text-3xl font-bold mb-2">Reliability</h1>
+      <p className="text-lg text-muted-foreground mb-6">
+        Monitor platform uptime, latency, and error signals to keep StyGo stable.
+      </p>
 
       {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg">
+        <div className="mb-4 p-3 bg-amber-50 border border-amber-200 text-amber-800 rounded-lg text-sm">
           {error}
         </div>
       )}
 
-      {/* Health Status Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div className="bg-card p-6 rounded-xl shadow-sm border border-border">
-          <div className="flex items-center gap-3 mb-2">
-            {health?.status === "healthy" ? (
-              <CheckCircle className="w-6 h-6 text-green-600" />
-            ) : (
-              <AlertCircle className="w-6 h-6 text-red-600" />
-            )}
-            <h3 className="text-sm font-medium text-muted-foreground">System Status</h3>
-          </div>
-          <p className={`text-2xl font-bold ${getStatusColor(health?.status || "unknown")}`}>
-            {health?.status ? health.status.toUpperCase() : "Unknown"}
-          </p>
-        </div>
-
-        <div className="bg-card p-6 rounded-xl shadow-sm border border-border">
-          <div className="flex items-center gap-3 mb-2">
-            <Clock className="w-6 h-6 text-primary" />
-            <h3 className="text-sm font-medium text-muted-foreground">Uptime</h3>
-          </div>
-          <p className="text-2xl font-bold text-foreground">
-            {reliability?.uptime.uptime_days ? `${reliability.uptime.uptime_days}d` : "N/A"}
-          </p>
-          <p className="text-xs text-muted-foreground mt-1">
-            {reliability?.uptime.uptime_percentage ? `${reliability.uptime.uptime_percentage.toFixed(2)}%` : ""}
-          </p>
-        </div>
-
-        <div className="bg-card p-6 rounded-xl shadow-sm border border-border">
-          <div className="flex items-center gap-3 mb-2">
-            <TrendingUp className="w-6 h-6 text-green-600" />
-            <h3 className="text-sm font-medium text-muted-foreground">Success Rate</h3>
-          </div>
-          <p className="text-2xl font-bold text-foreground">
-            {reliability?.reliability.success_rate_30d !== undefined
-              ? `${reliability.reliability.success_rate_30d.toFixed(1)}%`
-              : "N/A"}
-          </p>
-          <p className="text-xs text-muted-foreground mt-1">Last 30 days</p>
-        </div>
-
-        <div className="bg-card p-6 rounded-xl shadow-sm border border-border">
-          <div className="flex items-center gap-3 mb-2">
-            <Activity className="w-6 h-6 text-accent" />
-            <h3 className="text-sm font-medium text-muted-foreground">Error Rate (1h)</h3>
-          </div>
-          <p className="text-2xl font-bold text-foreground">
-            {health?.checks.error_rate.error_percentage !== undefined
-              ? `${health.checks.error_rate.error_percentage.toFixed(2)}%`
-              : "N/A"}
-          </p>
-          <p className="text-xs text-muted-foreground mt-1">
-            {health?.checks.error_rate.error_events_1h || 0} errors
-          </p>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <StatCard
+          title="Uptime (30d)"
+          value={uptimeDisplay}
+          icon={<CheckCircle className="w-5 h-5 text-green-600" />}
+          subtitle={`Status: ${statusDisplay}`}
+        />
+        <StatCard
+          title="Avg Latency"
+          value={latencyDisplay}
+          icon={<Clock className="w-5 h-5 text-blue-600" />}
+          subtitle="DB ping latency"
+        />
+        <StatCard
+          title="Error Rate"
+          value={errorRateDisplay}
+          icon={<AlertTriangle className="w-5 h-5 text-amber-600" />}
+          subtitle={`Errors last 24h: ${health?.total_errors_24h ?? "n/a"}`}
+        />
+        <StatCard
+          title="Sentry"
+          value={sentryEnabled ? "Enabled" : "Disabled"}
+          icon={<ServerCrash className="w-5 h-5 text-purple-600" />}
+          subtitle={sentryEnabled ? "Capturing errors" : "Set SENTRY_DSN to enable"}
+        />
       </div>
 
-      {/* System Health Checks */}
-      {health && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <div className="bg-card p-4 rounded-lg border border-border">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <Database className="w-4 h-4 text-muted-foreground" />
-                <span className="text-sm font-medium">Database</span>
-              </div>
-              <span className={`text-xs font-semibold ${getStatusColor(health.checks.database.status)}`}>
-                {health.checks.database.status}
-              </span>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Latency: {health.checks.database.latency_ms}ms
-            </p>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 bg-card border border-border rounded-2xl p-4 shadow-soft">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-lg font-semibold">Error trend (last hour)</h3>
+            <span className="text-xs text-muted-foreground">Auto-refresh on page load</span>
           </div>
-
-          <div className="bg-card p-4 rounded-lg border border-border">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <Zap className="w-4 h-4 text-muted-foreground" />
-                <span className="text-sm font-medium">Error Rate</span>
-              </div>
-              <span className={`text-xs font-semibold ${getStatusColor(health.checks.error_rate.status)}`}>
-                {health.checks.error_rate.status}
-              </span>
+          {trendData.length === 0 ? (
+            <div className="h-64 flex items-center justify-center text-sm text-muted-foreground">
+              No error activity in the last hour.
             </div>
-            <p className="text-xs text-muted-foreground">
-              {health.checks.error_rate.error_events_1h} / {health.checks.error_rate.total_events_1h} events
-            </p>
-          </div>
-
-          <div className="bg-card p-4 rounded-lg border border-border">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <Activity className="w-4 h-4 text-muted-foreground" />
-                <span className="text-sm font-medium">System Load</span>
-              </div>
-              <span className={`text-xs font-semibold ${getStatusColor(health.checks.system_load.status)}`}>
-                {health.checks.system_load.status}
-              </span>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {health.checks.system_load.active_users_24h} active users
-            </p>
-          </div>
-
-          <div className="bg-card p-4 rounded-lg border border-border">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <Database className="w-4 h-4 text-muted-foreground" />
-                <span className="text-sm font-medium">DB Tables</span>
-              </div>
-              <span className={`text-xs font-semibold ${getStatusColor(health.checks.database_tables.status)}`}>
-                {health.checks.database_tables.status}
-              </span>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {health.checks.database_tables.table_count} tables
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* Performance Metrics */}
-      {reliability && (
-        <div className="mb-8">
-          <ChartCard title="Performance Metrics">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">Avg Processing Time</p>
-                <p className="text-2xl font-bold">{reliability.performance.avg_appointment_processing_time_sec}s</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">Appointments (7d)</p>
-                <p className="text-2xl font-bold">{reliability.performance.total_appointments_7d}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">Completed (7d)</p>
-                <p className="text-2xl font-bold text-green-600">{reliability.performance.completed_appointments_7d}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">Completion Rate</p>
-                <p className="text-2xl font-bold">{reliability.performance.completion_rate_7d}%</p>
-              </div>
-            </div>
-          </ChartCard>
-        </div>
-      )}
-
-      {/* Event Summary */}
-      {logs && logs.event_summary && logs.event_summary.length > 0 && (
-        <div className="mb-8">
-          <ChartCard title="Event Summary (Last 7 Days)">
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-              {logs.event_summary.map((event) => (
-                <div key={event.event_type} className="bg-muted/50 p-3 rounded-lg">
-                  <p className="text-xs text-muted-foreground mb-1">{event.event_type}</p>
-                  <p className="text-xl font-bold">{event.count}</p>
-                </div>
-              ))}
-            </div>
-          </ChartCard>
-        </div>
-      )}
-
-      {/* System Logs */}
-      <ChartCard title="Recent System Logs">
-        <div className="max-h-[500px] overflow-y-auto">
-          {logs && logs.recent_logs && logs.recent_logs.length > 0 ? (
-            <table className="w-full">
-              <thead className="bg-muted sticky top-0">
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-foreground">
-                    Timestamp
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-foreground">
-                    Event Type
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-foreground">
-                    Salon ID
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-foreground">
-                    Event Note
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {logs.recent_logs.map((log, index) => (
-                  <tr
-                    key={log.audit_id || index}
-                    className="border-b border-border hover:bg-muted/50"
-                  >
-                    <td className="px-4 py-3 text-sm text-muted-foreground whitespace-nowrap">
-                      {new Date(log.created_at).toLocaleString()}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span
-                        className={`inline-block px-2 py-1 text-xs font-medium rounded border ${getEventTypeColor(
-                          log.event_type
-                        )}`}
-                      >
-                        {log.event_type}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-sm text-foreground">
-                      {log.salon_id || "-"}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-foreground">
-                      {log.event_note}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
           ) : (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">No system logs available</p>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={trendData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
+                  <XAxis
+                    dataKey="minute"
+                    tick={{ fontSize: 12 }}
+                    label={{ value: "Minute (last hour)", position: "insideBottom", offset: -5, fontSize: 12 }}
+                  />
+                  <YAxis
+                    allowDecimals={false}
+                    tick={{ fontSize: 12 }}
+                    label={{ value: "Events", angle: -90, position: "insideLeft", offset: 10, fontSize: 12 }}
+                  />
+                  <Tooltip />
+                  <Area
+                    type="monotone"
+                    dataKey="count"
+                    name="Events/min"
+                    stroke="hsl(var(--primary))"
+                    fill="hsl(var(--primary))/0.1"
+                    strokeWidth={3}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
             </div>
           )}
         </div>
-      </ChartCard>
+
+        <div className="bg-card border border-border rounded-2xl p-4 shadow-soft">
+          <div className="flex items-center gap-2 mb-3">
+            <ServerCrash className="w-5 h-5 text-red-600" />
+            <h3 className="text-lg font-semibold">Recent incidents</h3>
+          </div>
+          {incidents.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No active or recent incidents.</p>
+          ) : (
+            <div className="space-y-3">
+              {incidents.map((inc) => (
+                <div
+                  key={inc.id || inc.started_at || Math.random().toString(36)}
+                  className="border border-border rounded-lg p-3"
+                >
+                  <p className="text-sm font-semibold">
+                    {inc.title || inc.summary || "Incident detected"}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Started: {inc.started_at ? new Date(inc.started_at).toLocaleString() : "Unknown"}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Status: <span className="capitalize">{inc.status || "open"}</span>
+                    {inc.resolved_at ? ` • Resolved: ${new Date(inc.resolved_at).toLocaleString()}` : ""}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="bg-card border border-border rounded-2xl p-4 shadow-soft">
+          <h3 className="text-lg font-semibold mb-3">Detailed checks</h3>
+          <div className="space-y-3 text-sm">
+            <CheckRow
+              label="Database"
+              status={latencyMs !== undefined && latencyMs !== null}
+              detail={latencyDisplay !== "N/A" ? `Latency ${latencyDisplay}` : "No response"}
+            />
+            <CheckRow
+              label="Error rate"
+              status={Number.isFinite(errorRate) && (errorRate ?? 0) < 1}
+              detail={Number.isFinite(errorRate) ? `${errorRateDisplay}` : "No data"}
+            />
+            <CheckRow
+              label="Incidents"
+              status={incidents.length === 0}
+              detail={incidents.length === 0 ? "None open" : `${incidents.length} active/recent`}
+            />
+            <CheckRow
+              label="Sentry"
+              status={Boolean(sentryEnabled)}
+              detail={sentryEnabled ? "Enabled" : "Not configured"}
+            />
+          </div>
+        </div>
+
+        <div className="bg-card border border-border rounded-2xl p-4 shadow-soft">
+          <h3 className="text-lg font-semibold mb-3">Performance</h3>
+          <div className="space-y-2 text-sm text-muted-foreground">
+            <p>Latency (db ping): {latencyDisplay}</p>
+            <p>Uptime (30d): {uptimeDisplay}</p>
+            <p>Error rate (last hour): {errorRateDisplay}</p>
+            <p>Total errors (24h): {totalErrors24h}</p>
+          </div>
+        </div>
+
+        <div className="bg-card border border-border rounded-2xl p-4 shadow-soft">
+          <h3 className="text-lg font-semibold mb-3">Event summary</h3>
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            <SummaryPill label="Recent errors" value={errors.length} />
+            <SummaryPill label="Incidents" value={incidents.length} />
+            <SummaryPill label="Last up" value={lastUp ? lastUp.toLocaleString() : "Unknown"} />
+            <SummaryPill label="Last down" value={lastDown ? lastDown.toLocaleString() : "Unknown"} />
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-6 bg-card border border-border rounded-2xl p-4 shadow-soft">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-lg font-semibold">Recent errors</h3>
+          <span className="text-xs text-muted-foreground">Last ~10</span>
+        </div>
+        {errors.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No recent errors.</p>
+        ) : (
+          <div className="divide-y divide-border">
+            {errors.map((err) => (
+              <div key={err.id} className="py-2 flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-semibold capitalize">{err.service}</p>
+                  <p className="text-sm text-muted-foreground">{err.message}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {new Date(err.timestamp).toLocaleString()} • {err.severity}
+                  </p>
+                </div>
+                <span
+                  className={`text-xs px-2 py-1 rounded-full ${
+                    err.severity === "critical"
+                      ? "bg-red-100 text-red-700"
+                      : err.severity === "warn"
+                      ? "bg-amber-100 text-amber-800"
+                      : "bg-slate-100 text-slate-700"
+                  }`}
+                >
+                  {err.severity}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function StatCard({
+  title,
+  value,
+  subtitle,
+  icon,
+}: {
+  title: string;
+  value: string;
+  subtitle: string;
+  icon: React.ReactNode;
+}) {
+  return (
+    <div className="bg-card border border-border rounded-2xl p-4 shadow-soft flex items-center gap-3">
+      <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">{icon}</div>
+      <div>
+        <p className="text-sm text-muted-foreground">{title}</p>
+        <p className="text-2xl font-bold text-foreground">{value}</p>
+        <p className="text-xs text-muted-foreground">{subtitle}</p>
+      </div>
+    </div>
+  );
+}
+
+function CheckRow({
+  label,
+  status,
+  detail,
+}: {
+  label: string;
+  status: boolean;
+  detail: string;
+}) {
+  return (
+    <div className="flex items-center justify-between rounded-lg border border-border px-3 py-2">
+      <div>
+        <p className="text-sm font-semibold text-foreground">{label}</p>
+        <p className="text-xs text-muted-foreground">{detail}</p>
+      </div>
+      <span
+        className={`text-xs px-2 py-1 rounded-full ${
+          status ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+        }`}
+      >
+        {status ? "OK" : "Issue"}
+      </span>
+    </div>
+  );
+}
+
+function SummaryPill({ label, value }: { label: string; value: number | string }) {
+  return (
+    <div className="rounded-lg border border-border px-3 py-2">
+      <p className="text-xs text-muted-foreground">{label}</p>
+      <p className="text-sm font-semibold text-foreground truncate">{value}</p>
     </div>
   );
 }

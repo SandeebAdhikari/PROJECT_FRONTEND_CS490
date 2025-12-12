@@ -60,7 +60,7 @@ export default function AdminHeader({ adminName: _adminName, notificationCount: 
       <div className="flex items-center gap-5">
 
         {/* NOTIFICATION BELL */}
-        <Link href="/sidra/overview/pending-approvals" className="relative">
+        <Link href="/adminPortal/overview/pending-approvals" className="relative">
           <Bell size={22} className="hover:text-primary transition" />
 
           {notificationCount > 0 && (
@@ -81,7 +81,7 @@ export default function AdminHeader({ adminName: _adminName, notificationCount: 
 
         {/* ADMIN PROFILE */}
         <Link
-          href="/sidra/overview/admin"
+          href="/adminPortal/overview/admin"
           className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-base font-semibold hover:bg-accent transition shadow-sm"
         >
           <User size={18} />

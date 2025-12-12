@@ -46,7 +46,7 @@ export default function SetupAdminPage() {
       setSuccess(true);
       // Redirect to admin portal after successful setup
       setTimeout(() => {
-        router.push("/overview");
+        router.push("/adminPortal/overview");
       }, 2000);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
@@ -220,7 +220,7 @@ export default function SetupAdminPage() {
 
             <p className="text-xs text-center text-muted-foreground">
               This will create the first admin account. If an admin already
-              exists, you'll need to use the setup token or contact support.
+              exists, you&apos;ll need to use the setup token or contact support.
             </p>
           </form>
         )}
@@ -228,4 +228,3 @@ export default function SetupAdminPage() {
     </div>
   );
 }
-

@@ -183,8 +183,6 @@ export const API_ENDPOINTS = {
       `${API_BASE_URL}/api/users/salon-customers/directory?salon_id=${salonId}`,
     UPDATE_SALON_CUSTOMER: (userId: number | string) =>
       `${API_BASE_URL}/api/users/salon-customers/${userId}`,
-    CUSTOMER_VISIT_HISTORY: (userId: number | string, salonId: number | string) =>
-      `${API_BASE_URL}/api/users/salon-customers/${userId}/appointments?salon_id=${salonId}`,
   },
   ANALYTICS: {
     OVERVIEW: (salonId: number | string, params?: string) =>
@@ -239,9 +237,7 @@ export const API_ENDPOINTS = {
     SYSTEM_LOGS: `${API_BASE_URL}/api/admins/system-logs`,
     PENDING_SALONS: `${API_BASE_URL}/api/admins/pending-salons`,
     VERIFY_SALON: (salonId: number | string) => `${API_BASE_URL}/api/admins/verify/${salonId}`,
-    // Platform health and reliability monitoring
-    SYSTEM_HEALTH: `${API_BASE_URL}/api/admins/health`,
-    PLATFORM_RELIABILITY: `${API_BASE_URL}/api/admins/platform-reliability`,
+    SYSTEM_HEALTH: `${API_BASE_URL}/api/admins/system-health`,
   },
 };
 

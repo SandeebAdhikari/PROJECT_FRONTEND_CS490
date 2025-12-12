@@ -3,7 +3,7 @@
 StyGo is an enterprise salon operating system that pairs a high-converting marketing site with authenticated dashboards for owners, staff, and guests. This repository houses the Next.js 15 + React 19 frontend that speaks to the StyGo API (`NEXT_PUBLIC_API_URL`) and Firebase Authentication to deliver onboarding, appointment orchestration, analytics, and customer experiences in a single codebase.
 
 ## Overview
-- **App Router slices** power the multi-tenant experience: the public marketing page (`/`), the `/sign-in` and `/sign-up` flows, the owner dashboard under `/admin/salon-dashboard`, the `/customer` booking experience, and salon-specific staff portals under `/salon/[salonSlug]/staff`.
+- **App Router slices** power the multi-tenant experience: the public marketing page (`/`), the `/sign-in` and `/sign-up` flows, the owner dashboard under `/salonPortal/salon-dashboard`, the `/customer` booking experience, and salon-specific staff portals under `/salon/[salonSlug]/staff`.
 - **TypeScript-first development** keeps shared contracts in `libs/` (auth schemas, analytics types, Firebase helpers) and lightweight hooks such as `useSalonId` for contextual data.
 - **Stateful dashboards** lean on native `fetch`, `fetchWithRefresh`, and optimistic React state (modals, forms, and charts) rather than heavy global state libraries, keeping the footprint small while remaining fully typed.
 
@@ -14,7 +14,7 @@ StyGo is an enterprise salon operating system that pairs a high-converting marke
 - **Dashboard shell & navigation** – `components/Dashboard/SalonDashboard` renders the persistent navbar, KPI strip, tab navigation, and owner identity while storing the resolved salon in `localStorage` for downstream API calls.
 - **Appointment operations** – `components/Dashboard/Appointments` provides calendar ranges, metrics cards, list/detail views, edit modals, and creation wizards that talk to `/api/appointments`, `/api/staff`, `/api/services`, and `/api/users/salon-customers` endpoints with live validation and `react-datepicker` time pickers.
 - **Analytics & reporting** – Revenue, utilization, and service distribution views (`components/Dashboard/Analytics`, `Overview`, `ServiceDistChart`, etc.) lean on `recharts` to visualize the payloads defined in `libs/types/analytics` and surface KPIs such as total revenue, avg ticket, goal progress, and channel mix.
-- **Staff & customer management** – Owners can add/edit staff with role assignment (`components/Dashboard/Staff`), onboard customers via `AddCustomerModal`, review gallery uploads, and tweak salon settings (`app/admin/salon-dashboard/salon-settings`).
+- **Staff & customer management** – Owners can add/edit staff with role assignment (`components/Dashboard/Staff`), onboard customers via `AddCustomerModal`, review gallery uploads, and tweak salon settings (`app/salonPortal/salon-dashboard/salon-settings`).
 - **Customer experiences** – The `/customer` app router segment composes `components/Customer` to power booking search, curated salon cards, and profile tabs. It reuses shared appointment history widgets and data entry modals.
 - **Staff handheld portal** – Dynamic routes such as `/salon/{slug}/staff` expose `StaffLoginCard` and `StaffSignInCodeCard`, enabling team members to claim invites with staff codes + PINs and access upcoming handheld features.
 - **Reviews, notifications, history** – Supplemental modules (`components/Reviews`, `Notifications`, `History`) consume the API routes declared in `libs/api/config` to keep guests engaged and ops teams up to date.
@@ -47,7 +47,7 @@ touch .env.local  # or create with your editor
 # Run the development server
 npm run dev
 ```
-The app boots at `http://localhost:3000`. Marketing routes are public, while `/admin/salon-dashboard/*` will redirect to `/sign-in` unless a valid `token` cookie is present.
+The app boots at `http://localhost:3000`. Marketing routes are public, while `/salonPortal/salon-dashboard/*` will redirect to `/sign-in` unless a valid `token` cookie is present.
 
 ## Environment Variables
 Create an `.env.local` at the repo root with the following keys:
@@ -85,7 +85,7 @@ NEXT_PUBLIC_FIREBASE_APP_ID=1:123456:web:abcdef
 .
 ├── app/
 │   ├── (auth)/               # Sign-in / sign-up flows and auth layout
-│   ├── admin/salon-dashboard/ # Owner dashboard routes (overview, analytics, staff, etc.)
+│   ├── salonPortal/salon-dashboard/ # Owner dashboard routes (overview, analytics, staff, etc.)
 │   ├── customer/             # Customer booking + profile experiences
 │   ├── salon/[salonSlug]/    # Staff handheld portal entrypoints
 │   ├── layout.tsx            # Global fonts + metadata
