@@ -136,17 +136,31 @@ const SalonLoyaltySettings = forwardRef<
     setMessage(null);
     
     try {
+      console.log('[Rewards] Creating reward:', { salonId, name: newReward.name, points: newReward.points_required });
       const result = await createReward(salonId, newReward.name, newReward.description, newReward.points_required);
+      console.log('[Rewards] Result:', result);
+      
       if (result.reward_id) {
-        setRewards([...rewards, { ...newReward, reward_id: result.reward_id, salon_id: salonId, is_active: true }]);
+        const newRewardItem = { 
+          ...newReward, 
+          reward_id: result.reward_id, 
+          salon_id: salonId, 
+          is_active: true,
+          created_at: new Date().toISOString()
+        };
+        setRewards([...rewards, newRewardItem]);
         setNewReward({ name: "", description: "", points_required: 100 });
         setMessage({ type: "success", text: "Reward added successfully!" });
       } else if (result.error) {
+        console.error('[Rewards] API error:', result.error);
         setMessage({ type: "error", text: result.error });
+      } else {
+        console.error('[Rewards] Unexpected response:', result);
+        setMessage({ type: "error", text: "Unexpected response from server" });
       }
     } catch (error) {
-      console.error("Error adding reward:", error);
-      setMessage({ type: "error", text: "Failed to add reward" });
+      console.error("[Rewards] Error adding reward:", error);
+      setMessage({ type: "error", text: "Failed to add reward. Check console for details." });
     } finally {
       setAddingReward(false);
     }
@@ -169,17 +183,36 @@ const SalonLoyaltySettings = forwardRef<
     setMessage(null);
     
     try {
+      console.log('[Promo] Creating promo code:', { salonId, code: newPromo.code, type: newPromo.discount_type, value: newPromo.discount_value });
       const result = await createPromoCode(salonId, newPromo.code, newPromo.discount_type, newPromo.discount_value);
+      console.log('[Promo] Result:', result);
+      
       if (result.promo_id) {
-        setPromoCodes([...promoCodes, { promo_id: result.promo_id, salon_id: salonId, code: newPromo.code.toUpperCase(), discount_type: newPromo.discount_type === "percent" ? "percentage" : "fixed", discount_value: newPromo.discount_value, usage_limit: 0, used_count: 0, end_date: null, is_active: true }]);
+        const newPromoItem = { 
+          promo_id: result.promo_id, 
+          salon_id: salonId, 
+          code: newPromo.code.toUpperCase(), 
+          discount_type: newPromo.discount_type === "percent" ? "percentage" : "fixed", 
+          discount_value: newPromo.discount_value, 
+          usage_limit: 0, 
+          used_count: 0, 
+          end_date: null, 
+          is_active: true,
+          created_at: new Date().toISOString()
+        };
+        setPromoCodes([...promoCodes, newPromoItem]);
         setNewPromo({ code: "", discount_type: "percent", discount_value: 10 });
         setMessage({ type: "success", text: "Promo code added successfully!" });
       } else if (result.error) {
+        console.error('[Promo] API error:', result.error);
         setMessage({ type: "error", text: result.error });
+      } else {
+        console.error('[Promo] Unexpected response:', result);
+        setMessage({ type: "error", text: "Unexpected response from server" });
       }
     } catch (error) {
-      console.error("Error adding promo code:", error);
-      setMessage({ type: "error", text: "Failed to add promo code" });
+      console.error("[Promo] Error adding promo code:", error);
+      setMessage({ type: "error", text: "Failed to add promo code. Check console for details." });
     } finally {
       setAddingPromo(false);
     }
