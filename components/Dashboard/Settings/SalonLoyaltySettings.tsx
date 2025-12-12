@@ -128,14 +128,28 @@ const SalonLoyaltySettings = forwardRef<
   }));
 
   const handleAddReward = async () => {
-    if (!salonId || !newReward.name) return;
-    setAddingReward(true);
-    const result = await createReward(salonId, newReward.name, newReward.description, newReward.points_required);
-    if (result.reward_id) {
-      setRewards([...rewards, { ...newReward, reward_id: result.reward_id, salon_id: salonId, is_active: true }]);
-      setNewReward({ name: "", description: "", points_required: 100 });
+    if (!salonId || !newReward.name) {
+      setMessage({ type: "error", text: "Please enter a reward name" });
+      return;
     }
-    setAddingReward(false);
+    setAddingReward(true);
+    setMessage(null);
+    
+    try {
+      const result = await createReward(salonId, newReward.name, newReward.description, newReward.points_required);
+      if (result.reward_id) {
+        setRewards([...rewards, { ...newReward, reward_id: result.reward_id, salon_id: salonId, is_active: true }]);
+        setNewReward({ name: "", description: "", points_required: 100 });
+        setMessage({ type: "success", text: "Reward added successfully!" });
+      } else if (result.error) {
+        setMessage({ type: "error", text: result.error });
+      }
+    } catch (error) {
+      console.error("Error adding reward:", error);
+      setMessage({ type: "error", text: "Failed to add reward" });
+    } finally {
+      setAddingReward(false);
+    }
   };
 
   const handleDeleteReward = async (rewardId: number) => {
@@ -147,14 +161,28 @@ const SalonLoyaltySettings = forwardRef<
   };
 
   const handleAddPromo = async () => {
-    if (!salonId || !newPromo.code) return;
-    setAddingPromo(true);
-    const result = await createPromoCode(salonId, newPromo.code, newPromo.discount_type, newPromo.discount_value);
-    if (result.promo_id) {
-      setPromoCodes([...promoCodes, { promo_id: result.promo_id, salon_id: salonId, code: newPromo.code.toUpperCase(), discount_type: newPromo.discount_type === "percent" ? "percentage" : "fixed", discount_value: newPromo.discount_value, usage_limit: 0, used_count: 0, end_date: null, is_active: true }]);
-      setNewPromo({ code: "", discount_type: "percent", discount_value: 10 });
+    if (!salonId || !newPromo.code) {
+      setMessage({ type: "error", text: "Please enter a promo code" });
+      return;
     }
-    setAddingPromo(false);
+    setAddingPromo(true);
+    setMessage(null);
+    
+    try {
+      const result = await createPromoCode(salonId, newPromo.code, newPromo.discount_type, newPromo.discount_value);
+      if (result.promo_id) {
+        setPromoCodes([...promoCodes, { promo_id: result.promo_id, salon_id: salonId, code: newPromo.code.toUpperCase(), discount_type: newPromo.discount_type === "percent" ? "percentage" : "fixed", discount_value: newPromo.discount_value, usage_limit: 0, used_count: 0, end_date: null, is_active: true }]);
+        setNewPromo({ code: "", discount_type: "percent", discount_value: 10 });
+        setMessage({ type: "success", text: "Promo code added successfully!" });
+      } else if (result.error) {
+        setMessage({ type: "error", text: result.error });
+      }
+    } catch (error) {
+      console.error("Error adding promo code:", error);
+      setMessage({ type: "error", text: "Failed to add promo code" });
+    } finally {
+      setAddingPromo(false);
+    }
   };
 
   const handleDeletePromo = async (promoId: number) => {
