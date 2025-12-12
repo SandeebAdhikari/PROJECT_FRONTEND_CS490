@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { CalendarClock, Sparkles } from "lucide-react";
+import { CalendarPlus, Sparkles } from "lucide-react";
 import {
   StaffPortalAppointment,
   StaffPortalCustomer,
@@ -29,7 +29,7 @@ const formatTime = (value?: string) => {
 
 const StaffPortalTabsOverview: React.FC<StaffPortalTabsOverviewProps> = ({
   appointments,
-  nextAppointment,
+  nextAppointment: _nextAppointment,
   customers,
   teamMembers: _teamMembers,
   onCreateAppointment,
@@ -55,46 +55,7 @@ const StaffPortalTabsOverview: React.FC<StaffPortalTabsOverviewProps> = ({
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-4 lg:grid-cols-3">
-        <article className="rounded-2xl border border-border bg-white p-5 shadow-soft-br">
-          <div className="flex items-center gap-3">
-            <div className="rounded-2xl bg-primary/10 text-primary p-3">
-              <CalendarClock className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Next guest</p>
-              <p className="text-lg font-semibold">
-                {nextAppointment?.client || "All caught up"}
-              </p>
-            </div>
-          </div>
-          {nextAppointment && nextAppointment.client ? (
-            <dl className="mt-4 space-y-2 text-sm">
-              <div className="flex items-center justify-between">
-                <dt className="text-muted-foreground">Time</dt>
-                <dd className="font-semibold">{formatTime(nextAppointment.time)}</dd>
-              </div>
-              <div className="flex items-center justify-between">
-                <dt className="text-muted-foreground">Service</dt>
-                <dd className="font-semibold">
-                  {nextAppointment.service || "Service"}
-                </dd>
-              </div>
-            </dl>
-          ) : (
-            <p className="mt-4 text-sm text-muted-foreground">
-              No upcoming appointments scheduled
-            </p>
-          )}
-          <button
-            type="button"
-            onClick={onCreateAppointment}
-            className="mt-4 w-full rounded-xl bg-primary text-primary-foreground py-2.5 font-semibold hover:bg-primary/90 transition-smooth"
-          >
-            New appointment
-          </button>
-        </article>
-
+      <div className="grid gap-4 lg:grid-cols-2">
         <article className="rounded-2xl border border-border bg-muted/20 p-5 shadow-inner">
           <div className="flex items-center gap-3">
             <div className="rounded-2xl bg-emerald-100 text-emerald-600 p-3">
@@ -142,9 +103,19 @@ const StaffPortalTabsOverview: React.FC<StaffPortalTabsOverviewProps> = ({
       </div>
 
 
-      {upcoming.length > 0 && (
-        <div className="rounded-2xl border border-border bg-muted/30 p-5">
-          <p className="text-sm text-muted-foreground">Upcoming</p>
+      <div className="rounded-2xl border border-border bg-muted/30 p-5">
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-medium text-muted-foreground">Upcoming Appointments</p>
+          <button
+            type="button"
+            onClick={onCreateAppointment}
+            className="inline-flex items-center gap-2 rounded-xl bg-primary text-primary-foreground px-4 py-2 text-sm font-semibold hover:bg-primary/90 transition-smooth"
+          >
+            <CalendarPlus className="h-4 w-4" />
+            New appointment
+          </button>
+        </div>
+        {upcoming.length > 0 ? (
           <div className="mt-4 grid gap-4 md:grid-cols-3">
             {upcoming.map((item) => (
               <div
@@ -166,8 +137,12 @@ const StaffPortalTabsOverview: React.FC<StaffPortalTabsOverviewProps> = ({
               </div>
             ))}
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="mt-4 text-center py-8">
+            <p className="text-sm text-muted-foreground">No upcoming appointments</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
