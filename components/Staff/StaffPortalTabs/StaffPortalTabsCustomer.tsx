@@ -154,8 +154,8 @@ const StaffPortalTabsCustomer: React.FC<StaffPortalTabsCustomerProps> = ({
                         </span>
                       )}
                     </div>
-                    <p className="text-sm text-muted-foreground">{customer.email || "No email"}</p>
                     <p className="text-sm text-muted-foreground">{customer.phone || "No phone"}</p>
+                    <p className="text-sm text-muted-foreground">{customer.favoriteService || "No favorite service"}</p>
                   </div>
                 </div>
 
