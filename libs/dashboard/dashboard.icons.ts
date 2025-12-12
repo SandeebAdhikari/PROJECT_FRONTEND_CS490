@@ -22,6 +22,7 @@ import {
   Image,
   Building2,
   Tag,
+  CreditCard,
 } from "lucide-react";
 
 export const icons = {
@@ -48,4 +49,5 @@ export const icons = {
   Image,
   Building2,
   Tag,
+  CreditCard,
 };

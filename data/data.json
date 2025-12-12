@@ -108,6 +108,12 @@
       "icon": "Tag"
     },
     {
+      "id": 11,
+      "label": "Payments",
+      "shortLabel": "Payments",
+      "icon": "CreditCard"
+    },
+    {
       "id": 8,
       "label": "Salon Settings",
       "shortLabel": "Salon",
