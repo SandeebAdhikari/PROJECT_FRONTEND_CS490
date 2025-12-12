@@ -71,6 +71,7 @@ export default function ReportsPage() {
   const cancelledBookings = reportSummary?.cancelled_bookings || 0;
   const completionRate =
     totalBookings > 0 ? Math.round((completedBookings / totalBookings) * 100) : 0;
+  const totalRevenue = reportSummary?.total_revenue || totalSales;
 
   const retentionRate =
     (retention?.active_customers_90d ?? 0) > 0
@@ -121,6 +122,20 @@ export default function ReportsPage() {
     </div>
   );
 
+  const SummaryCard: React.FC<{ title: string; value: string | number; subtitle?: string }> = ({
+    title,
+    value,
+    subtitle,
+  }) => (
+    <div className="bg-card p-6 rounded-xl shadow-sm border border-border">
+      <h3 className="text-primary text-lg font-medium mb-2">{title}</h3>
+      <p className="text-3xl font-bold text-foreground">
+        {typeof value === "number" ? value.toLocaleString() : value}
+      </p>
+      {subtitle && <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>}
+    </div>
+  );
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -150,32 +165,47 @@ export default function ReportsPage() {
       )}
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-card p-6 rounded-xl shadow-sm border border-border">
-          <h3 className="text-primary text-lg font-medium mb-2">Total Sales</h3>
-          <p className="text-4xl font-bold text-foreground">
-            ${totalSales.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-          </p>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <SummaryCard
+          title="Total Revenue"
+          value={`$${totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+          subtitle="All salons combined"
+        />
+        <SummaryCard
+          title="Active Salons"
+          value={totalSalons.toLocaleString()}
+          subtitle="Reporting period"
+        />
+        <SummaryCard
+          title="Bookings"
+          value={totalBookings.toLocaleString()}
+          subtitle={`Completed ${completedBookings.toLocaleString()} • Cancelled ${cancelledBookings.toLocaleString()}`}
+        />
+        <SummaryCard
+          title="Completion Rate"
+          value={`${completionRate}%`}
+          subtitle="Completed / total bookings"
+        />
+      </div>
 
-        <div className="bg-card p-6 rounded-xl shadow-sm border border-border">
-          <h3 className="text-primary text-lg font-medium mb-2">Active Salons</h3>
-          <p className="text-4xl font-bold text-foreground">{totalSalons}</p>
-        </div>
-
-        <div className="bg-card p-6 rounded-xl shadow-sm border border-border">
-          <h3 className="text-primary text-lg font-medium mb-2">Average Sales</h3>
-          <p className="text-4xl font-bold text-foreground">
-            ${averageSales.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-          </p>
-        </div>
-
-        <div className="bg-card p-6 rounded-xl shadow-sm border border-border">
-          <h3 className="text-primary text-lg font-medium mb-2">Bookings (30d)</h3>
-          <p className="text-4xl font-bold text-foreground">{totalBookings.toLocaleString()}</p>
-          <p className="text-sm text-muted-foreground mt-1">
-            Completed: {completedBookings.toLocaleString()} • Cancelled: {cancelledBookings.toLocaleString()} • Completion: {completionRate}%
-          </p>
+      {/* Sales by salon list */}
+      <div className="bg-card p-6 rounded-xl shadow-sm border border-border mb-8">
+        <h3 className="text-xl font-bold text-foreground mb-4">Sales by Salon</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {reports.map((r) => (
+            <div key={r.salon_id} className="border border-border rounded-lg p-4 bg-muted/20">
+              <p className="text-sm text-muted-foreground">Salon</p>
+              <p className="text-lg font-semibold text-foreground mb-2">
+                {r.salon_name || `Salon ${r.salon_id}`}
+              </p>
+              <p className="text-sm text-muted-foreground">Salon ID</p>
+              <p className="text-base font-medium text-foreground mb-2">{r.salon_id}</p>
+              <p className="text-sm text-muted-foreground">Total Sales</p>
+              <p className="text-xl font-semibold text-foreground">
+                ${Number(r.total_sales || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </p>
+            </div>
+          ))}
         </div>
       </div>
 
