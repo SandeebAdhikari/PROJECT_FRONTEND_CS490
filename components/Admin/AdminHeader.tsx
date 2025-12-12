@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import NextImage from "next/image";
 import Link from "next/link";
-import { User, Bell, Download } from "lucide-react";
+import { Bell, Download } from "lucide-react";
 import Icon9 from "@/public/icons/9.png";
 import { getPendingSalons } from "@/libs/api/admins";
 

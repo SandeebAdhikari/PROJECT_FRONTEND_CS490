@@ -27,7 +27,7 @@ const SalonDashboardTabs = ({ activeTab }: { activeTab?: string }) => {
     <div className="p-4 sm:p-8">
       <div className="grid w-full grid-cols-3 sm:grid-cols-6 bg-secondary rounded-2xl p-1 sm:p-2 scrollbar-hide">
         {DASHBOARD_MENU.map((tab) => {
-          const Icon = icons[tab.icon];
+          const Icon = icons[tab.icon as keyof typeof icons];
           const isActive =
             pathname.endsWith(tab.label.toLowerCase()) ||
             activeTab === tab.label;

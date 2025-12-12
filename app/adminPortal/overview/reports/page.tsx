@@ -59,13 +59,12 @@ export default function ReportsPage() {
 
   useEffect(() => {
     loadReports();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Calculate KPIs
   const totalSales = reports.reduce((sum, r) => sum + Number(r.total_sales || 0), 0);
   const totalSalons = reports.length;
-  const averageSales = totalSalons > 0 ? totalSales / totalSalons : 0;
+  // const averageSales = totalSalons > 0 ? totalSales / totalSalons : 0;
   const totalBookings = reportSummary?.total_bookings || 0;
   const completedBookings = reportSummary?.completed_bookings || 0;
   const cancelledBookings = reportSummary?.cancelled_bookings || 0;

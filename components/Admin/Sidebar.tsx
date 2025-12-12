@@ -5,7 +5,6 @@ import {
     Store,
     BarChart2,
     Download,
-    Activity,
     Users,
     ClipboardCheck,
 } from "lucide-react";

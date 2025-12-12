@@ -27,7 +27,7 @@ const SalonDashboardTabs = ({ activeTab }: { activeTab?: string }) => {
     <div className="p-4 sm:p-8">
       <div className="flex w-full bg-secondary rounded-2xl p-1 sm:p-2 scrollbar-hide overflow-x-auto">
         {DASHBOARD_MENU.map((tab) => {
-          const Icon = icons[tab.icon];
+          const Icon = icons[tab.icon as keyof typeof icons];
           const urlPath = tab.label.toLowerCase().replace(/\s+/g, "-");
           const isActive =
             pathname.endsWith(urlPath) ||
