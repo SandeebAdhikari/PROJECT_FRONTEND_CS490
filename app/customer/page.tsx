@@ -63,11 +63,8 @@ const Page = () => {
     const fetchSalons = async () => {
       try {
         setLoading(true);
-        const result = await getAllSalons(
-          selectedService,
-          selectedGender,
-          showBarbershops
-        );
+        // Fetch salons from backend with filters
+        const result = await getAllSalons(selectedService, selectedGender, showBarbershops);
         
         if (result.error) {
           console.error("Error fetching salons:", result.error);
@@ -75,10 +72,11 @@ const Page = () => {
           return;
         }
 
-        const realSalons = (result.salons ?? []) as CustomerSalon[];
-        setSalons(realSalons);
+        const salons = (result.salons ?? []) as CustomerSalon[];
+        setSalons(salons);
       } catch (error) {
         console.error("Error loading salons:", error);
+        // Show empty array if backend fails
         setSalons([]);
       } finally {
         setLoading(false);

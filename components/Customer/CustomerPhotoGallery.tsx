@@ -3,8 +3,8 @@
 
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
-import { X, ImageIcon, Calendar } from "lucide-react";
-import { getUserPhotos, getPhotoUrl, ServicePhoto } from "@/libs/api/photos";
+import { X, ImageIcon, Calendar, Download, Trash2 } from "lucide-react";
+import { getUserPhotos, getPhotoUrl, ServicePhoto, deleteServicePhoto, downloadPhoto } from "@/libs/api/photos";
 
 interface PhotoPair {
   appointment_id: number | null;
@@ -36,6 +36,46 @@ const CustomerPhotoGallery = () => {
       setError(result.error);
     }
     setLoading(false);
+  };
+
+  const handleDeletePhoto = async (photoId: number, photoType: 'before' | 'after') => {
+    if (!window.confirm(`Are you sure you want to delete this ${photoType} photo?`)) {
+      return;
+    }
+
+    const result = await deleteServicePhoto(photoId);
+    
+    if (result.success) {
+      // Remove from local state
+      setPhotos(photos.filter(p => p.photo_id !== photoId));
+      
+      // Close modal if both photos are deleted
+      if (selectedPair) {
+        const remainingBefore = selectedPair.before?.photo_id !== photoId ? selectedPair.before : undefined;
+        const remainingAfter = selectedPair.after?.photo_id !== photoId ? selectedPair.after : undefined;
+        
+        if (!remainingBefore && !remainingAfter) {
+          setSelectedPair(null);
+        } else {
+          setSelectedPair({
+            ...selectedPair,
+            before: remainingBefore,
+            after: remainingAfter,
+          });
+        }
+      }
+    } else {
+      alert(result.error || "Failed to delete photo");
+    }
+  };
+
+  const handleDownloadPhoto = async (photoUrl: string, photoType: 'before' | 'after') => {
+    const filename = `${photoType}_photo_${Date.now()}.jpg`;
+    const result = await downloadPhoto(photoUrl, filename);
+    
+    if (!result.success) {
+      alert(result.error || "Failed to download photo");
+    }
   };
 
   // Group photos by salon, then by date (consistent with staff portal)
@@ -274,12 +314,37 @@ const CustomerPhotoGallery = () => {
                 </div>
                 <div className="relative aspect-square bg-black rounded-lg overflow-hidden">
                   {selectedPair.before ? (
-                    <Image
-                      src={getPhotoUrl(selectedPair.before.photo_url)}
-                      alt="Before"
-                      fill
-                      className="object-contain"
-                    />
+                    <>
+                      <Image
+                        src={getPhotoUrl(selectedPair.before.photo_url)}
+                        alt="Before"
+                        fill
+                        className="object-contain"
+                      />
+                      {/* Action buttons */}
+                      <div className="absolute bottom-2 right-2 flex gap-2">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDownloadPhoto(selectedPair.before!.photo_url, 'before');
+                          }}
+                          className="p-2 bg-white/90 hover:bg-white rounded-full transition-colors"
+                          title="Download Before Photo"
+                        >
+                          <Download className="w-5 h-5 text-gray-800" />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeletePhoto(selectedPair.before!.photo_id, 'before');
+                          }}
+                          className="p-2 bg-red-600/90 hover:bg-red-600 rounded-full transition-colors"
+                          title="Delete Before Photo"
+                        >
+                          <Trash2 className="w-5 h-5 text-white" />
+                        </button>
+                      </div>
+                    </>
                   ) : (
                     <div className="flex items-center justify-center h-full">
                       <ImageIcon className="w-16 h-16 text-gray-600" />
@@ -295,12 +360,37 @@ const CustomerPhotoGallery = () => {
                 </div>
                 <div className="relative aspect-square bg-black rounded-lg overflow-hidden">
                   {selectedPair.after ? (
-                    <Image
-                      src={getPhotoUrl(selectedPair.after.photo_url)}
-                      alt="After"
-                      fill
-                      className="object-contain"
-                    />
+                    <>
+                      <Image
+                        src={getPhotoUrl(selectedPair.after.photo_url)}
+                        alt="After"
+                        fill
+                        className="object-contain"
+                      />
+                      {/* Action buttons */}
+                      <div className="absolute bottom-2 right-2 flex gap-2">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDownloadPhoto(selectedPair.after!.photo_url, 'after');
+                          }}
+                          className="p-2 bg-white/90 hover:bg-white rounded-full transition-colors"
+                          title="Download After Photo"
+                        >
+                          <Download className="w-5 h-5 text-gray-800" />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeletePhoto(selectedPair.after!.photo_id, 'after');
+                          }}
+                          className="p-2 bg-red-600/90 hover:bg-red-600 rounded-full transition-colors"
+                          title="Delete After Photo"
+                        >
+                          <Trash2 className="w-5 h-5 text-white" />
+                        </button>
+                      </div>
+                    </>
                   ) : (
                     <div className="flex items-center justify-center h-full">
                       <ImageIcon className="w-16 h-16 text-gray-600" />

@@ -147,6 +147,80 @@ export const getUserPhotos = async (userId?: number, salonId?: number): Promise<
   }
 };
 
+// Delete a service photo (before/after)
+export const deleteServicePhoto = async (
+  photoId: number
+): Promise<{ success: boolean; message?: string; error?: string }> => {
+  try {
+    const token = localStorage.getItem("token") || localStorage.getItem("authToken");
+    if (!token) {
+      return { success: false, error: "Authentication required" };
+    }
+
+    const response = await fetch(`${API_BASE_URL}/api/photos/service/${photoId}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      credentials: "include",
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      return { success: false, error: result.error || "Failed to delete photo" };
+    }
+
+    return { success: true, message: result.message };
+  } catch (error) {
+    console.error("Error deleting photo:", error);
+    return { success: false, error: "Network error. Please try again." };
+  }
+};
+
+// Download a photo
+export const downloadPhoto = async (
+  photoUrl: string,
+  filename: string = "photo.jpg"
+): Promise<{ success: boolean; error?: string }> => {
+  try {
+    const token = localStorage.getItem("token") || localStorage.getItem("authToken");
+    if (!token) {
+      return { success: false, error: "Authentication required" };
+    }
+
+    const fullUrl = getPhotoUrl(photoUrl);
+    const downloadUrl = `${API_BASE_URL}/api/photos/download?url=${encodeURIComponent(fullUrl)}&filename=${encodeURIComponent(filename)}`;
+
+    const response = await fetch(downloadUrl, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      return { success: false, error: "Failed to download photo" };
+    }
+
+    // Create a blob from the response and trigger download
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error downloading photo:", error);
+    return { success: false, error: "Network error. Please try again." };
+  }
+};
+
 // Helper to get full image URL
 export const getPhotoUrl = (photoUrl: string): string => {
   if (photoUrl.startsWith("http")) {

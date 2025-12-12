@@ -10,7 +10,6 @@ import useSalonId from "@/hooks/useSalonId";
 import {
   StaffPortalAppointment,
   StaffPortalCustomer,
-  StaffPortalProduct,
 } from "./staffPortalTypes";
 import {
   getStaffProfile,
@@ -21,7 +20,6 @@ import {
   updateAppointmentStatus,
   StaffPortalAppointmentBackend,
   StaffPortalCustomerBackend,
-  StaffPortalProductBackend,
   StaffPortalDashboard,
 } from "@/libs/api/staffPortal";
 

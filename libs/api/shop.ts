@@ -170,6 +170,10 @@ export interface CartItem {
   item_description?: string;
   product_id?: number;
   service_id?: number;
+  // Service-specific fields
+  appointment_id?: number;
+  staff_name?: string;
+  scheduled_time?: string;
 }
 
 export interface ProductSuggestion {

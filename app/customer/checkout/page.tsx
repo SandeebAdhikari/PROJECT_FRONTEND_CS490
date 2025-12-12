@@ -15,6 +15,9 @@ interface ServiceItem {
   service_id: number;
   custom_name: string;
   price: number;
+  appointment_id?: number;
+  staff_name?: string;
+  scheduled_time?: string;
 }
 
 interface ProductItem {
@@ -114,6 +117,9 @@ const CheckoutPageContent = () => {
               service_id: item.service_id || item.item_id,
               custom_name: item.item_name || 'Service',
               price: parseFloat(String(item.price)) || 0,
+              appointment_id: item.appointment_id,
+              staff_name: item.staff_name,
+              scheduled_time: item.scheduled_time,
             });
           } else if (item.type === 'product') {
             // item.price should be the UNIT price, not total
@@ -501,22 +507,60 @@ const CheckoutPageContent = () => {
 
                 {/* Services Section - Cart Checkout */}
                 {isCartCheckout && cartItems.services.length > 0 && (
-                  <div className="flex items-start gap-4 pb-4 border-b border-border">
-                    <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
-                      <Scissors className="w-6 h-6 text-primary" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-sm text-muted-foreground">Service{cartItems.services.length > 1 ? 's' : ''}</p>
-                      <div className="space-y-2">
-                        {cartItems.services.map((service, idx) => (
-                          <div key={idx} className="flex justify-between items-center">
-                            <p className="text-lg font-semibold">{service.custom_name}</p>
-                            <p className="text-muted-foreground">${service.price.toFixed(2)}</p>
+                  <>
+                    {cartItems.services.map((service, idx) => {
+                      const serviceDate = service.scheduled_time ? new Date(service.scheduled_time) : null;
+                      return (
+                        <div key={idx} className="pb-4 border-b border-border">
+                          <div className="flex items-start gap-4 mb-3">
+                            <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                              <Scissors className="w-6 h-6 text-primary" />
+                            </div>
+                            <div className="flex-1">
+                              <p className="text-sm text-muted-foreground">Service</p>
+                              <div className="flex justify-between items-center">
+                                <p className="text-lg font-semibold">{service.custom_name}</p>
+                                <p className="text-muted-foreground">${service.price.toFixed(2)}</p>
+                              </div>
+                            </div>
                           </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
+                          {/* Show appointment details if available */}
+                          {(service.staff_name || serviceDate) && (
+                            <div className="ml-16 space-y-2">
+                              {service.staff_name && (
+                                <div className="flex items-center gap-2 text-sm">
+                                  <User className="w-4 h-4 text-muted-foreground" />
+                                  <span className="text-muted-foreground">with {service.staff_name}</span>
+                                </div>
+                              )}
+                              {serviceDate && (
+                                <div className="flex items-center gap-3 text-sm">
+                                  <div className="flex items-center gap-1">
+                                    <Calendar className="w-4 h-4 text-muted-foreground" />
+                                    <span className="text-muted-foreground">
+                                      {serviceDate.toLocaleDateString("en-US", {
+                                        month: "short",
+                                        day: "numeric",
+                                      })}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-1">
+                                    <Clock className="w-4 h-4 text-muted-foreground" />
+                                    <span className="text-muted-foreground">
+                                      {serviceDate.toLocaleTimeString("en-US", {
+                                        hour: "numeric",
+                                        minute: "2-digit",
+                                      })}
+                                    </span>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </>
                 )}
 
                 {/* Services Section - Single Appointment */}
