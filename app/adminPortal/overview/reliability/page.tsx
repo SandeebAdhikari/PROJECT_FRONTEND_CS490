@@ -203,6 +203,15 @@ export default function ReliabilityPage() {
               detail={incidents.length === 0 ? "None open" : `${incidents.length} active/recent`}
             />
             <CheckRow
+              label="AWS S3"
+              status={health?.s3_status?.accessible ?? false}
+              detail={
+                health?.s3_status
+                  ? `${health.s3_status.bucket} (${health.s3_status.latency_ms}ms)`
+                  : "Not configured"
+              }
+            />
+            <CheckRow
               label="Sentry"
               status={Boolean(sentryEnabled)}
               detail={sentryEnabled ? "Enabled" : "Not configured"}

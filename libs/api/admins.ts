@@ -25,6 +25,11 @@ export interface SystemHealth {
   last_up?: string;
   last_down?: string;
   sentry_enabled?: boolean;
+  s3_status?: {
+    accessible: boolean;
+    latency_ms: number;
+    bucket: string;
+  };
   incidents?: Array<{
     id?: number | string;
     title?: string;
@@ -125,8 +130,8 @@ export async function getAdminReports(
       return { error: result.error || "Failed to get reports" };
     }
 
-    const reports = await response.json();
-    return { reports: Array.isArray(reports) ? reports : [] };
+    const data = await response.json();
+    return { reports: Array.isArray(data.reports) ? data.reports : [] };
   } catch (error) {
     console.error("Get reports error:", error);
     return { error: "Network error. Please try again." };
@@ -648,33 +653,3 @@ export async function verifySalon(
   }
 }
 
-/**
- * Get platform system health (uptime/errors)
- */
-export async function getSystemHealth(): Promise<{ health?: SystemHealth; error?: string }> {
-  try {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      return { error: "Not authenticated" };
-    }
-
-    const response = await fetch(API_ENDPOINTS.ADMINS.SYSTEM_HEALTH, {
-      ...fetchConfig,
-      headers: {
-        ...fetchConfig.headers,
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    if (!response.ok) {
-      const result = await response.json().catch(() => ({}));
-      return { error: result.error || "Failed to fetch system health" };
-    }
-
-    const data = await response.json();
-    return { health: data };
-  } catch (error) {
-    console.error("Get system health error:", error);
-    return { error: "Network error. Please try again." };
-  }
-}

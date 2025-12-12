@@ -72,13 +72,14 @@ export default function ReportsPage() {
         endDate || undefined
       );
       if (result.error) {
-        alert(`Failed to export: ${result.error}`);
+        setError(`Failed to export: ${result.error}`);
       } else {
-        alert("Reports exported successfully!");
+        // CSV file will be automatically downloaded
+        console.log("Reports exported successfully");
       }
     } catch (err) {
       console.error("Export error:", err);
-      alert("Failed to export reports");
+      setError("Failed to export reports");
     } finally {
       setExporting(false);
     }
