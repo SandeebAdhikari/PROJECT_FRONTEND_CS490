@@ -234,7 +234,7 @@ const NewAppointmentModal = ({
 
     if (!res.ok) alert(data.error || "Failed to create appointment");
     else {
-      alert("Appointment added and confirmation email sent!");
+      alert("Appointment created! Payment link sent to customer's email.");
       if (onCreated) await Promise.resolve(onCreated());
       onClose();
       setForm({
