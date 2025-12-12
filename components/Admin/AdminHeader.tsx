@@ -3,16 +3,23 @@
 import React, { useState, useEffect } from "react";
 import NextImage from "next/image";
 import Link from "next/link";
-import { User, Bell } from "lucide-react";
+import { User, Bell, Download } from "lucide-react";
 import Icon9 from "@/public/icons/9.png";
 import { getPendingSalons } from "@/libs/api/admins";
 
 type AdminHeaderProps = {
   adminName: string;
   notificationCount?: number;
+  onExport?: () => void;
+  exporting?: boolean;
 };
 
-export default function AdminHeader({ adminName: _adminName, notificationCount: propNotificationCount }: AdminHeaderProps) {
+export default function AdminHeader({
+  adminName: _adminName,
+  notificationCount: propNotificationCount,
+  onExport,
+  exporting,
+}: AdminHeaderProps) {
   const [notificationCount, setNotificationCount] = useState(propNotificationCount || 0);
 
   useEffect(() => {
@@ -56,7 +63,7 @@ export default function AdminHeader({ adminName: _adminName, notificationCount: 
         <h1 className="text-2xl font-bold text-primary">StyGo Admin</h1>
       </div>
 
-      {/* RIGHT: BELL + PROFILE + LOGOUT */}
+      {/* RIGHT: BELL + EXPORT + LOGOUT */}
       <div className="flex items-center gap-5">
 
         {/* NOTIFICATION BELL */}
@@ -79,14 +86,17 @@ export default function AdminHeader({ adminName: _adminName, notificationCount: 
           )}
         </Link>
 
-        {/* ADMIN PROFILE */}
-        <Link
-          href="/adminPortal/overview/admin"
-          className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-base font-semibold hover:bg-accent transition shadow-sm"
-        >
-          <User size={18} />
-          Admin Profile 
-        </Link>
+        {/* EXPORT CSV */}
+        {onExport && (
+          <button
+            onClick={onExport}
+            disabled={exporting}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-primary text-white hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition shadow-sm"
+          >
+            <Download size={16} />
+            {exporting ? "Exporting..." : "Export CSV"}
+          </button>
+        )}
 
         {/* LOGOUT BUTTON */}
         <button

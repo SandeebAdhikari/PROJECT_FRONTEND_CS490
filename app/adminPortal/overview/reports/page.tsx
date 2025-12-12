@@ -2,12 +2,10 @@
 
 import React, { useState, useEffect } from "react";
 import ChartCard from "@/components/Admin/ChartCard";
-import { Download } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts";
 import {
   getAdminReports,
   getSalonRevenues,
-  exportAdminReports,
   AdminReport,
   SalonRevenue,
   getRetentionSummary,
@@ -20,9 +18,6 @@ export default function ReportsPage() {
   const [retention, setRetention] = useState<RetentionSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [startDate, setStartDate] = useState<string>("");
-  const [endDate, setEndDate] = useState<string>("");
-  const [exporting, setExporting] = useState(false);
 
   const loadReports = async () => {
     setLoading(true);
@@ -30,8 +25,8 @@ export default function ReportsPage() {
 
     try {
       const [reportsResult, revenuesResult, retentionResult] = await Promise.all([
-        getAdminReports(startDate || undefined, endDate || undefined),
-        getSalonRevenues(startDate || undefined, endDate || undefined),
+        getAdminReports(),
+        getSalonRevenues(),
         getRetentionSummary(),
       ]);
 
@@ -63,27 +58,7 @@ export default function ReportsPage() {
   useEffect(() => {
     loadReports();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [startDate, endDate]);
-
-  const handleExport = async () => {
-    setExporting(true);
-    try {
-      const result = await exportAdminReports(
-        startDate || undefined,
-        endDate || undefined
-      );
-      if (result.error) {
-        alert(`Failed to export: ${result.error}`);
-      } else {
-        alert("Reports exported successfully!");
-      }
-    } catch (err) {
-      console.error("Export error:", err);
-      alert("Failed to export reports");
-    } finally {
-      setExporting(false);
-    }
-  };
+  }, []);
 
   // Calculate KPIs
   const totalSales = reports.reduce((sum, r) => sum + Number(r.total_sales || 0), 0);
@@ -158,32 +133,6 @@ export default function ReportsPage() {
           <p className="text-lg text-muted-foreground">
             View salon sales performance and revenue analytics
           </p>
-        </div>
-        <div className="flex flex-col sm:flex-row gap-2">
-          <div className="flex gap-2">
-            <input
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="px-3 py-2 border border-border rounded-lg text-sm bg-background"
-              placeholder="Start Date"
-            />
-            <input
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              className="px-3 py-2 border border-border rounded-lg text-sm bg-background"
-              placeholder="End Date"
-            />
-          </div>
-          <button
-            onClick={handleExport}
-            disabled={exporting}
-            className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
-          >
-            <Download className="w-4 h-4" />
-            {exporting ? "Exporting..." : "Export CSV"}
-          </button>
         </div>
       </div>
 

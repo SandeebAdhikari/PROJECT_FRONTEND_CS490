@@ -24,6 +24,7 @@ import {
   getUserEngagement,
   getUserDemographics,
   getLoyaltySummary,
+  exportAdminReports,
   AppointmentTrend,
   SalonRevenue,
   EngagementResponse,
@@ -38,6 +39,7 @@ export default function AdminDashboard() {
   const [demographics, setDemographics] = useState<DemographicsResponse | null>(null);
   const [loyaltySummary, setLoyaltySummary] = useState<LoyaltySummary | null>(null);
   const [engagement, setEngagement] = useState<EngagementResponse | null>(null);
+  const [exporting, setExporting] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -127,12 +129,15 @@ export default function AdminDashboard() {
 
   // Calculate stats
   const totalRevenue = revenues.reduce((sum, r) => sum + Number(r.total_revenue || 0), 0);
-  const peakHour = appointmentTrends.length > 0
-    ? appointmentTrends.reduce(
-        (max, trend) => (trend.appointments > max.appointments ? trend : max),
-        appointmentTrends[0]
-      )
-    : { hour: 0, appointments: 0 };
+  const peakHourPoint = (() => {
+    if (appointmentTrends.length === 0) return { hour: 0, appointments: 0 };
+    const nonZero = appointmentTrends.filter((t) => (t.appointments || 0) > 0);
+    const source = nonZero.length > 0 ? nonZero : appointmentTrends;
+    return source.reduce(
+      (max, curr) => (curr.appointments > max.appointments ? curr : max),
+      source[0]
+    );
+  })();
   const topHours = appointmentTrends
     .slice()
     .sort((a, b) => b.appointments - a.appointments)
@@ -157,7 +162,7 @@ export default function AdminDashboard() {
 
   const stats = {
     engagement: engagementPercent,
-    peakHours: peakHour.appointments > 0 ? `${peakHour.hour}:00` : "N/A",
+    peakHours: `${String(peakHourPoint.hour || 0).padStart(2, "0")}:00`,
     revenue: totalRevenue,
   };
 
@@ -170,6 +175,23 @@ export default function AdminDashboard() {
       .sort((a, b) => Number(b.total_points || 0) - Number(a.total_points || 0))
       .slice(0, 5) || [];
   const topLoyaltySalon = loyaltySummary?.top_salon || topLoyaltySalons[0];
+
+  const handleExportReports = async () => {
+    setExporting(true);
+    try {
+      const result = await exportAdminReports();
+      if (result.error) {
+        alert(`Failed to export: ${result.error}`);
+      } else {
+        alert("Reports exported successfully!");
+      }
+    } catch (err) {
+      console.error("Export error:", err);
+      alert("Failed to export reports");
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const formatCurrency = (val: number) =>
     `$${val.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
@@ -216,7 +238,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="pb-10">
-      <AdminHeader adminName={ADMIN_NAME} />
+      <AdminHeader adminName={ADMIN_NAME} onExport={handleExportReports} exporting={exporting} />
       
       {error && (
         <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg">
