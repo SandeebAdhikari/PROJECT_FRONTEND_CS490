@@ -39,11 +39,24 @@ const SalonCard: React.FC<SalonCardProps> = ({
     ? `Remove ${name} from favorites`
     : `Add ${name} to favorites`;
 
+  const fallbackImage = (() => {
+    const lowerName = (name || "").toLowerCase();
+    if (lowerName.includes("urban edge")) {
+      return "https://images.unsplash.com/photo-1504198453319-5ce911bafcde?auto=format&fit=crop&w=1200&q=80";
+    }
+    if (lowerName.includes("urban")) {
+      return "https://images.unsplash.com/photo-1511288593014-8acb33db1c83?auto=format&fit=crop&w=1200&q=80";
+    }
+    return "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=1200&q=80";
+  })();
+
+  const displayImage = imageUrl || fallbackImage;
+
   return (
     <div className="border border-border rounded-xl sm:rounded-2xl overflow-hidden shadow-soft-br hover:shadow-premium transition-smooth bg-card group cursor-pointer relative font-inter h-full flex flex-col">
       <div className="relative">
         <Image
-          src={getImageUrl(imageUrl)}
+          src={getImageUrl(displayImage)}
           alt={name || "Salon image"}
           width={400}
           height={300}
