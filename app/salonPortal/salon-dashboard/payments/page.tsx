@@ -16,6 +16,7 @@ import {
 import { fetchWithRefresh } from "@/libs/api/fetchWithRefresh";
 import { API_ENDPOINTS } from "@/libs/api/config";
 import SalonDashboardTabs from "@/components/Dashboard/SalonDashboard/SalonDashboardTabs";
+import useSalonId from "@/hooks/useSalonId";
 
 interface Payment {
   payment_id: number;
@@ -38,6 +39,7 @@ interface PaymentStats {
 }
 
 export default function PaymentsPage() {
+  const { salonId, loadingSalon } = useSalonId();
   const [payments, setPayments] = useState<Payment[]>([]);
   const [filteredPayments, setFilteredPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -53,20 +55,12 @@ export default function PaymentsPage() {
   });
 
   const fetchPayments = useCallback(async () => {
+    if (!salonId) return;
+    
     setLoading(true);
     setError(null);
 
     try {
-      // Get salon ID from localStorage
-      const userData = localStorage.getItem("user");
-      const user = userData ? JSON.parse(userData) : null;
-      const salonId = user?.salon_id;
-
-      if (!salonId) {
-        setError("No salon associated with this account");
-        setLoading(false);
-        return;
-      }
 
       const response = await fetchWithRefresh(
         API_ENDPOINTS.PAYMENTS.SALON_PAYMENTS(salonId),
@@ -107,11 +101,13 @@ export default function PaymentsPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [salonId]);
 
   useEffect(() => {
-    fetchPayments();
-  }, [fetchPayments]);
+    if (salonId) {
+      fetchPayments();
+    }
+  }, [salonId, fetchPayments]);
 
   // Filter payments based on search and filters
   useEffect(() => {
@@ -237,7 +233,7 @@ export default function PaymentsPage() {
     a.click();
   };
 
-  if (loading) {
+  if (loading || loadingSalon) {
     return (
       <div className="min-h-screen bg-background">
         <SalonDashboardTabs activeTab="Payments" />
@@ -245,6 +241,19 @@ export default function PaymentsPage() {
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
             <p className="text-muted-foreground">Loading payments...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!salonId) {
+    return (
+      <div className="min-h-screen bg-background">
+        <SalonDashboardTabs activeTab="Payments" />
+        <div className="px-4 sm:px-8 pb-8">
+          <div className="p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg">
+            No salon associated with this account. Please ensure you are logged in as a salon owner.
           </div>
         </div>
       </div>
