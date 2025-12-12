@@ -244,7 +244,7 @@ const StaffPortalTabsAvailability: React.FC = () => {
         <p className="font-semibold mb-1">💡 Tip</p>
         <p>
           Your availability determines when customers can book appointments with you.
-          If you don't set availability for a day, the system will use the salon's business hours.
+          If you don{"'"}t set availability for a day, the system will use the salon{"'"}s business hours.
         </p>
       </div>
 

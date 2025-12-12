@@ -106,7 +106,7 @@ const StaffPortalTabsOverview: React.FC<StaffPortalTabsOverviewProps> = ({
             </div>
           </div>
           <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
-            <li>• Review today's appointments</li>
+            <li>• Review today{"'"}s appointments</li>
             <li>• Check customer notes and preferences</li>
             <li>• Prepare for upcoming services</li>
           </ul>

@@ -4,16 +4,14 @@ import React from "react";
 import {
   StaffPortalAppointment,
   StaffPortalCustomer,
-  StaffPortalProduct,
 } from "@/components/Staff/staffPortalTypes";
 import StaffPortalTabsOverview from "./StaffPortalTabsOverview";
 import StaffPortalTabsCustomer from "./StaffPortalTabsCustomer";
-import StaffPortalTabsProduct from "./StaffPortalTabsProduct";
 import StaffPortalTabsAppointment from "./StaffPortalTabsAppointment";
 import StaffPortalTabsAvailability from "./StaffPortalTabsAvailability";
 import StaffPortalTabsSchedule from "./StaffPortalTabsSchedule";
 
-type TabKey = "overview" | "appointments" | "schedule" | "customers" | "products" | "availability";
+type TabKey = "overview" | "appointments" | "schedule" | "customers" | "availability";
 
 const tabConfig: { id: TabKey; label: string; description: string }[] = [
   { id: "overview", label: "Overview", description: "Shift briefing" },
@@ -32,7 +30,6 @@ interface StaffPortalTabsProps {
   onTabChange: (tab: TabKey) => void;
   appointments: StaffPortalAppointment[];
   customers: StaffPortalCustomer[];
-  products: StaffPortalProduct[];
   featuredStaff: never[];
   nextAppointment?: StaffPortalAppointment;
   onCreateAppointment: () => void;
@@ -49,7 +46,6 @@ const StaffPortalTabs: React.FC<StaffPortalTabsProps> = ({
   onTabChange,
   appointments,
   customers,
-  products,
   featuredStaff,
   nextAppointment,
   onCreateAppointment,
@@ -111,10 +107,6 @@ const StaffPortalTabs: React.FC<StaffPortalTabsProps> = ({
 
         {activeTab === "customers" && (
           <StaffPortalTabsCustomer customers={customers} staffId={staffId} salonId={salonId} />
-        )}
-
-        {activeTab === "products" && (
-          <StaffPortalTabsProduct products={products} />
         )}
 
         {activeTab === "availability" && (

@@ -478,7 +478,6 @@ const StaffPortal = () => {
             onTabChange={(tab: TabKey) => setActiveTab(tab)}
             appointments={appointments}
             customers={customers}
-            products={products}
             featuredStaff={featuredStaff}
             onCreateAppointment={() => setShowNewAppointment(true)}
             onEditAppointment={(id) => setEditingAppointmentId(id)}

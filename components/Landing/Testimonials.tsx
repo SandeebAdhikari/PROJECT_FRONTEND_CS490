@@ -41,7 +41,7 @@ const Testimonials: React.FC = () => {
             </h2>
             <p className="text-lg text-muted-foreground font-inter mb-8 max-w-2xl">
               We pair enterprise-grade reliability with a product your stylists
-              actually love. That's how we turn pilots into multi-year
+              actually love. That{"'"}s how we turn pilots into multi-year
               partnerships.
             </p>
 
