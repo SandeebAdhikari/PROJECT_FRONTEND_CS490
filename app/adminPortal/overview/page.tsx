@@ -75,7 +75,7 @@ export default function AdminDashboard() {
       if (demographicsResult.error) {
         console.error("Failed to load demographics:", demographicsResult.error);
       } else {
-        setDemographics(demographicsResult.demographics || []);
+        setDemographics(demographicsResult.demographics || null);
       }
     } catch (err) {
       console.error("Error loading dashboard:", err);

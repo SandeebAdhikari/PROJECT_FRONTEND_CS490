@@ -31,7 +31,7 @@ const customerSchema = z.object({
     .string()
     .regex(/^\+?[\d\s\-\(\)]+$/, "Invalid phone")
     .optional(),
-  gender: z.enum(["male", "female", "nonbinary", "prefer_not_say"]).optional(),
+  gender: z.enum(["male", "female", "other", "prefer_not_to_say"]).optional(),
   zipcode: z
     .string()
     .regex(/^\d{5}$/, "Zip code must be 5 digits")

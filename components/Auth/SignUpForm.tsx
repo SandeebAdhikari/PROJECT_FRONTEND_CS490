@@ -34,12 +34,8 @@ const SignUpForm = () => {
       };
 
       if (data.userType === "customer") {
-        const genderValue =
-          data.gender === "prefer_not_to_say"
-            ? "prefer_not_say"
-            : data.gender || null;
-        if (genderValue) {
-          payload.gender = genderValue;
+        if (data.gender) {
+          payload.gender = data.gender;
         }
       }
 
