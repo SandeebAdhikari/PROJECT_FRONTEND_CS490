@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis } from "recharts";
 import AdminHeader from "@/components/Admin/AdminHeader";
 import ChartCard from "@/components/Admin/ChartCard";
 import DashboardCards from "@/components/Admin/DashboardCards";
