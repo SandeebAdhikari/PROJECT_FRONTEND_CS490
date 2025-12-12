@@ -19,11 +19,15 @@ import {
   exportAdminReports,
   AdminReport,
   SalonRevenue,
+  getRetentionSummary,
+  RetentionSummary,
 } from "@/libs/api/admins";
+import { BarChart, Bar, XAxis, YAxis, Tooltip } from "recharts";
 
 export default function ReportsPage() {
   const [reports, setReports] = useState<AdminReport[]>([]);
   const [revenues, setRevenues] = useState<SalonRevenue[]>([]);
+  const [retention, setRetention] = useState<RetentionSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [startDate, setStartDate] = useState<string>("");
@@ -35,9 +39,10 @@ export default function ReportsPage() {
     setError(null);
 
     try {
-      const [reportsResult, revenuesResult] = await Promise.all([
+      const [reportsResult, revenuesResult, retentionResult] = await Promise.all([
         getAdminReports(startDate || undefined, endDate || undefined),
         getSalonRevenues(startDate || undefined, endDate || undefined),
+        getRetentionSummary(),
       ]);
 
       if (reportsResult.error) {
@@ -50,6 +55,12 @@ export default function ReportsPage() {
         console.error("Failed to load revenues:", revenuesResult.error);
       } else {
         setRevenues(revenuesResult.revenues || []);
+      }
+
+      if (retentionResult.error) {
+        console.error("Failed to load retention:", retentionResult.error);
+      } else {
+        setRetention(retentionResult.retention || null);
       }
     } catch (err) {
       console.error("Error loading reports:", err);
@@ -89,6 +100,30 @@ export default function ReportsPage() {
   const totalSalons = reports.length;
   const averageSales = totalSalons > 0 ? totalSales / totalSalons : 0;
 
+  const retentionRate =
+    (retention?.active_customers_90d ?? 0) > 0
+      ? Math.round(
+          ((retention?.returning_customers_90d ?? 0) /
+            (retention?.active_customers_90d ?? 1)) *
+            100
+        )
+      : 0;
+  const repeatShare =
+    (retention?.total_bookings_30d ?? 0) > 0
+      ? Math.round(
+          ((retention?.repeat_bookings_30d ?? 0) /
+            (retention?.total_bookings_30d ?? 1)) *
+            100
+        )
+      : 0;
+
+  const retentionTrendData =
+    retention?.trend.map((t) => ({
+      week: t.week_start,
+      new_users: t.new_users,
+      returning_users: t.returning_users,
+    })) || [];
+
   // Format revenue data for chart
   const revenueChartData = revenues.map((r) => ({
     name: r.salon_name || `Salon ${r.salon_id}`,
@@ -100,6 +135,19 @@ export default function ReportsPage() {
     name: r.salon_name || `Salon ${r.salon_id}`,
     sales: Number(r.total_sales || 0),
   }));
+
+  const StatPill: React.FC<{ label: string; value: string | number; small?: boolean }> = ({
+    label,
+    value,
+    small = false,
+  }) => (
+    <div className={`p-4 rounded-lg border border-border bg-muted/40 ${small ? "text-sm" : ""}`}>
+      <p className="text-muted-foreground text-sm">{label}</p>
+      <p className={`${small ? "text-lg" : "text-2xl"} font-semibold text-foreground`}>
+        {typeof value === "number" ? value.toLocaleString() : value}
+      </p>
+    </div>
+  );
 
   if (loading) {
     return (
@@ -174,6 +222,54 @@ export default function ReportsPage() {
           <p className="text-4xl font-bold text-foreground">
             ${averageSales.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </p>
+        </div>
+      </div>
+
+      {/* Retention Metrics */}
+      <div className="bg-card p-6 rounded-xl shadow-sm border border-border mb-8">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-2xl font-bold text-foreground">Customer Retention</h3>
+            <p className="text-sm text-muted-foreground">
+              New vs. returning customers and repeat behavior
+            </p>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-6">
+          <StatPill label="Active customers (90d)" value={retention?.active_customers_90d ?? 0} />
+          <StatPill label="Returning customers (90d)" value={retention?.returning_customers_90d ?? 0} />
+          <StatPill label="Retention rate (90d)" value={`${retentionRate}%`} />
+          <StatPill label="Churn risk (60d+)" value={retention?.churn_risk_60d ?? 0} />
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="border border-border rounded-lg p-4 bg-muted/30">
+            <h4 className="text-lg font-semibold mb-2">Repeat behavior (30d)</h4>
+            <p className="text-sm text-muted-foreground mb-3">
+              Repeat bookings: {retention?.repeat_bookings_30d ?? 0} / {retention?.total_bookings_30d ?? 0}{" "}
+              ({repeatShare}%)
+            </p>
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <StatPill label="New customers (30d)" value={retention?.new_customers_30d ?? 0} small />
+              <StatPill label="New customers (90d)" value={retention?.new_customers_90d ?? 0} small />
+            </div>
+          </div>
+
+          <div className="border border-border rounded-lg p-4 bg-muted/30">
+            <h4 className="text-lg font-semibold mb-3">New vs Returning (weekly)</h4>
+            {retentionTrendData.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No data for the last 12 weeks.</p>
+            ) : (
+              <ResponsiveContainer width="100%" height={240}>
+                <BarChart data={retentionTrendData}>
+                  <XAxis dataKey="week" tick={{ fontSize: 12 }} />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
+                  <Tooltip />
+                  <Bar dataKey="new_users" stackId="a" fill="hsl(var(--primary))" name="New" />
+                  <Bar dataKey="returning_users" stackId="a" fill="hsl(var(--accent))" name="Returning" />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </div>
         </div>
       </div>
 
@@ -280,4 +376,3 @@ export default function ReportsPage() {
     </div>
   );
 }
-

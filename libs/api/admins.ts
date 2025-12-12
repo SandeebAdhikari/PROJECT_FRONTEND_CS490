@@ -248,6 +248,23 @@ export interface CustomerRetention {
   retained_customers: number;
 }
 
+export interface RetentionTrend {
+  week_start: string;
+  new_users: number;
+  returning_users: number;
+}
+
+export interface RetentionSummary {
+  active_customers_90d: number;
+  returning_customers_90d: number;
+  new_customers_30d: number;
+  new_customers_90d: number;
+  total_bookings_30d: number;
+  repeat_bookings_30d: number;
+  churn_risk_60d: number;
+  trend: RetentionTrend[];
+}
+
 export interface LoyaltySummary {
   total_points: number;
   active_salons: number;
@@ -305,6 +322,35 @@ export async function getUserEngagement(): Promise<{ engagement?: EngagementResp
 export interface DemographicsResponse {
   gender: UserDemographicBucket[];
   age: UserDemographicBucket[];
+}
+
+export async function getRetentionSummary(): Promise<{ retention?: RetentionSummary; error?: string }> {
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      return { error: "Not authenticated" };
+    }
+
+    const response = await fetch(API_ENDPOINTS.ADMINS.RETENTION_SUMMARY, {
+      ...fetchConfig,
+      cache: "no-store",
+      headers: {
+        ...fetchConfig.headers,
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok && response.status !== 304) {
+      const result = await response.json().catch(() => ({}));
+      return { error: result.error || "Failed to get retention summary" };
+    }
+
+    const data = response.status === 304 ? {} : await response.json();
+    return { retention: (data as any).retention || (data as RetentionSummary) };
+  } catch (error) {
+    console.error("Get retention summary error:", error);
+    return { error: "Network error. Please try again." };
+  }
 }
 
 export async function getLoyaltySummary(): Promise<{ summary?: LoyaltySummary; error?: string }> {

@@ -1,15 +1,30 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 import AdminHeader from "@/components/Admin/AdminHeader";
 import { AlertTriangle, CheckCircle, Clock, ServerCrash } from "lucide-react";
 import { getSystemHealth, SystemHealth } from "@/libs/api/admins";
+import { API_BASE_URL } from "@/libs/api/config";
 
 export default function ReliabilityPage() {
   const [health, setHealth] = useState<SystemHealth | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [quickPing, setQuickPing] = useState<{
+    db: string;
+    api: string;
+    overall: string;
+    lastChecked: string;
+  }>({ db: "checking", api: "checking", overall: "checking", lastChecked: "" });
 
   useEffect(() => {
     let timer: NodeJS.Timeout | null = null;
@@ -30,6 +45,34 @@ export default function ReliabilityPage() {
     load();
     timer = setInterval(load, 30_000); // auto-refresh every 30s
 
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, []);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout | null = null;
+    const ping = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/health`, { cache: "no-store" });
+        const data = await res.json();
+        setQuickPing({
+          db: data.database || "unknown",
+          api: data.status === "ok" ? "healthy" : "unhealthy",
+          overall: data.status === "ok" ? "healthy" : "unhealthy",
+          lastChecked: new Date().toLocaleTimeString(),
+        });
+      } catch {
+        setQuickPing({
+          db: "unhealthy",
+          api: "unhealthy",
+          overall: "unhealthy",
+          lastChecked: new Date().toLocaleTimeString(),
+        });
+      }
+    };
+    ping();
+    timer = setInterval(ping, 30_000);
     return () => {
       if (timer) clearInterval(timer);
     };
@@ -109,6 +152,20 @@ export default function ReliabilityPage() {
           value={sentryEnabled ? "Enabled" : "Disabled"}
           icon={<ServerCrash className="w-5 h-5 text-purple-600" />}
           subtitle={sentryEnabled ? "Capturing errors" : "Set SENTRY_DSN to enable"}
+        />
+        <StatCard
+          title="Live health ping"
+          value={quickPing.overall === "healthy" ? "Healthy" : "Unhealthy"}
+          icon={
+            quickPing.overall === "healthy" ? (
+              <CheckCircle className="w-5 h-5 text-green-600" />
+            ) : (
+              <AlertTriangle className="w-5 h-5 text-amber-600" />
+            )
+          }
+          subtitle={`DB: ${quickPing.db} • API: ${quickPing.api} • Checked: ${
+            quickPing.lastChecked || "–"
+          }`}
         />
       </div>
 

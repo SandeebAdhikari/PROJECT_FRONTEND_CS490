@@ -16,17 +16,10 @@ import NextImage from "next/image";
 
 const navItems = [
     { href: "/adminPortal/overview", icon: <LayoutDashboard size={18} />, label: "Dashboard" },
-
     { href: "/adminPortal/overview/salons", icon: <Store size={18} />, label: "Salons" },
-
     { href: "/adminPortal/overview/analytics", icon: <BarChart2 size={18} />, label: "Users" },
-
     { href: "/adminPortal/overview/reports", icon: <Users size={18} />, label: "Customers" },
-
-    { href: "/adminPortal/overview/reliability", icon: <Download size={18} />, label: "Reports" },
-
-    { href: "/adminPortal/overview/settings", icon: <Activity size={18} />, label: "System Health" },
-
+    { href: "/adminPortal/overview/reliability", icon: <Download size={18} />, label: "Reliability" },
     { href: "/adminPortal/overview/pending-approvals", icon: <ClipboardCheck size={18} />, label: "Approvals" },
 ];
 
