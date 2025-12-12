@@ -2,6 +2,7 @@ import { API_ENDPOINTS, fetchConfig } from "./config";
 
 export interface Salon {
   salon_id?: number;
+  id?: string | number;
   owner_id?: number;
   name: string;
   address: string;
@@ -14,8 +15,13 @@ export interface Salon {
   email?: string;
   website?: string;
   profile_picture?: string;
+  imageUrl?: string;
   status?: string;
   created_at?: string;
+  category?: string;
+  rating?: number;
+  totalReviews?: number;
+  priceFrom?: number;
 }
 
 export interface CreateSalonData {
@@ -118,11 +124,30 @@ export async function getAllSalons(
     const result = await response.json();
 
     if (!response.ok) {
-      return { error: result.error || "Failed to fetch salons" };
+      console.error("Failed to fetch salons:", result);
+      return { error: result.error || result.message || "Failed to fetch salons" };
     }
 
-    return { salons: result };
-  } catch {
+    // Handle different response structures
+    // If result is an array, use it directly
+    // If result has a salons property, use that
+    // If result has a data property, use that
+    let salons: Salon[] = [];
+    if (Array.isArray(result)) {
+      salons = result;
+    } else if (result.salons && Array.isArray(result.salons)) {
+      salons = result.salons;
+    } else if (result.data && Array.isArray(result.data)) {
+      salons = result.data;
+    } else {
+      console.warn("Unexpected API response structure:", result);
+      salons = [];
+    }
+
+    console.log(`Fetched ${salons.length} salons from API`);
+    return { salons };
+  } catch (error) {
+    console.error("Network error fetching salons:", error);
     return { error: "Network error. Please try again." };
   }
 }
