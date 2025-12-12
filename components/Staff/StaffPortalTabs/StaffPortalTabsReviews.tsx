@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { Star, MessageSquare, Send, ChevronDown, ChevronUp } from "lucide-react";
+import React, { useState, useEffect, useCallback } from "react";
+import { Star, MessageSquare, Send } from "lucide-react";
 
 interface Review {
   review_id: number;
@@ -33,11 +33,10 @@ const StaffPortalTabsReviews: React.FC<StaffPortalTabsReviewsProps> = ({
   const [respondingTo, setRespondingTo] = useState<number | null>(null);
   const [responseText, setResponseText] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [expandedReviews, setExpandedReviews] = useState<Set<number>>(new Set());
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
-  const fetchReviews = async () => {
+  const fetchReviews = useCallback(async () => {
     if (!salonId) return;
     
     try {
@@ -56,11 +55,11 @@ const StaffPortalTabsReviews: React.FC<StaffPortalTabsReviewsProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [salonId]);
 
   useEffect(() => {
     fetchReviews();
-  }, [salonId]);
+  }, [fetchReviews]);
 
   const handleSubmitResponse = async (reviewId: number) => {
     if (!responseText.trim() || !salonId) return;
@@ -95,18 +94,6 @@ const StaffPortalTabsReviews: React.FC<StaffPortalTabsReviewsProps> = ({
     } finally {
       setSubmitting(false);
     }
-  };
-
-  const toggleExpanded = (reviewId: number) => {
-    setExpandedReviews(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(reviewId)) {
-        newSet.delete(reviewId);
-      } else {
-        newSet.add(reviewId);
-      }
-      return newSet;
-    });
   };
 
   const renderStars = (rating: number) => {
@@ -219,7 +206,6 @@ const StaffPortalTabsReviews: React.FC<StaffPortalTabsReviewsProps> = ({
           </div>
         ) : (
           reviews.map((review) => {
-            const isExpanded = expandedReviews.has(review.review_id);
             const isResponding = respondingTo === review.review_id;
             
             return (
@@ -307,4 +293,3 @@ const StaffPortalTabsReviews: React.FC<StaffPortalTabsReviewsProps> = ({
 };
 
 export default StaffPortalTabsReviews;
-

@@ -12,6 +12,8 @@ export default function ReliabilityPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let timer: NodeJS.Timeout | null = null;
+
     const load = async () => {
       setLoading(true);
       const result = await getSystemHealth();
@@ -19,19 +21,47 @@ export default function ReliabilityPage() {
         setError(result.error || "Failed to fetch system health");
         setHealth(null);
       } else {
+        setError(null);
         setHealth(result.health);
       }
       setLoading(false);
     };
+
     load();
+    timer = setInterval(load, 30_000); // auto-refresh every 30s
+
+    return () => {
+      if (timer) clearInterval(timer);
+    };
   }, []);
 
   const incidents = health?.incidents || [];
   const errors = useMemo(() => health?.recent_errors || [], [health]);
   const trend = health?.error_trend || [];
+
+  // Fallback trend: if DB trend is empty but we have recent errors, build a per-minute series
+  const trendData = useMemo(() => {
+    if (trend.length > 0) return trend;
+    if (!errors.length) return [];
+    const counts = new Map<string, number>();
+    errors.forEach((err) => {
+      if (!err.timestamp) return;
+      const d = new Date(err.timestamp);
+      if (Number.isNaN(d.getTime())) return;
+      const key = d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      counts.set(key, (counts.get(key) || 0) + 1);
+    });
+    return Array.from(counts.entries())
+      .map(([minute, count]) => ({ minute, count }))
+      .sort((a, b) => a.minute.localeCompare(b.minute));
+  }, [trend, errors]);
   const latencyMs = health?.avg_latency_ms;
   const uptimePercent = health?.uptime_percent;
   const errorRate = health?.error_rate_per_min;
+  const totalErrors24h = health?.total_errors_24h ?? 0;
+  const lastUp = health?.last_up ? new Date(health.last_up) : null;
+  const lastDown = health?.last_down ? new Date(health.last_down) : null;
+  const sentryEnabled = health?.sentry_enabled;
 
   const latencyDisplay = Number.isFinite(latencyMs) ? `${Math.round(latencyMs!)} ms` : "N/A";
   const uptimeDisplay = Number.isFinite(uptimePercent) ? `${uptimePercent!.toFixed(2)}%` : "--";
@@ -55,7 +85,7 @@ export default function ReliabilityPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <StatCard
           title="Uptime (30d)"
           value={uptimeDisplay}
@@ -74,6 +104,12 @@ export default function ReliabilityPage() {
           icon={<AlertTriangle className="w-5 h-5 text-amber-600" />}
           subtitle={`Errors last 24h: ${health?.total_errors_24h ?? "n/a"}`}
         />
+        <StatCard
+          title="Sentry"
+          value={sentryEnabled ? "Enabled" : "Disabled"}
+          icon={<ServerCrash className="w-5 h-5 text-purple-600" />}
+          subtitle={sentryEnabled ? "Capturing errors" : "Set SENTRY_DSN to enable"}
+        />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -82,14 +118,14 @@ export default function ReliabilityPage() {
             <h3 className="text-lg font-semibold">Error trend (last hour)</h3>
             <span className="text-xs text-muted-foreground">Auto-refresh on page load</span>
           </div>
-          {trend.length === 0 ? (
+          {trendData.length === 0 ? (
             <div className="h-64 flex items-center justify-center text-sm text-muted-foreground">
               No error activity in the last hour.
             </div>
           ) : (
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={trend}>
+                <AreaChart data={trendData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
                   <XAxis
                     dataKey="minute"
@@ -144,6 +180,54 @@ export default function ReliabilityPage() {
               ))}
             </div>
           )}
+        </div>
+      </div>
+
+      <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="bg-card border border-border rounded-2xl p-4 shadow-soft">
+          <h3 className="text-lg font-semibold mb-3">Detailed checks</h3>
+          <div className="space-y-3 text-sm">
+            <CheckRow
+              label="Database"
+              status={latencyMs !== undefined && latencyMs !== null}
+              detail={latencyDisplay !== "N/A" ? `Latency ${latencyDisplay}` : "No response"}
+            />
+            <CheckRow
+              label="Error rate"
+              status={Number.isFinite(errorRate) && (errorRate ?? 0) < 1}
+              detail={Number.isFinite(errorRate) ? `${errorRateDisplay}` : "No data"}
+            />
+            <CheckRow
+              label="Incidents"
+              status={incidents.length === 0}
+              detail={incidents.length === 0 ? "None open" : `${incidents.length} active/recent`}
+            />
+            <CheckRow
+              label="Sentry"
+              status={Boolean(sentryEnabled)}
+              detail={sentryEnabled ? "Enabled" : "Not configured"}
+            />
+          </div>
+        </div>
+
+        <div className="bg-card border border-border rounded-2xl p-4 shadow-soft">
+          <h3 className="text-lg font-semibold mb-3">Performance</h3>
+          <div className="space-y-2 text-sm text-muted-foreground">
+            <p>Latency (db ping): {latencyDisplay}</p>
+            <p>Uptime (30d): {uptimeDisplay}</p>
+            <p>Error rate (last hour): {errorRateDisplay}</p>
+            <p>Total errors (24h): {totalErrors24h}</p>
+          </div>
+        </div>
+
+        <div className="bg-card border border-border rounded-2xl p-4 shadow-soft">
+          <h3 className="text-lg font-semibold mb-3">Event summary</h3>
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            <SummaryPill label="Recent errors" value={errors.length} />
+            <SummaryPill label="Incidents" value={incidents.length} />
+            <SummaryPill label="Last up" value={lastUp ? lastUp.toLocaleString() : "Unknown"} />
+            <SummaryPill label="Last down" value={lastDown ? lastDown.toLocaleString() : "Unknown"} />
+          </div>
         </div>
       </div>
 
@@ -204,6 +288,41 @@ function StatCard({
         <p className="text-2xl font-bold text-foreground">{value}</p>
         <p className="text-xs text-muted-foreground">{subtitle}</p>
       </div>
+    </div>
+  );
+}
+
+function CheckRow({
+  label,
+  status,
+  detail,
+}: {
+  label: string;
+  status: boolean;
+  detail: string;
+}) {
+  return (
+    <div className="flex items-center justify-between rounded-lg border border-border px-3 py-2">
+      <div>
+        <p className="text-sm font-semibold text-foreground">{label}</p>
+        <p className="text-xs text-muted-foreground">{detail}</p>
+      </div>
+      <span
+        className={`text-xs px-2 py-1 rounded-full ${
+          status ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+        }`}
+      >
+        {status ? "OK" : "Issue"}
+      </span>
+    </div>
+  );
+}
+
+function SummaryPill({ label, value }: { label: string; value: number | string }) {
+  return (
+    <div className="rounded-lg border border-border px-3 py-2">
+      <p className="text-xs text-muted-foreground">{label}</p>
+      <p className="text-sm font-semibold text-foreground truncate">{value}</p>
     </div>
   );
 }

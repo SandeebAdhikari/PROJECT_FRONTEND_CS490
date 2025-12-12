@@ -68,7 +68,7 @@ const SalonDashboard = () => {
             Welcome{userName ? `, ${userName.split(" ")[0]}` : ""}!
           </h1>
           <p className="text-muted-foreground font-inter text-base mt-2 sm:text-lg">
-            Your salon is performing excellently today. Here's your
+            Your salon is performing excellently today. Here&apos;s your
             overview.
           </p>
         </div>

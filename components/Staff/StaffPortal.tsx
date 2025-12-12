@@ -56,7 +56,6 @@ const StaffPortal = () => {
 
   const [appointments, setAppointments] = useState<StaffPortalAppointment[]>([]);
   const [customers, setCustomers] = useState<StaffPortalCustomer[]>([]);
-  const [products, setProducts] = useState<StaffPortalProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [dashboard, setDashboard] = useState<StaffPortalDashboard | null>(null);
@@ -252,9 +251,8 @@ const StaffPortal = () => {
         });
         setCustomers(customersData.customers.map(mapCustomer));
 
-        // Fetch products
-        const productsData = await listStaffRetail({ limit: 20 });
-        setProducts(productsData.products.map(mapProduct));
+        // Fetch products (currently unused in UI)
+        await listStaffRetail({ limit: 20 });
       } catch (err) {
         console.error("Error fetching staff portal data:", err);
         setError(
