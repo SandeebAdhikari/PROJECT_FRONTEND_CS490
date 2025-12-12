@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Upload, X, Image as ImageIcon, Check, Calendar, Trash2, Download } from "lucide-react";
+import { Upload, X, Image as ImageIcon, Check, Calendar, Trash2, Download, Info } from "lucide-react";
 import Image from "next/image";
 import {
   getUserPhotos,
@@ -255,10 +255,16 @@ const CustomerPhotoManager: React.FC<CustomerPhotoManagerProps> = ({
             <>
               {/* Existing Photos - Grouped by Date */}
               <div>
-                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                  <ImageIcon className="w-5 h-5 text-primary" />
-                  Photo History
-                </h3>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold flex items-center gap-2">
+                    <ImageIcon className="w-5 h-5 text-primary" />
+                    Photo History
+                  </h3>
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">
+                    <Info className="w-3 h-3" />
+                    <span>Hover photos to download or delete</span>
+                  </div>
+                </div>
                 
                 {/* Group photos by date */}
                 {(() => {
