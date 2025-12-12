@@ -15,7 +15,6 @@ import {
 } from "lucide-react";
 import { fetchWithRefresh } from "@/libs/api/fetchWithRefresh";
 import { API_ENDPOINTS } from "@/libs/api/config";
-import SalonDashboardTabs from "@/components/Dashboard/SalonDashboard/SalonDashboardTabs";
 import useSalonId from "@/hooks/useSalonId";
 
 interface Payment {
@@ -235,13 +234,10 @@ export default function PaymentsPage() {
 
   if (loading || loadingSalon) {
     return (
-      <div className="min-h-screen bg-background">
-        <SalonDashboardTabs activeTab="Payments" />
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Loading payments...</p>
-          </div>
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading payments...</p>
         </div>
       </div>
     );
@@ -249,22 +245,16 @@ export default function PaymentsPage() {
 
   if (!salonId) {
     return (
-      <div className="min-h-screen bg-background">
-        <SalonDashboardTabs activeTab="Payments" />
-        <div className="px-4 sm:px-8 pb-8">
-          <div className="p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg">
-            No salon associated with this account. Please ensure you are logged in as a salon owner.
-          </div>
+      <div className="px-4 sm:px-8 pb-8">
+        <div className="p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg">
+          No salon associated with this account. Please ensure you are logged in as a salon owner.
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <SalonDashboardTabs activeTab="Payments" />
-
-      <div className="px-4 sm:px-8 pb-8">
+    <div className="px-4 sm:px-8 pb-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div>
@@ -489,7 +479,6 @@ export default function PaymentsPage() {
             </div>
           )}
         </div>
-      </div>
     </div>
   );
 }
