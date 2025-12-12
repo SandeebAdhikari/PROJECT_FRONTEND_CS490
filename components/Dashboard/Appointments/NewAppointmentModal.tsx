@@ -556,6 +556,7 @@ const NewAppointmentModal = ({
               title="Start Time"
               placeholder="HH:MM"
               aria-label="Start Time"
+              step="900"
               value={form.time}
               onChange={(e) => setForm({ ...form, time: e.target.value })}
               className="w-full border border-border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-light"
