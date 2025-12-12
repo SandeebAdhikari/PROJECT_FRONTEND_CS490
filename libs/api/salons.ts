@@ -152,6 +152,37 @@ export async function getAllSalons(
   }
 }
 
+// Delete a salon (admin only)
+export async function deleteSalon(
+  salonId: number | string
+): Promise<{ message?: string; error?: string }> {
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      return { error: "Not authenticated" };
+    }
+
+    const response = await fetch(API_ENDPOINTS.SALONS.DELETE(salonId), {
+      method: "DELETE",
+      headers: {
+        ...fetchConfig.headers,
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const result = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      return { error: result.error || "Failed to delete salon" };
+    }
+
+    return { message: result.message || "Salon deleted successfully" };
+  } catch (error) {
+    console.error("Network error deleting salon:", error);
+    return { error: "Network error. Please try again." };
+  }
+}
+
 // Check if owner has a salon
 export async function checkOwnerSalon(): Promise<{
   hasSalon: boolean;

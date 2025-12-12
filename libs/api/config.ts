@@ -100,6 +100,8 @@ export const API_ENDPOINTS = {
   SALONS: {
     CREATE: `${API_BASE_URL}/api/salons`,
     LIST: `${API_BASE_URL}/api/salons`,
+    DELETE: (salonId: number | string) =>
+      `${API_BASE_URL}/api/salons/${salonId}`,
     GET_PUBLIC: (salonId: number | string) =>
       `${API_BASE_URL}/api/salons/public/${salonId}`,
     CHECK_OWNER: `${API_BASE_URL}/api/salons/check-owner`,

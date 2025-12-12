@@ -1,8 +1,19 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { RefreshCw, MapPin, Phone, Mail, Globe, Calendar, CheckCircle, Clock, XCircle } from "lucide-react";
-import { getAllSalons, Salon } from "@/libs/api/salons";
+import {
+  RefreshCw,
+  MapPin,
+  Phone,
+  Mail,
+  Globe,
+  Calendar,
+  CheckCircle,
+  Clock,
+  XCircle,
+  Trash2,
+} from "lucide-react";
+import { deleteSalon, getAllSalons, Salon } from "@/libs/api/salons";
 import AdminHeader from "@/components/Admin/AdminHeader";
 
 export default function SalonsPage() {
@@ -10,6 +21,7 @@ export default function SalonsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [deletingId, setDeletingId] = useState<number | null>(null);
 
   useEffect(() => {
     loadSalons();
@@ -30,6 +42,39 @@ export default function SalonsPage() {
       setError("Failed to load salons");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDelete = async (salonId?: number | null, salonName?: string | null) => {
+    if (!salonId) {
+      setError("Salon ID is missing");
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Are you sure you want to delete ${salonName || "this salon"}? This action cannot be undone.`
+    );
+    if (!confirmed) return;
+
+    setError(null);
+    setDeletingId(salonId);
+    try {
+      const result = await deleteSalon(salonId);
+      if (result.error) {
+        setError(result.error);
+        return;
+      }
+      setSalons((prev) =>
+        prev.filter(
+          (salon) =>
+            (salon.salon_id ?? (salon.id ? Number(salon.id) : null)) !== salonId
+        )
+      );
+    } catch (err) {
+      console.error("Error deleting salon:", err);
+      setError("Failed to delete salon");
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -140,28 +185,31 @@ export default function SalonsPage() {
           <div className="text-sm text-muted-foreground mb-4">
             Showing {filteredSalons.length} of {salons.length} salons
           </div>
-          {filteredSalons.map((salon) => (
-            <div
-              key={salon.salon_id}
-              className="
-                bg-card 
-                border border-border 
-                rounded-2xl 
-                shadow-sm 
-                p-6 
-                transition-all
-                hover:shadow-md
-              "
-            >
-              <div className="flex items-start justify-between">
-                {/* LEFT SIDE — Salon Info */}
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-3">
-                    <h2 className="text-xl font-semibold text-foreground">
-                      {salon.name || `Salon ${salon.salon_id}`}
-                    </h2>
-                    {getStatusBadge(salon.status)}
-                  </div>
+          {filteredSalons.map((salon, index) => {
+            const salonId = salon.salon_id ?? (salon.id ? Number(salon.id) : null);
+            const cardKey = salonId ?? `salon-${index}`;
+            return (
+              <div
+                key={cardKey}
+                className="
+                  bg-card 
+                  border border-border 
+                  rounded-2xl 
+                  shadow-sm 
+                  p-6 
+                  transition-all
+                  hover:shadow-md
+                "
+              >
+                <div className="flex items-start justify-between">
+                  {/* LEFT SIDE — Salon Info */}
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-3">
+                      <h2 className="text-xl font-semibold text-foreground">
+                        {salon.name || `Salon ${salon.salon_id}`}
+                      </h2>
+                      {getStatusBadge(salon.status)}
+                    </div>
 
                   {salon.description && (
                     <p className="text-muted-foreground mb-4 line-clamp-2">
@@ -217,13 +265,20 @@ export default function SalonsPage() {
                       </div>
                     )}
                   </div>
+                  <button
+                    onClick={() => handleDelete(salonId, salon.name)}
+                    disabled={deletingId === salonId}
+                    className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ml-4"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    {deletingId === salonId ? "Deleting..." : "Delete"}
+                  </button>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
   );
 }
-

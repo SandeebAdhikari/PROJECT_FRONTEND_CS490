@@ -174,7 +174,7 @@ const SignInForm = () => {
     return (
       <form
         onSubmit={handleCodeVerification}
-        className="my-5 flex flex-col space-y-3 p-6 bg-card rounded-lg shadow w-[436px] sm:w-[672px]"
+        className="my-5 flex flex-col space-y-3 p-6 bg-card rounded-lg shadow w-[436px] sm:w-2xl"
       >
         <AuthHeader
           title="Verify Your Code"
@@ -223,7 +223,7 @@ const SignInForm = () => {
   return (
     <form
       onSubmit={form.handleSubmit(onSubmit)}
-      className="my-5 flex flex-col space-y-3 p-6 bg-card rounded-lg shadow w-[436px] sm:w-[672px]"
+      className="my-5 flex flex-col space-y-3 p-6 bg-card rounded-lg shadow w-[436px] sm:w-2xl"
     >
       <AuthHeader
         title="Welcome Back"

@@ -12,9 +12,7 @@ import Link from "next/link";
 
 const resetPasswordSchema = z
   .object({
-    password: z
-      .string()
-      .min(8, "Password must be at least 8 characters long"),
+    password: z.string().min(8, "Password must be at least 8 characters long"),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -45,13 +43,17 @@ const ResetPasswordForm = () => {
 
   useEffect(() => {
     if (!token) {
-      setError("Invalid or missing reset token. Please request a new password reset link.");
+      setError(
+        "Invalid or missing reset token. Please request a new password reset link."
+      );
     }
   }, [token]);
 
   const onSubmit = async (data: ResetPasswordFormData) => {
     if (!token) {
-      setError("Invalid or missing reset token. Please request a new password reset link.");
+      setError(
+        "Invalid or missing reset token. Please request a new password reset link."
+      );
       return;
     }
 
@@ -80,7 +82,7 @@ const ResetPasswordForm = () => {
 
   if (!token) {
     return (
-      <div className="my-5 flex flex-col space-y-3 p-6 bg-card rounded-lg shadow w-[436px] sm:w-[672px]">
+      <div className="my-5 flex flex-col space-y-3 p-6 bg-card rounded-lg shadow w-[436px] sm:w-2xl">
         <AuthHeader
           title="Invalid Reset Link"
           subtitle="The password reset link is invalid or has expired."
@@ -108,13 +110,14 @@ const ResetPasswordForm = () => {
 
   if (success) {
     return (
-      <div className="my-5 flex flex-col space-y-3 p-6 bg-card rounded-lg shadow w-[436px] sm:w-[672px]">
+      <div className="my-5 flex flex-col space-y-3 p-6 bg-card rounded-lg shadow w-[436px] sm:w-2xl">
         <AuthHeader
           title="Password Reset Successful!"
           subtitle="Your password has been reset successfully."
         />
         <p className="text-green-600 text-sm">
-          You can now sign in with your new password. Redirecting to sign-in page...
+          You can now sign in with your new password. Redirecting to sign-in
+          page...
         </p>
         <Link
           href="/sign-in"
@@ -129,7 +132,7 @@ const ResetPasswordForm = () => {
   return (
     <form
       onSubmit={form.handleSubmit(onSubmit)}
-      className="my-5 flex flex-col space-y-3 p-6 bg-card rounded-lg shadow w-[436px] sm:w-[672px]"
+      className="my-5 flex flex-col space-y-3 p-6 bg-card rounded-lg shadow w-[436px] sm:w-2xl"
     >
       <AuthHeader
         title="Reset your password"
@@ -235,4 +238,3 @@ const ResetPasswordForm = () => {
 };
 
 export default ResetPasswordForm;
-
