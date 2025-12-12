@@ -551,17 +551,32 @@ const NewAppointmentModal = ({
             <label className="block text-sm font-medium mb-1">
               Start Time <span className="text-red-500">*</span>
             </label>
-            <input
-              type="time"
-              title="Start Time"
-              placeholder="HH:MM"
-              aria-label="Start Time"
-              step="900"
-              value={form.time}
-              onChange={(e) => setForm({ ...form, time: e.target.value })}
-              className="w-full border border-border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-light"
-              required
-            />
+            <div className="grid grid-cols-4 gap-2 max-h-40 overflow-y-auto border border-border rounded-lg p-3">
+              {/* Generate time slots from 8 AM to 8 PM in 30-min intervals */}
+              {Array.from({ length: 25 }, (_, i) => {
+                const hour = Math.floor(i / 2) + 8;
+                const minute = (i % 2) * 30;
+                if (hour > 20) return null;
+                const time24 = `${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`;
+                const hour12 = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
+                const ampm = hour >= 12 ? "PM" : "AM";
+                const time12 = `${hour12}:${minute.toString().padStart(2, "0")} ${ampm}`;
+                return (
+                  <button
+                    key={time24}
+                    type="button"
+                    onClick={() => setForm({ ...form, time: time24 })}
+                    className={`px-2 py-1.5 text-xs border rounded-lg transition-colors ${
+                      form.time === time24
+                        ? "border-primary bg-primary text-white"
+                        : "border-border hover:border-primary/50 hover:bg-primary/5"
+                    }`}
+                  >
+                    {time12}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           <div>
