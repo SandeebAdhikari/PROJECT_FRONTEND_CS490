@@ -287,6 +287,256 @@ export async function getCustomerRetention(): Promise<{ retention?: CustomerRete
   }
 }
 
+export interface LoyaltyUsageOverview {
+  total_enrolled_users: number;
+  active_users_30d: number;
+  total_points_outstanding: number;
+  avg_points_per_user: number;
+  max_points: number;
+  users_who_redeemed: number;
+  recent_redeemers_30d: number;
+}
+
+export interface LoyaltySalonBreakdown {
+  salon_id: number;
+  salon_name: string;
+  enrolled_users: number;
+  total_points: number;
+  avg_points_per_user: number;
+  active_users_30d: number;
+}
+
+export interface LoyaltyTrend {
+  date: string;
+  points_activity: number;
+}
+
+export interface LoyaltyUsage {
+  overview: LoyaltyUsageOverview;
+  salon_breakdown: LoyaltySalonBreakdown[];
+  trends: LoyaltyTrend[];
+}
+
+/**
+ * Get loyalty program usage statistics
+ */
+export async function getLoyaltyUsage(): Promise<{ usage?: LoyaltyUsage; error?: string }> {
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      return { error: "Not authenticated" };
+    }
+
+    const response = await fetch(API_ENDPOINTS.ADMINS.LOYALTY_USAGE, {
+      ...fetchConfig,
+      headers: {
+        ...fetchConfig.headers,
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const result = await response.json();
+      return { error: result.error || "Failed to get loyalty usage" };
+    }
+
+    const usage = await response.json();
+    return { usage };
+  } catch (error) {
+    console.error("Get loyalty usage error:", error);
+    return { error: "Network error. Please try again." };
+  }
+}
+
+export interface SystemLog {
+  audit_id: number;
+  salon_id: number;
+  event_type: string;
+  event_note: string;
+  performed_by: number | null;
+  created_at: string;
+}
+
+export interface SystemLogEventSummary {
+  event_type: string;
+  count: number;
+}
+
+export interface SystemLogErrorTrend {
+  date: string;
+  error_count: number;
+}
+
+export interface SystemLogsResponse {
+  event_summary: SystemLogEventSummary[];
+  recent_logs: SystemLog[];
+  error_trends: SystemLogErrorTrend[];
+}
+
+export interface HealthCheck {
+  status: string;
+  latency_ms?: number;
+  connected?: boolean;
+  error?: string;
+  table_count?: number;
+  error_percentage?: number;
+  total_events_1h?: number;
+  error_events_1h?: number;
+  scheduled_appointments?: number;
+  active_users_24h?: number;
+  payments_last_hour?: number;
+}
+
+export interface SystemHealth {
+  status: "healthy" | "degraded" | "unhealthy" | "error";
+  timestamp: string;
+  checks: {
+    database: HealthCheck;
+    database_tables: HealthCheck;
+    error_rate: HealthCheck;
+    system_load: HealthCheck;
+  };
+}
+
+export interface PlatformUptime {
+  uptime_percentage: number;
+  uptime_seconds: number;
+  uptime_days: number;
+  oldest_record: string;
+  latest_record: string;
+}
+
+export interface PlatformReliability {
+  success_rate_30d: number;
+  total_events_30d: number;
+  successful_events: number;
+  failed_events: number;
+}
+
+export interface PlatformPerformance {
+  avg_appointment_processing_time_sec: number;
+  total_appointments_7d: number;
+  completed_appointments_7d: number;
+  cancelled_appointments_7d: number;
+  completion_rate_7d: string;
+}
+
+export interface DailyActivity {
+  date: string;
+  total_events: number;
+  successful_events: number;
+  failed_events: number;
+}
+
+export interface PlatformReliabilityResponse {
+  uptime: PlatformUptime;
+  reliability: PlatformReliability;
+  performance: PlatformPerformance;
+  daily_activity: DailyActivity[];
+}
+
+/**
+ * Get system logs with enhanced details
+ */
+export async function getSystemLogs(
+  limit?: number
+): Promise<{ logs?: SystemLogsResponse; error?: string }> {
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      return { error: "Not authenticated" };
+    }
+
+    const url = limit
+      ? `${API_ENDPOINTS.ADMINS.SYSTEM_LOGS}?limit=${limit}`
+      : API_ENDPOINTS.ADMINS.SYSTEM_LOGS;
+
+    const response = await fetch(url, {
+      ...fetchConfig,
+      headers: {
+        ...fetchConfig.headers,
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const result = await response.json();
+      return { error: result.error || "Failed to get system logs" };
+    }
+
+    const logs = await response.json();
+    return { logs };
+  } catch (error) {
+    console.error("Get system logs error:", error);
+    return { error: "Network error. Please try again." };
+  }
+}
+
+/**
+ * Get comprehensive system health metrics
+ */
+export async function getSystemHealth(): Promise<{ health?: SystemHealth; error?: string }> {
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      return { error: "Not authenticated" };
+    }
+
+    const response = await fetch(API_ENDPOINTS.ADMINS.SYSTEM_HEALTH, {
+      ...fetchConfig,
+      headers: {
+        ...fetchConfig.headers,
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const result = await response.json();
+      return { error: result.error || "Failed to get system health" };
+    }
+
+    const health = await response.json();
+    return { health };
+  } catch (error) {
+    console.error("Get system health error:", error);
+    return { error: "Network error. Please try again." };
+  }
+}
+
+/**
+ * Get platform reliability and uptime metrics
+ */
+export async function getPlatformReliability(): Promise<{
+  reliability?: PlatformReliabilityResponse;
+  error?: string
+}> {
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      return { error: "Not authenticated" };
+    }
+
+    const response = await fetch(API_ENDPOINTS.ADMINS.PLATFORM_RELIABILITY, {
+      ...fetchConfig,
+      headers: {
+        ...fetchConfig.headers,
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const result = await response.json();
+      return { error: result.error || "Failed to get platform reliability" };
+    }
+
+    const reliability = await response.json();
+    return { reliability };
+  } catch (error) {
+    console.error("Get platform reliability error:", error);
+    return { error: "Network error. Please try again." };
+  }
+}
+
 export interface PendingSalon {
   salon_id: number;
   name: string;

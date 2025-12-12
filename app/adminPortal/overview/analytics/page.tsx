@@ -19,14 +19,20 @@ import {
   getAppointmentTrends,
   getUserEngagement,
   getUserDemographics,
+  getCustomerRetention,
+  getLoyaltyUsage,
   AppointmentTrend,
   UserDemographic,
+  CustomerRetention,
+  LoyaltyUsage,
 } from "@/libs/api/admins";
 
 export default function AnalyticsPage() {
   const [appointmentTrends, setAppointmentTrends] = useState<AppointmentTrend[]>([]);
   const [demographics, setDemographics] = useState<UserDemographic[]>([]);
   const [engagement, setEngagement] = useState<{ activeUsers: { active_user_count: number }; totalUsers: { total_user_count: number } } | null>(null);
+  const [retention, setRetention] = useState<CustomerRetention | null>(null);
+  const [loyaltyUsage, setLoyaltyUsage] = useState<LoyaltyUsage | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [startDate, setStartDate] = useState<string>("");
@@ -37,10 +43,12 @@ export default function AnalyticsPage() {
     setError(null);
 
     try {
-      const [trendsResult, engagementResult, demographicsResult] = await Promise.all([
+      const [trendsResult, engagementResult, demographicsResult, retentionResult, loyaltyResult] = await Promise.all([
         getAppointmentTrends(startDate || undefined, endDate || undefined),
         getUserEngagement(),
         getUserDemographics(),
+        getCustomerRetention(),
+        getLoyaltyUsage(),
       ]);
 
       if (trendsResult.error) {
@@ -59,6 +67,18 @@ export default function AnalyticsPage() {
         console.error("Failed to load demographics:", demographicsResult.error);
       } else {
         setDemographics(demographicsResult.demographics || []);
+      }
+
+      if (retentionResult.error) {
+        console.error("Failed to load retention:", retentionResult.error);
+      } else {
+        setRetention(retentionResult.retention || null);
+      }
+
+      if (loyaltyResult.error) {
+        console.error("Failed to load loyalty:", loyaltyResult.error);
+      } else {
+        setLoyaltyUsage(loyaltyResult.usage || null);
       }
     } catch (err) {
       console.error("Error loading analytics:", err);
@@ -224,6 +244,57 @@ export default function AnalyticsPage() {
               />
             </LineChart>
           </ResponsiveContainer>
+        </ChartCard>
+
+        {/* Customer Retention */}
+        <ChartCard title="Customer Retention">
+          <div className="flex flex-col items-center justify-center h-[250px] text-center">
+            <p className="text-4xl font-bold text-foreground mb-2">
+              {retention?.retained_customers || 0}
+            </p>
+            <p className="text-muted-foreground mb-4">Retained Customers</p>
+            <p className="text-sm text-muted-foreground">
+              Customers who made repeat purchases
+            </p>
+          </div>
+        </ChartCard>
+
+        {/* Loyalty Program Usage */}
+        <ChartCard title="Loyalty Program Usage">
+          <div className="flex flex-col justify-center h-[250px] px-4">
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-muted-foreground">Total Enrolled</span>
+                <span className="text-2xl font-bold text-foreground">
+                  {loyaltyUsage?.overview.total_enrolled_users || 0}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-muted-foreground">Active (30d)</span>
+                <span className="text-xl font-semibold text-primary">
+                  {loyaltyUsage?.overview.active_users_30d || 0}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-muted-foreground">Points Outstanding</span>
+                <span className="text-xl font-semibold text-accent">
+                  {loyaltyUsage?.overview.total_points_outstanding?.toLocaleString() || 0}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-muted-foreground">Avg Points/User</span>
+                <span className="text-lg font-semibold text-foreground">
+                  {loyaltyUsage?.overview.avg_points_per_user?.toLocaleString() || 0}
+                </span>
+              </div>
+              <div className="flex justify-between items-center pt-2 border-t border-border">
+                <span className="text-sm text-muted-foreground">Users Who Redeemed</span>
+                <span className="text-lg font-bold text-foreground">
+                  {loyaltyUsage?.overview.users_who_redeemed || 0}
+                </span>
+              </div>
+            </div>
+          </div>
         </ChartCard>
       </div>
     </div>

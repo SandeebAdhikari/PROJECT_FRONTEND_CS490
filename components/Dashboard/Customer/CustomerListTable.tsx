@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
-import { Edit, Camera } from "lucide-react";
+import { Edit, Camera, History } from "lucide-react";
 import CustomerPhotoManager from "@/components/Staff/CustomerPhotoManager";
 import EditCustomerModal from "./EditCustomerModal";
+import CustomerVisitHistoryModal from "./CustomerVisitHistoryModal";
 
 interface CustomerCardProps {
   userId: number;
@@ -42,7 +43,8 @@ const CustomerCard: React.FC<CustomerCardProps> = ({
 }) => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showPhotoManager, setShowPhotoManager] = useState(false);
-  
+  const [showVisitHistory, setShowVisitHistory] = useState(false);
+
   const initials = (name || "U N")
     .split(" ")
     .map((n) => n[0])
@@ -99,6 +101,13 @@ const CustomerCard: React.FC<CustomerCardProps> = ({
 
       <div className="flex items-center gap-3 justify-center lg:justify-end text-gray-600">
         <button
+          title="View Visit History"
+          onClick={() => setShowVisitHistory(true)}
+          className="p-2 rounded-md hover:bg-gray-100 transition-smooth"
+        >
+          <History className="w-4 h-4" />
+        </button>
+        <button
           title="Edit Customer"
           onClick={() => setShowEditModal(true)}
           className="p-2 rounded-md hover:bg-gray-100 transition-smooth"
@@ -144,6 +153,16 @@ const CustomerCard: React.FC<CustomerCardProps> = ({
           staffId={staffId}
           salonId={salonId}
           onClose={() => setShowPhotoManager(false)}
+        />
+      )}
+
+      {showVisitHistory && salonId && (
+        <CustomerVisitHistoryModal
+          isOpen={showVisitHistory}
+          onClose={() => setShowVisitHistory(false)}
+          userId={userId}
+          customerName={name}
+          salonId={salonId}
         />
       )}
     </div>

@@ -56,7 +56,7 @@ const StaffPortal = () => {
 
   const [appointments, setAppointments] = useState<StaffPortalAppointment[]>([]);
   const [customers, setCustomers] = useState<StaffPortalCustomer[]>([]);
-  const [products, setProducts] = useState<StaffPortalProduct[]>([]);
+  const [_products, setProducts] = useState<StaffPortalProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [dashboard, setDashboard] = useState<StaffPortalDashboard | null>(null);

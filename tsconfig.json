@@ -37,6 +37,8 @@
   ],
   "exclude": [
     "node_modules",
-    ".next"
+    ".next",
+    "vitest.e2e.config.ts",
+    "vitest.config.ts"
   ]
 }
