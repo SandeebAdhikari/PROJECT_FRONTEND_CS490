@@ -2,13 +2,15 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Upload, X, Image as ImageIcon, Check } from "lucide-react";
+import { Upload, X, Image as ImageIcon, Check, Download, Trash2 } from "lucide-react";
 import Image from "next/image";
 import {
   uploadAppointmentPhoto,
   getAppointmentPhotos,
   getPhotoUrl,
   ServicePhoto,
+  deleteServicePhoto,
+  downloadPhoto,
 } from "@/libs/api/photos";
 
 interface AppointmentPhotoUploadProps {
@@ -100,6 +102,33 @@ const AppointmentPhotoUpload: React.FC<AppointmentPhotoUploadProps> = ({
     setUploading(false);
   };
 
+  const handleDeletePhoto = async (photoId: number, photoType: 'before' | 'after') => {
+    if (!window.confirm(`Are you sure you want to delete this ${photoType} photo?`)) {
+      return;
+    }
+
+    const result = await deleteServicePhoto(photoId);
+    
+    if (result.success) {
+      setMessage("Photo deleted successfully");
+      fetchPhotos();
+      setTimeout(() => setMessage(""), 3000);
+    } else {
+      setError(result.error || "Failed to delete photo");
+      setTimeout(() => setError(""), 3000);
+    }
+  };
+
+  const handleDownloadPhoto = async (photoUrl: string, photoType: 'before' | 'after') => {
+    const filename = `${photoType}_photo_${Date.now()}.jpg`;
+    const result = await downloadPhoto(photoUrl, filename);
+    
+    if (!result.success) {
+      setError(result.error || "Failed to download photo");
+      setTimeout(() => setError(""), 3000);
+    }
+  };
+
   const beforePhotos = photos.filter((p) => p.photo_type === "before");
   const afterPhotos = photos.filter((p) => p.photo_type === "after");
 
@@ -147,7 +176,7 @@ const AppointmentPhotoUpload: React.FC<AppointmentPhotoUploadProps> = ({
               beforePhotos.map((photo) => (
                 <div
                   key={photo.photo_id}
-                  className="relative aspect-square rounded-lg overflow-hidden border border-border"
+                  className="relative aspect-square rounded-lg overflow-hidden border border-border group"
                 >
                   <Image
                     src={getPhotoUrl(photo.photo_url)}
@@ -155,6 +184,23 @@ const AppointmentPhotoUpload: React.FC<AppointmentPhotoUploadProps> = ({
                     fill
                     className="object-cover"
                   />
+                  {/* Action buttons - show on hover */}
+                  <div className="absolute bottom-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={() => handleDownloadPhoto(photo.photo_url, 'before')}
+                      className="p-2 bg-white/90 hover:bg-white rounded-full transition-colors shadow-lg"
+                      title="Download"
+                    >
+                      <Download className="w-4 h-4 text-gray-800" />
+                    </button>
+                    <button
+                      onClick={() => handleDeletePhoto(photo.photo_id, 'before')}
+                      className="p-2 bg-red-600/90 hover:bg-red-600 rounded-full transition-colors shadow-lg"
+                      title="Delete"
+                    >
+                      <Trash2 className="w-4 h-4 text-white" />
+                    </button>
+                  </div>
                 </div>
               ))
             )}
@@ -175,7 +221,7 @@ const AppointmentPhotoUpload: React.FC<AppointmentPhotoUploadProps> = ({
               afterPhotos.map((photo) => (
                 <div
                   key={photo.photo_id}
-                  className="relative aspect-square rounded-lg overflow-hidden border border-border"
+                  className="relative aspect-square rounded-lg overflow-hidden border border-border group"
                 >
                   <Image
                     src={getPhotoUrl(photo.photo_url)}
@@ -183,6 +229,23 @@ const AppointmentPhotoUpload: React.FC<AppointmentPhotoUploadProps> = ({
                     fill
                     className="object-cover"
                   />
+                  {/* Action buttons - show on hover */}
+                  <div className="absolute bottom-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={() => handleDownloadPhoto(photo.photo_url, 'after')}
+                      className="p-2 bg-white/90 hover:bg-white rounded-full transition-colors shadow-lg"
+                      title="Download"
+                    >
+                      <Download className="w-4 h-4 text-gray-800" />
+                    </button>
+                    <button
+                      onClick={() => handleDeletePhoto(photo.photo_id, 'after')}
+                      className="p-2 bg-red-600/90 hover:bg-red-600 rounded-full transition-colors shadow-lg"
+                      title="Delete"
+                    >
+                      <Trash2 className="w-4 h-4 text-white" />
+                    </button>
+                  </div>
                 </div>
               ))
             )}
