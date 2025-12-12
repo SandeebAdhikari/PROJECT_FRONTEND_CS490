@@ -1,31 +1,53 @@
 "use client";
 
-import React from "react";
-import data from "@/data/data.json";
+import React, { useEffect, useState } from "react";
 import SalonDetailExploreOtherCard from "@/components/Salon/SalonDetailExploreOtherCard";
+import { getAllSalons } from "@/libs/api/salons";
 
 interface SalonDetailExploreOtherProps {
   currentSalonId: string;
 }
 
+interface Salon {
+  salon_id: number;
+  name: string;
+  city?: string;
+  rating?: number;
+  totalReviews?: number;
+  profile_picture?: string;
+  category?: string;
+}
+
 const SalonDetailExploreOther: React.FC<SalonDetailExploreOtherProps> = ({
   currentSalonId,
 }) => {
-  const currentSalon = data.salons.find((s) => s.id === currentSalonId);
+  const [relatedSalons, setRelatedSalons] = useState<Salon[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  if (!currentSalon) return null;
+  useEffect(() => {
+    const fetchRelatedSalons = async () => {
+      try {
+        const result = await getAllSalons();
+        const allSalons = (result.salons ?? []) as Salon[];
+        
+        // Filter out current salon and get up to 3 others
+        const otherSalons = allSalons
+          .filter((s) => s.salon_id.toString() !== currentSalonId)
+          .slice(0, 3);
+        
+        setRelatedSalons(otherSalons);
+      } catch (error) {
+        console.error("Error fetching related salons:", error);
+        setRelatedSalons([]);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const sameCategory = data.salons.filter(
-    (s) => s.category === currentSalon.category && s.id !== currentSalon.id
-  );
+    fetchRelatedSalons();
+  }, [currentSalonId]);
 
-  const fallback = data.salons
-    .filter((s) => s.category !== currentSalon.category)
-    .slice(0, 3 - sameCategory.length);
-
-  const relatedSalons = [...sameCategory, ...fallback].slice(0, 3);
-
-  if (relatedSalons.length === 0) return null;
+  if (loading || relatedSalons.length === 0) return null;
 
   return (
     <section className="mt-10">
@@ -34,14 +56,14 @@ const SalonDetailExploreOther: React.FC<SalonDetailExploreOtherProps> = ({
       <div className="sm:flex w-full justify-between">
         {relatedSalons.map((salon) => (
           <SalonDetailExploreOtherCard
-            key={salon.id}
+            key={salon.salon_id}
             name={salon.name}
-            city={salon.city}
-            rating={salon.rating}
-            totalReviews={salon.totalReviews}
-            imageUrl={salon.imageUrl ?? ""}
+            city={salon.city || ""}
+            rating={salon.rating || 0}
+            totalReviews={salon.totalReviews || 0}
+            imageUrl={salon.profile_picture || ""}
             onViewDetails={() =>
-              alert(`Navigate to salon details for ${salon.name}`)
+              (window.location.href = `/customer/salon-details/${salon.salon_id}`)
             }
           />
         ))}

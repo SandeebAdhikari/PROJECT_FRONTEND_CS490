@@ -7,7 +7,6 @@ import ServiceButton from "@/components/Dashboard/Service/ServiceButton";
 import { useFavorites } from "@/hooks/useFavorites";
 import Setup2FAModal from "@/components/Auth/Setup2FAModal";
 import { getAllSalons, type Salon as ApiSalon } from "@/libs/api/salons";
-import data from "@/data/data.json"; // Import mock data
 
 import { Scissors, Palette, Sparkles, Hand, Eye, Brush, User, Users } from "lucide-react";
 import CustomerTopSalon from "@/components/Customer/CustomerTopSalon";
@@ -24,10 +23,6 @@ type CustomerSalon = Omit<ApiSalon, "address" | "phone"> & {
   address?: string;
   phone?: string;
 };
-
-const MOCK_SALONS: CustomerSalon[] = Array.isArray(data.salons)
-  ? (data.salons as CustomerSalon[])
-  : [];
 
 const Page = () => {
   const [selectedService, setSelectedService] = useState("all");
@@ -58,57 +53,15 @@ const Page = () => {
   useEffect(() => {
     const fetchSalons = async () => {
       try {
-        // Fetch real salons from backend with filters
+        // Fetch salons from backend with filters
         const result = await getAllSalons(selectedService, selectedGender, showBarbershops);
-        const realSalons = (result.salons ?? []) as CustomerSalon[];
+        const salons = (result.salons ?? []) as CustomerSalon[];
         
-        // Get mock salons from data.json
-        const mockSalons = MOCK_SALONS;
-        
-        // Filter mock salons by category if not "all"
-        let filteredMockSalons = mockSalons;
-        if (selectedService !== "all") {
-          filteredMockSalons = mockSalons.filter((salon) => {
-            const categoryMatch = {
-              haircut: salon.category?.toLowerCase().includes("hair") || false,
-              coloring: salon.category?.toLowerCase().includes("color") || false,
-              nails: salon.category?.toLowerCase().includes("nail") || false,
-              eyebrows: salon.category?.toLowerCase().includes("eyebrow") || false,
-              makeup: salon.category?.toLowerCase().includes("makeup") || false,
-            };
-            return categoryMatch[selectedService as keyof typeof categoryMatch] || false;
-          });
-        }
-        
-        // Filter by gender if selected
-        if (selectedGender) {
-          filteredMockSalons = filteredMockSalons.filter((salon) => {
-            if (selectedGender === "men") {
-              return salon.name?.toLowerCase().includes("barber") || 
-                     salon.category?.toLowerCase().includes("men") || false;
-            } else if (selectedGender === "women") {
-              return salon.category?.toLowerCase().includes("women") || 
-                     salon.category?.toLowerCase().includes("beauty") || false;
-            }
-            return true;
-          });
-        }
-        
-        // Filter barbershops if selected
-        if (showBarbershops) {
-          filteredMockSalons = filteredMockSalons.filter((salon) => {
-            return salon.name?.toLowerCase().includes("barber") || false;
-          });
-        }
-        
-        // Combine both: real salons first, then filtered mock salons
-        const combinedSalons = [...realSalons, ...filteredMockSalons];
-        
-        setSalons(combinedSalons);
+        setSalons(salons);
       } catch (error) {
         console.error("Error loading salons:", error);
-        // If backend fails, at least show mock data
-        setSalons(MOCK_SALONS);
+        // Show empty array if backend fails
+        setSalons([]);
       } finally {
         setLoading(false);
       }

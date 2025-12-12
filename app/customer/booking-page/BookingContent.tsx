@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Calendar, Clock, DollarSign, User, Scissors } from "lucide-react";
 import { bookAppointment } from "@/libs/api";
 import { API_ENDPOINTS } from "@/libs/api/config";
-import data from "@/data/data.json";
 import { useCart } from "@/hooks/useCart";
 
 interface Staff {
@@ -203,13 +202,10 @@ const BookingContent = () => {
             servicesStatus: servicesResponse.status,
           });
 
-          // LOCAL FALLBACK (data.json)
-          const staffData =
-            (data.staff as Record<string, Staff[]>)[salonId] || [];
-          const servicesData =
-            (data.services as Record<string, Service[]>)[salonId] || [];
-          setAvailableStaff(staffData);
-          setAvailableServices(servicesData);
+          // Show empty arrays if fetch fails
+          setAvailableStaff([]);
+          setAvailableServices([]);
+          setError("Unable to load salon data. Please try again later.");
         }
       } catch (error) {
         console.error("Error fetching salon data:", error);
@@ -219,14 +215,9 @@ const BookingContent = () => {
           setError(`Failed to load salon data: ${error.message}`);
         }
 
-        // LOCAL FALLBACK (data.json)
-        const staffData =
-          (data.staff as Record<string, Staff[]>)[salonId] || [];
-        const servicesData =
-          (data.services as Record<string, Service[]>)[salonId] || [];
-
-        setAvailableStaff(staffData);
-        setAvailableServices(servicesData);
+        // Show empty arrays if fetch fails
+        setAvailableStaff([]);
+        setAvailableServices([]);
       }
     };
 

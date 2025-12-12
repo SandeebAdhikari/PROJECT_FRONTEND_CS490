@@ -2,7 +2,6 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { MapPin, Star, Heart } from "lucide-react";
-import data from "@/data/data.json";
 import { getImageUrl } from "@/libs/utils/imageUrl";
 
 interface SalonCardProps {
@@ -44,7 +43,7 @@ const SalonCard: React.FC<SalonCardProps> = ({
     <div className="border border-border rounded-xl sm:rounded-2xl overflow-hidden shadow-soft-br hover:shadow-premium transition-smooth bg-card group cursor-pointer relative font-inter h-full flex flex-col">
       <div className="relative">
         <Image
-          src={getImageUrl(imageUrl) || data.salonImages.default}
+          src={getImageUrl(imageUrl) || "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=400&h=300&fit=crop"}
           alt={name || "Salon image"}
           width={400}
           height={300}
