@@ -34,10 +34,16 @@ import {
 
 export default function AdminDashboard() {
   const ADMIN_NAME = "Admin";
-  const [appointmentTrends, setAppointmentTrends] = useState<AppointmentTrend[]>([]);
+  const [appointmentTrends, setAppointmentTrends] = useState<
+    AppointmentTrend[]
+  >([]);
   const [revenues, setRevenues] = useState<SalonRevenue[]>([]);
-  const [demographics, setDemographics] = useState<DemographicsResponse | null>(null);
-  const [loyaltySummary, setLoyaltySummary] = useState<LoyaltySummary | null>(null);
+  const [demographics, setDemographics] = useState<DemographicsResponse | null>(
+    null
+  );
+  const [loyaltySummary, setLoyaltySummary] = useState<LoyaltySummary | null>(
+    null
+  );
   const [engagement, setEngagement] = useState<EngagementResponse | null>(null);
   const [exporting, setExporting] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -52,7 +58,13 @@ export default function AdminDashboard() {
     setError(null);
 
     try {
-      const [trendsResult, revenuesResult, engagementResult, demographicsResult, loyaltyResult] = await Promise.all([
+      const [
+        trendsResult,
+        revenuesResult,
+        engagementResult,
+        demographicsResult,
+        loyaltyResult,
+      ] = await Promise.all([
         getAppointmentTrends(),
         getSalonRevenues(),
         getUserEngagement(),
@@ -128,7 +140,10 @@ export default function AdminDashboard() {
   }));
 
   // Calculate stats
-  const totalRevenue = revenues.reduce((sum, r) => sum + Number(r.total_revenue || 0), 0);
+  const totalRevenue = revenues.reduce(
+    (sum, r) => sum + Number(r.total_revenue || 0),
+    0
+  );
   const peakHourPoint = (() => {
     if (appointmentTrends.length === 0) return { hour: 0, appointments: 0 };
     const nonZero = appointmentTrends.filter((t) => (t.appointments || 0) > 0);
@@ -194,14 +209,20 @@ export default function AdminDashboard() {
   };
 
   const formatCurrency = (val: number) =>
-    `$${val.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
+    `$${val.toLocaleString(undefined, {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    })}`;
 
   const customerMetrics: Array<{ label: string; value: string | number }> = [
     { label: "Active (30d)", value: activeCount },
     { label: "DAU (7d)", value: dau7d },
     { label: "Bookings (7d)", value: bookings7d },
     { label: "Bookings (30d)", value: bookings30d },
-    { label: "Completion (30d)", value: `${(completionRate || 0).toFixed(2)}%` },
+    {
+      label: "Completion (30d)",
+      value: `${(completionRate || 0).toFixed(2)}%`,
+    },
     { label: "Repeat (90d)", value: repeat90d },
     { label: "Reviews (30d)", value: reviews30d },
     { label: "Messages (30d)", value: messages30d },
@@ -210,7 +231,10 @@ export default function AdminDashboard() {
 
   const ownerMetrics: Array<{ label: string; value: string | number }> = [
     { label: "Active owners (30d)", value: activeOwners30d },
-    { label: "Active salons (30d)", value: `${activeSalons30d}/${totalSalons}` },
+    {
+      label: "Active salons (30d)",
+      value: `${activeSalons30d}/${totalSalons}`,
+    },
     { label: "Owner appts (30d)", value: ownerAppts30d },
     { label: "Staff logins (30d)", value: staffLogins30d },
   ];
@@ -238,8 +262,12 @@ export default function AdminDashboard() {
 
   return (
     <div className="pb-10">
-      <AdminHeader adminName={ADMIN_NAME} onExport={handleExportReports} exporting={exporting} />
-      
+      <AdminHeader
+        adminName={ADMIN_NAME}
+        onExport={handleExportReports}
+        exporting={exporting}
+      />
+
       {error && (
         <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg">
           {error}
@@ -266,7 +294,9 @@ export default function AdminDashboard() {
             ))}
           </div>
           <p className="text-xs text-muted-foreground mt-3">
-            Engagement rate: {engagementPercent}% of {totalCount.toLocaleString()} total users. Inactive (60d+): {inactive60d.toLocaleString()}
+            Engagement rate: {engagementPercent}% of{" "}
+            {totalCount.toLocaleString()} total users. Inactive (60d+):{" "}
+            {inactive60d.toLocaleString()}
           </p>
         </ChartCard>
 
@@ -309,8 +339,12 @@ export default function AdminDashboard() {
           {topHours.length > 0 && (
             <div className="flex flex-wrap gap-3 text-xs text-muted-foreground mb-3">
               {topHours.map((h) => (
-                <div key={h.hour} className="px-3 py-2 rounded-lg border border-border">
-                  Peak {String(h.hour).padStart(2, "0")}:00 — {h.appointments} bookings
+                <div
+                  key={h.hour}
+                  className="px-3 py-2 rounded-lg border border-border"
+                >
+                  Peak {String(h.hour).padStart(2, "0")}:00 — {h.appointments}{" "}
+                  bookings
                 </div>
               ))}
             </div>
@@ -335,8 +369,12 @@ export default function AdminDashboard() {
           {topRevenueSalons.length > 0 && (
             <div className="flex flex-wrap gap-3 text-xs text-muted-foreground mb-3">
               {topRevenueSalons.map((s) => (
-                <div key={s.salon_id} className="px-3 py-2 rounded-lg border border-border">
-                  {s.salon_name || `Salon ${s.salon_id}`}: ${Number(s.total_revenue || 0).toLocaleString()}
+                <div
+                  key={s.salon_id}
+                  className="px-3 py-2 rounded-lg border border-border"
+                >
+                  {s.salon_name || `Salon ${s.salon_id}`}: $
+                  {Number(s.total_revenue || 0).toLocaleString()}
                 </div>
               ))}
             </div>
@@ -358,39 +396,49 @@ export default function AdminDashboard() {
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
-
       </div>
 
       <div className="mt-8">
         <ChartCard title="Loyalty Program Effectiveness (last 30 days)">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
-            <div className="p-4 rounded-xl border border-border bg-gradient-to-br from-primary/5 to-background">
-              <p className="text-sm text-muted-foreground">Total points earned</p>
+            <div className="p-4 rounded-xl border border-border bg-linear-to-br from-primary/5 to-background">
+              <p className="text-sm text-muted-foreground">
+                Total points earned
+              </p>
               <p className="text-3xl font-semibold text-foreground">
                 {loyaltyTotalPoints.toLocaleString()}
               </p>
             </div>
-            <div className="p-4 rounded-xl border border-border bg-gradient-to-br from-primary/5 to-background">
-              <p className="text-sm text-muted-foreground">Active loyalty salons</p>
+            <div className="p-4 rounded-xl border border-border bg-linear-to-br from-primary/5 to-background">
+              <p className="text-sm text-muted-foreground">
+                Active loyalty salons
+              </p>
               <p className="text-3xl font-semibold text-foreground">
                 {loyaltyActiveSalons}
               </p>
             </div>
-            <div className="p-4 rounded-xl border border-border bg-gradient-to-br from-primary/5 to-background">
+            <div className="p-4 rounded-xl border border-border bg-linear-to-br from-primary/5 to-background">
               <p className="text-sm text-muted-foreground">Top salon</p>
               <p className="text-xl font-semibold text-foreground truncate">
                 {topLoyaltySalon
-                  ? `${topLoyaltySalon.salon_name || `Salon ${topLoyaltySalon.salon_id}`}`
+                  ? `${
+                      topLoyaltySalon.salon_name ||
+                      `Salon ${topLoyaltySalon.salon_id}`
+                    }`
                   : "—"}
               </p>
               <p className="text-sm text-muted-foreground">
                 {topLoyaltySalon
-                  ? `${Number(topLoyaltySalon.total_points || 0).toLocaleString()} pts`
+                  ? `${Number(
+                      topLoyaltySalon.total_points || 0
+                    ).toLocaleString()} pts`
                   : "No data"}
               </p>
             </div>
-            <div className="p-4 rounded-xl border border-border bg-gradient-to-br from-primary/5 to-background">
-              <p className="text-sm text-muted-foreground">Active loyalty members</p>
+            <div className="p-4 rounded-xl border border-border bg-linear-to-br from-primary/5 to-background">
+              <p className="text-sm text-muted-foreground">
+                Active loyalty members
+              </p>
               <p className="text-3xl font-semibold text-foreground">
                 {loyaltyActiveMembers}
               </p>
@@ -399,10 +447,14 @@ export default function AdminDashboard() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="space-y-3">
-              <p className="text-sm text-muted-foreground">Top salons by points</p>
+              <p className="text-sm text-muted-foreground">
+                Top salons by points
+              </p>
               <div className="space-y-2">
                 {topLoyaltySalons.length === 0 && (
-                  <p className="text-muted-foreground text-sm">No loyalty activity in the last 30 days.</p>
+                  <p className="text-muted-foreground text-sm">
+                    No loyalty activity in the last 30 days.
+                  </p>
                 )}
                 {topLoyaltySalons.map((s) => (
                   <div
@@ -413,7 +465,9 @@ export default function AdminDashboard() {
                       <p className="font-semibold text-foreground truncate">
                         {s.salon_name || `Salon ${s.salon_id}`}
                       </p>
-                      <p className="text-xs text-muted-foreground">ID: {s.salon_id}</p>
+                      <p className="text-xs text-muted-foreground">
+                        ID: {s.salon_id}
+                      </p>
                     </div>
                     <p className="font-semibold text-foreground">
                       {Number(s.total_points || 0).toLocaleString()} pts
@@ -424,7 +478,9 @@ export default function AdminDashboard() {
             </div>
 
             <div className="space-y-3">
-              <p className="text-sm text-muted-foreground">Points by top salons</p>
+              <p className="text-sm text-muted-foreground">
+                Points by top salons
+              </p>
               <div className="p-3 rounded-lg border border-border bg-muted/30">
                 <ResponsiveContainer width="100%" height={220}>
                   <BarChart
@@ -433,14 +489,24 @@ export default function AdminDashboard() {
                       points: Number(s.total_points || 0),
                     }))}
                   >
-                    <XAxis dataKey="name" stroke="#999" angle={-30} textAnchor="end" height={80} />
+                    <XAxis
+                      dataKey="name"
+                      stroke="#999"
+                      angle={-30}
+                      textAnchor="end"
+                      height={80}
+                    />
                     <YAxis stroke="#999" />
-                    <Tooltip formatter={(v: number) => `${v.toLocaleString()} pts`} />
+                    <Tooltip
+                      formatter={(v: number) => `${v.toLocaleString()} pts`}
+                    />
                     <Bar dataKey="points" fill="hsl(var(--primary))" />
                   </BarChart>
                 </ResponsiveContainer>
                 {topLoyaltySalons.length === 0 && (
-                  <p className="text-center text-muted-foreground text-sm mt-2">No loyalty activity to chart.</p>
+                  <p className="text-center text-muted-foreground text-sm mt-2">
+                    No loyalty activity to chart.
+                  </p>
                 )}
               </div>
             </div>
@@ -464,7 +530,16 @@ export default function AdminDashboard() {
                 {genderChartData.map((_, i) => (
                   <Cell
                     key={i}
-                    fill={["hsl(var(--primary))", "hsl(var(--accent))", "#8884d8", "#82ca9d", "#f6ad55", "#63b3ed"][i % 6]}
+                    fill={
+                      [
+                        "hsl(var(--primary))",
+                        "hsl(var(--accent))",
+                        "#8884d8",
+                        "#82ca9d",
+                        "#f6ad55",
+                        "#63b3ed",
+                      ][i % 6]
+                    }
                   />
                 ))}
               </Pie>
@@ -488,7 +563,16 @@ export default function AdminDashboard() {
                 {ageChartData.map((_, i) => (
                   <Cell
                     key={i}
-                    fill={["#63b3ed", "#f6ad55", "hsl(var(--primary))", "hsl(var(--accent))", "#8884d8", "#82ca9d"][i % 6]}
+                    fill={
+                      [
+                        "#63b3ed",
+                        "#f6ad55",
+                        "hsl(var(--primary))",
+                        "hsl(var(--accent))",
+                        "#8884d8",
+                        "#82ca9d",
+                      ][i % 6]
+                    }
                   />
                 ))}
               </Pie>

@@ -26,7 +26,10 @@ export default function AdminLayout({
         }
 
         // Decode JWT to check role
-        const decoded = jwtDecode(token) as { role?: string; user_role?: string };
+        const decoded = jwtDecode(token) as {
+          role?: string;
+          user_role?: string;
+        };
         const userRole = decoded.role || decoded.user_role;
 
         if (userRole !== "admin") {
@@ -68,9 +71,9 @@ export default function AdminLayout({
   }
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex min-h-screen bg-background ">
       <Sidebar />
-      <main className="flex-1 p-6 sm:p-8 overflow-auto">{children}</main>
+      <main className="flex-1 p-6 sm:p-8 overflow-auto ">{children}</main>
     </div>
   );
 }
