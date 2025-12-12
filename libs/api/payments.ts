@@ -102,7 +102,8 @@ export async function createCheckout(
 export async function createUnifiedCheckout(
   salonId: number | string,
   cartId: number | string,
-  pointsToRedeem: number = 0
+  pointsToRedeem: number = 0,
+  promoCode?: string
 ): Promise<PaymentResponse> {
   try {
     const token = localStorage.getItem("token");
@@ -121,6 +122,7 @@ export async function createUnifiedCheckout(
         salon_id: salonId,
         cart_id: cartId,
         points_to_redeem: pointsToRedeem,
+        promo_code: promoCode,
       }),
     });
 

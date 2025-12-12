@@ -524,7 +524,9 @@ export async function updateSalonAmenities(
 export interface LoyaltySettings {
   loyaltyEnabled: boolean;
   pointsPerVisit: number;
+  pointsPerDollar: number;
   redeemRate: number;
+  minPointsRedeem: number;
 }
 
 export async function getSalonLoyaltySettings(

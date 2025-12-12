@@ -24,7 +24,6 @@ import {
   CreditCard,
   Loader2,
   MapPin,
-  Gift,
 } from "lucide-react";
 import { API_ENDPOINTS } from "@/libs/api/config";
 import {
@@ -34,7 +33,6 @@ import {
   removeFromCart,
 } from "@/libs/api/shop";
 import { createUnifiedCheckout } from "@/libs/api/payments";
-import { getMyPoints, calculateDiscount } from "@/libs/api/loyalty";
 
 const CartPage = () => {
   const router = useRouter();
@@ -49,11 +47,6 @@ const CartPage = () => {
     "pay_in_full" | "pay_in_store"
   >("pay_in_full");
   const [depositPercentage, setDepositPercentage] = useState(0);
-  const [availablePoints, setAvailablePoints] = useState(0);
-  const [pointsToRedeem, setPointsToRedeem] = useState(0);
-  const [discount, setDiscount] = useState(0);
-  const [loadingPoints, setLoadingPoints] = useState(false);
-  const [minPointsRedeem, setMinPointsRedeem] = useState(100); // Default to 100
   const isLoadingBackendCart = useRef(false); // Prevent infinite loops
   const loadedSalonId = useRef<number | null>(null); // Track which salonId we've loaded
   const hasLoadedBackendCart = useRef(false); // Track if we've loaded once
@@ -777,11 +770,14 @@ const CartPage = () => {
             return !isNaN(appointmentDate.getTime()) && appointmentDate > now;
           });
 
-          if (validLocalServices.length > 0) {
+          // Also check for local products
+          const localProducts = cart.getProducts();
+          
+          if (validLocalServices.length > 0 || localProducts.length > 0) {
             console.log(
-              `[Cart] Backend cart is empty but local cart has ${validLocalServices.length} valid appointments - syncing to backend`
+              `[Cart] Backend cart is empty but local cart has ${validLocalServices.length} valid appointments and ${localProducts.length} products - syncing to backend`
             );
-            // Sync local appointments to backend instead of clearing
+            // Sync local appointments to backend
             for (const service of validLocalServices) {
               try {
                 await addAppointmentToCart(
@@ -791,6 +787,22 @@ const CartPage = () => {
               } catch (err) {
                 console.error(
                   `[Cart] Failed to sync appointment ${service.appointment_id} to backend:`,
+                  err
+                );
+              }
+            }
+            // Sync local products to backend
+            for (const product of localProducts) {
+              try {
+                await addToCart({
+                  product_id: product.product_id,
+                  quantity: product.quantity,
+                  price: product.price,
+                  salon_id: numericSalonId,
+                });
+              } catch (err) {
+                console.error(
+                  `[Cart] Failed to sync product ${product.product_id} to backend:`,
                   err
                 );
               }
@@ -806,13 +818,19 @@ const CartPage = () => {
               backendCart.cart = updatedCart.cart;
               // Continue with normal loading flow below
             } else {
+              // Backend still empty but we have local products, keep them
+              if (localProducts.length > 0) {
+                console.log(`[Cart] Backend sync failed but keeping ${localProducts.length} local products`);
+                isLoadingBackendCart.current = false;
+                return;
+              }
               console.log(`[Cart] After syncing, backend cart is still empty`);
               isLoadingBackendCart.current = false;
               return;
             }
           } else {
             console.log(
-              `[Cart] Backend cart is empty and local cart has no valid appointments - clearing local cart`
+              `[Cart] Backend cart is empty and local cart has no valid items - clearing local cart`
             );
             cart.clearCart();
             localStorage.removeItem("cart");
@@ -1281,244 +1299,98 @@ const CartPage = () => {
     fetchDepositSettings();
   }, [salonId]);
 
-  // Fetch loyalty points - refetch periodically to get updated points after payments
-  useEffect(() => {
-    const fetchLoyaltyPoints = async () => {
-      if (!salonId) {
-        console.log("[Cart] No salonId, skipping loyalty points fetch");
-        return;
-      }
-
-      setLoadingPoints(true);
-      try {
-        const numericSalonId =
-          typeof salonId === "string" ? parseInt(salonId, 10) : salonId;
-        console.log(
-          "[Cart] Fetching loyalty points for salon:",
-          numericSalonId
-        );
-        const result = await getMyPoints(numericSalonId);
-        console.log(
-          "[Cart] Loyalty points result:",
-          JSON.stringify(result, null, 2)
-        );
-
-        if (result.error) {
-          console.error("[Cart] Error fetching loyalty points:", result.error);
-          setAvailablePoints(0);
-        } else if (result.data) {
-          // Backend returns: { salon_id, points, min_points_redeem, redeem_rate, can_redeem, estimated_discount }
-          const points =
-            typeof result.data.points === "number"
-              ? result.data.points
-              : parseInt(result.data.points) || 0;
-          const minPoints =
-            typeof result.data.min_points_redeem === "number"
-              ? result.data.min_points_redeem
-              : parseInt(result.data.min_points_redeem) || 100;
-          console.log(
-            "[Cart] Setting available points to:",
-            points,
-            "min_points_redeem:",
-            minPoints,
-            "from result.data:",
-            result.data
-          );
-          setAvailablePoints(points);
-          setMinPointsRedeem(minPoints);
-        } else {
-          console.warn("[Cart] No data in loyalty points result:", result);
-          setAvailablePoints(0);
-        }
-      } catch (err) {
-        console.error("[Cart] Failed to fetch loyalty points:", err);
-        setAvailablePoints(0);
-      } finally {
-        setLoadingPoints(false);
-      }
-    };
-
-    fetchLoyaltyPoints();
-
-    // Refetch loyalty points every 10 seconds to catch updates after payments (reduced from 30s)
-    const interval = setInterval(fetchLoyaltyPoints, 10000);
-
-    // Also refresh when window regains focus (user returns from payment page)
-    const handleFocus = () => {
-      console.log("[Cart] Window focused, refreshing loyalty points");
-      fetchLoyaltyPoints();
-    };
-
-    // Also refresh when visibility changes (tab becomes visible)
-    const handleVisibilityChange = () => {
-      if (!document.hidden) {
-        console.log("[Cart] Tab visible, refreshing loyalty points");
-        fetchLoyaltyPoints();
-      }
-    };
-
-    // Check if we're returning from payment success page
-    const checkPaymentReturn = () => {
-      const paymentReturned = sessionStorage.getItem("payment_completed");
-      const refreshTime = sessionStorage.getItem("loyalty_refresh_time");
-
-      if (paymentReturned === "true") {
-        // If refresh was set more than 3 seconds ago, refresh again (backend might have just finished processing)
-        const shouldRefresh =
-          !refreshTime || Date.now() - parseInt(refreshTime) > 3000;
-
-        if (shouldRefresh) {
-          console.log(
-            "[Cart] Payment completed flag detected, refreshing loyalty points immediately"
-          );
-          sessionStorage.removeItem("payment_completed");
-          sessionStorage.removeItem("loyalty_refresh_needed");
-          sessionStorage.removeItem("loyalty_refresh_time");
-          fetchLoyaltyPoints();
-
-          // Also refresh again after 2 seconds to catch any delayed processing
-          setTimeout(() => {
-            console.log("[Cart] Delayed loyalty points refresh after payment");
-            fetchLoyaltyPoints();
-          }, 2000);
-        }
-      }
-    };
-
-    // Check immediately and also on focus/visibility
-    checkPaymentReturn();
-
-    window.addEventListener("focus", () => {
-      handleFocus();
-      checkPaymentReturn();
-    });
-    document.addEventListener("visibilitychange", () => {
-      handleVisibilityChange();
-      if (!document.hidden) {
-        checkPaymentReturn();
-      }
-    });
-
-    return () => {
-      clearInterval(interval);
-      window.removeEventListener("focus", handleFocus);
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-    };
-  }, [salonId]);
-
-  // Calculate discount when points to redeem changes
-  useEffect(() => {
-    const calculateDiscountAmount = async () => {
-      if (!salonId || pointsToRedeem <= 0) {
-        setDiscount(0);
-        return;
-      }
-
-      // Check if points to redeem meets minimum requirement before calling API
-      if (pointsToRedeem < minPointsRedeem) {
-        console.log(
-          `[Cart] Points to redeem (${pointsToRedeem}) is less than minimum (${minPointsRedeem}), skipping discount calculation`
-        );
-        setDiscount(0);
-        return;
-      }
-
-      try {
-        const numericSalonId =
-          typeof salonId === "string" ? parseInt(salonId, 10) : salonId;
-        console.log(
-          "[Cart] Calculating discount for",
-          pointsToRedeem,
-          "points at salon",
-          numericSalonId
-        );
-        const result = await calculateDiscount(numericSalonId, pointsToRedeem);
-        console.log("[Cart] Discount calculation result:", result);
-        if (result.discount !== undefined) {
-          setDiscount(result.discount);
-          console.log("[Cart] Discount set to:", result.discount);
-        } else if (result.error) {
-          // Only log as warning, not error, since we're handling it gracefully
-          console.warn(
-            "[Cart] Discount calculation returned error:",
-            result.error
-          );
-          setDiscount(0);
-        }
-      } catch (err) {
-        // Only log as warning, not error, since we're handling it gracefully
-        console.warn("[Cart] Failed to calculate discount:", err);
-        setDiscount(0);
-      }
-    };
-
-    calculateDiscountAmount();
-  }, [pointsToRedeem, salonId, minPointsRedeem]);
-
   // Sync local cart with backend cart and clear if backend cart is empty
-  useEffect(() => {
-    const syncCartWithBackend = async () => {
-      const numericSalonId =
-        typeof salonId === "string" ? parseInt(salonId, 10) : salonId;
-      if (!numericSalonId) return;
+  const syncCartWithBackend = useCallback(async () => {
+    const numericSalonId =
+      typeof salonId === "string" ? parseInt(salonId, 10) : salonId;
+    if (!numericSalonId) return;
 
-      setSyncing(true);
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) return;
+    // Prevent concurrent syncs
+    if (syncing) return;
 
-        // First, check backend cart status
-        const backendCart = await getUnifiedCart(numericSalonId);
-        if (backendCart.error) {
-          console.error("Failed to fetch backend cart:", backendCart.error);
-          return;
-        }
+    setSyncing(true);
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setSyncing(false);
+        return;
+      }
 
-        // If backend cart is empty (checked out), clear local cart and localStorage
-        if (!backendCart.cart?.items || backendCart.cart.items.length === 0) {
-          cart.clearCart();
-          // Also clear localStorage directly to ensure it's cleared
-          localStorage.removeItem("cart");
-          return;
-        }
+      // First, check backend cart status
+      const backendCart = await getUnifiedCart(numericSalonId);
+      if (backendCart.error) {
+        console.error("Failed to fetch backend cart:", backendCart.error);
+        setSyncing(false);
+        return;
+      }
 
-        // If local cart is empty but backend has items, clear the backend cart (old items)
-        if (services.length === 0 && products.length === 0) {
-          // Backend has old items but local cart is empty - clear backend cart
-          if (backendCart.cart?.items && backendCart.cart.items.length > 0) {
-            console.log(
-              `[Cart] Local cart is empty but backend has ${backendCart.cart.items.length} items. Clearing backend cart.`
-            );
-            // Clear backend cart by removing all items
-            const cartId = backendCart.cart.cart_id;
-            if (cartId) {
-              // Delete all items from backend cart
-              for (const item of backendCart.cart.items) {
-                try {
-                  await fetch(
-                    API_ENDPOINTS.SHOP.REMOVE_FROM_CART(item.item_id),
-                    {
-                      method: "DELETE",
-                      headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${token}`,
-                      },
-                    }
-                  );
-                } catch (err) {
-                  console.error(
-                    "Failed to remove item from backend cart:",
-                    err
-                  );
-                }
+      // If backend cart is empty (checked out), clear local cart and localStorage
+      if (!backendCart.cart?.items || backendCart.cart.items.length === 0) {
+        cart.clearCart();
+        // Also clear localStorage directly to ensure it's cleared
+        localStorage.removeItem("cart");
+        setSyncing(false);
+        return;
+      }
+
+      // Get current local cart state
+      const currentServices = cart.getServices();
+      const currentProducts = cart.getProducts();
+
+      // If local cart is empty but backend has items, clear the backend cart (old items)
+      if (currentServices.length === 0 && currentProducts.length === 0) {
+        // Backend has old items but local cart is empty - clear backend cart
+        if (backendCart.cart?.items && backendCart.cart.items.length > 0) {
+          console.log(
+            `[Cart] Local cart is empty but backend has ${backendCart.cart.items.length} items. Clearing backend cart.`
+          );
+          // Clear backend cart by removing all items
+          const cartId = backendCart.cart.cart_id;
+          if (cartId) {
+            // Delete all items from backend cart
+            for (const item of backendCart.cart.items) {
+              try {
+                await fetch(
+                  API_ENDPOINTS.SHOP.REMOVE_FROM_CART(item.item_id),
+                  {
+                    method: "DELETE",
+                    headers: {
+                      "Content-Type": "application/json",
+                      Authorization: `Bearer ${token}`,
+                    },
+                  }
+                );
+              } catch (err) {
+                console.error(
+                  "Failed to remove item from backend cart:",
+                  err
+                );
               }
             }
           }
-          return;
         }
+        setSyncing(false);
+        return;
+      }
 
-        // Add appointments to backend cart
-        for (const service of services) {
+      // Check what's already in the backend cart to avoid duplicates
+      const backendItems = backendCart.cart?.items || [];
+      
+      // Build a set of what's already in backend
+      const backendServiceIds = new Set(
+        backendItems
+          .filter(item => item.type === 'service' && item.service_id)
+          .map(item => item.service_id)
+      );
+      const backendProductIds = new Set(
+        backendItems
+          .filter(item => item.type === 'product' && item.product_id)
+          .map(item => item.product_id)
+      );
+
+      // Only add appointments that aren't already in backend
+      for (const service of currentServices) {
+        if (!backendServiceIds.has(service.service_id)) {
           try {
             await addAppointmentToCart(
               service.appointment_id,
@@ -1528,9 +1400,11 @@ const CartPage = () => {
             console.error("Failed to add appointment to cart:", err);
           }
         }
+      }
 
-        // Add products to backend cart
-        for (const product of products) {
+      // Only add products that aren't already in backend
+      for (const product of currentProducts) {
+        if (!backendProductIds.has(product.product_id)) {
           try {
             const productSalonId = product.salon_id || salonId;
             await addToCart({
@@ -1546,15 +1420,20 @@ const CartPage = () => {
             console.error("Failed to add product to cart:", err);
           }
         }
-      } catch (err) {
-        console.error("Failed to sync cart:", err);
-      } finally {
-        setSyncing(false);
       }
-    };
+    } catch (err) {
+      console.error("Failed to sync cart:", err);
+    } finally {
+      setSyncing(false);
+    }
+  }, [salonId, syncing]); // Remove services and products from dependencies
 
-    syncCartWithBackend();
-  }, [salonId, services.length, products.length]);
+  useEffect(() => {
+    // Only run sync when salonId changes or services/products length changes
+    if (salonId) {
+      syncCartWithBackend();
+    }
+  }, [salonId, services.length, products.length]); // Run when lengths change, not when sync function changes
 
   const handleUnifiedCheckout = async () => {
     if (!salonId || (services.length === 0 && products.length === 0)) {
@@ -1562,6 +1441,38 @@ const CartPage = () => {
       return;
     }
 
+    // For "Pay in Full", sync cart to backend first, then go to checkout page
+    if (paymentMethod === "pay_in_full") {
+      setCheckoutProcessing(true);
+      setError("");
+      
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          throw new Error("Please login to continue");
+        }
+
+        const numericSalonId = typeof salonId === "string" ? parseInt(salonId, 10) : salonId;
+        if (!numericSalonId) {
+          throw new Error("Invalid salon ID");
+        }
+
+        // Sync cart to backend before redirecting
+        await syncCartWithBackend();
+        
+        // Small delay to ensure sync completes
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Redirect to checkout
+        router.push(`/customer/checkout?salonId=${salonId}`);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to sync cart");
+        setCheckoutProcessing(false);
+      }
+      return;
+    }
+
+    // For "Pay in Store", handle directly here
     setCheckoutProcessing(true);
     setError("");
 
@@ -1578,7 +1489,7 @@ const CartPage = () => {
         throw new Error("Invalid salon ID");
       }
 
-      let cartResult = await getUnifiedCart(numericSalonId);
+      const cartResult = await getUnifiedCart(numericSalonId);
       if (cartResult.error) {
         throw new Error(cartResult.error || "Failed to get cart");
       }
@@ -1643,82 +1554,39 @@ const CartPage = () => {
         }
       }
 
-      // Get the updated cart (should only have current items now)
-      cartResult = await getUnifiedCart(numericSalonId);
-      if (cartResult.error || !cartResult.cart || !cartResult.cart.cart_id) {
-        throw new Error(cartResult.error || "Failed to get cart after sync");
-      }
+      // For pay in store, call the pay-in-store endpoint
+      const firstService = services[0];
+      const totalAmount = serviceTotal + productTotal;
 
-      // Create unified checkout
-      console.log(
-        "[Cart] Creating unified checkout for cart_id:",
-        cartResult.cart.cart_id
-      );
-      const checkoutResult = await createUnifiedCheckout(
-        numericSalonId,
-        cartResult.cart.cart_id,
-        pointsToRedeem
-      );
-
-      console.log("[Cart] Checkout result:", {
-        success: checkoutResult.success,
-        hasPaymentLink: !!checkoutResult.payment_link,
-        error: checkoutResult.error,
+      const response = await fetch(API_ENDPOINTS.PAYMENTS.PAY_IN_STORE, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          amount: totalAmount,
+          appointment_id: firstService?.appointment_id,
+          salon_id: numericSalonId,
+        }),
       });
 
-      if (!checkoutResult.success || !checkoutResult.payment_link) {
-        console.error("[Cart] Checkout failed:", checkoutResult.error);
-        throw new Error(checkoutResult.error || "Failed to create checkout");
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to process pay in store");
       }
 
-      // Verify payment_link is a valid URL before redirecting
-      if (
-        !checkoutResult.payment_link ||
-        !checkoutResult.payment_link.startsWith("http")
-      ) {
-        console.error(
-          "[Cart] Invalid payment link:",
-          checkoutResult.payment_link
-        );
-        throw new Error("Invalid payment link received from server");
-      }
-
-      // Clear local cart and localStorage before redirecting
-      // Also remove any past appointments that might still be in the cart
-      const checkoutTime = new Date();
-      const allCartServices = cart.getServices();
-      allCartServices.forEach((service) => {
-        const appointmentDate = new Date(service.scheduled_time);
-        if (appointmentDate <= checkoutTime) {
-          cart.removeItem(service.appointment_id, "service");
-        }
-      });
-
-      // Clear cart before redirect (this is correct - cart should be empty after checkout)
+      // Clear cart after successful pay-in-store
       cart.clearCart();
       localStorage.removeItem("cart");
 
-      // Redirect to Stripe checkout
-      console.log(
-        "[Cart] Redirecting to Stripe checkout:",
-        checkoutResult.payment_link
-      );
-      console.log(
-        "[Cart] Payment link is valid URL:",
-        checkoutResult.payment_link.startsWith("http")
-      );
-
-      // Use window.location.replace to prevent back button from going back to cart
-      // This will navigate away from the cart page to Stripe
-      try {
-        window.location.replace(checkoutResult.payment_link);
-      } catch (redirectError) {
-        console.error(
-          "[Cart] Redirect failed, trying href instead:",
-          redirectError
-        );
-        // Fallback to href if replace fails
-        window.location.href = checkoutResult.payment_link;
+      // Redirect based on whether deposit is required
+      if (result.requires_deposit && result.payment_link) {
+        window.location.href = result.payment_link;
+      } else {
+        alert("Appointment confirmed! You can pay when you arrive at the salon.");
+        router.push("/customer/my-profile?tab=upcoming");
       }
     } catch (err) {
       setError(
@@ -1758,7 +1626,6 @@ const CartPage = () => {
           body: JSON.stringify({
             amount: totalAmount,
             appointment_id: firstService.appointment_id,
-            points_to_redeem: pointsToRedeem,
             salon_id: firstService.salon_id,
           }),
         });
@@ -1791,17 +1658,38 @@ const CartPage = () => {
         setCheckoutProcessing(false);
       }
     } else {
-      // Pay in full - redirect to checkout page
+      // Pay in full - redirect to checkout page where user can apply promo codes and loyalty points
       const firstService = services[0];
       router.push(
-        `/customer/checkout?appointmentId=${firstService.appointment_id}`
+        `/customer/checkout?salonId=${firstService.salon_id}&appointmentId=${firstService.appointment_id}`
       );
     }
   };
 
-  const handleCheckoutProducts = () => {
+  const handleCheckoutProducts = async () => {
     if (products.length === 0) return;
-    router.push(`/customer/checkout/products`);
+    
+    setCheckoutProcessing(true);
+    setError("");
+    
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("Please login to continue");
+      }
+
+      // Sync cart to backend before redirecting
+      await syncCartWithBackend();
+      
+      // Small delay to ensure sync completes
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Redirect to checkout page with salonId for promo codes and loyalty points
+      router.push(`/customer/checkout?salonId=${salonId}`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to sync cart");
+      setCheckoutProcessing(false);
+    }
   };
 
   if (services.length === 0 && products.length === 0) {
@@ -1853,16 +1741,31 @@ const CartPage = () => {
                         <div
                           key={suggestion.product_id}
                           className="border border-border rounded-lg p-3 hover:bg-muted/50 transition cursor-pointer"
-                          onClick={() => {
+                          onClick={async () => {
+                            const productPrice = parseFloat(suggestion.price) || 0;
+                            const productSalonId = typeof salonId === "string" ? parseInt(salonId, 10) : salonId || 0;
+                            
                             cart.addProduct({
                               product_id: suggestion.product_id,
                               name: suggestion.name,
                               description: suggestion.description || "",
-                              price: parseFloat(suggestion.price) || 0,
+                              price: productPrice,
                               quantity: 1,
-                              salon_id: salonId || 0,
+                              salon_id: productSalonId,
                               salon_name: "",
                             });
+                            
+                            // Sync to backend
+                            try {
+                              await addToCart({
+                                product_id: suggestion.product_id,
+                                quantity: 1,
+                                price: productPrice,
+                                salon_id: productSalonId,
+                              });
+                            } catch (err) {
+                              console.error("Failed to sync product to backend:", err);
+                            }
                           }}
                         >
                           <div className="w-full h-24 bg-muted rounded-lg flex items-center justify-center mb-2">
@@ -1876,17 +1779,32 @@ const CartPage = () => {
                               ${parseFloat(suggestion.price || 0).toFixed(2)}
                             </span>
                             <button
-                              onClick={(e) => {
+                              onClick={async (e) => {
                                 e.stopPropagation();
+                                const productPrice = parseFloat(suggestion.price) || 0;
+                                const productSalonId = typeof salonId === "string" ? parseInt(salonId, 10) : salonId || 0;
+                                
                                 cart.addProduct({
                                   product_id: suggestion.product_id,
                                   name: suggestion.name,
                                   description: suggestion.description || "",
-                                  price: parseFloat(suggestion.price) || 0,
+                                  price: productPrice,
                                   quantity: 1,
-                                  salon_id: salonId || 0,
+                                  salon_id: productSalonId,
                                   salon_name: "",
                                 });
+                                
+                                // Sync to backend
+                                try {
+                                  await addToCart({
+                                    product_id: suggestion.product_id,
+                                    quantity: 1,
+                                    price: productPrice,
+                                    salon_id: productSalonId,
+                                  });
+                                } catch (err) {
+                                  console.error("Failed to sync product to backend:", err);
+                                }
                               }}
                               className="px-2 py-1 bg-primary text-white text-xs rounded hover:bg-primary/90 transition-colors flex items-center gap-1"
                             >
@@ -2143,41 +2061,44 @@ const CartPage = () => {
                       <div
                         key={suggestion.product_id}
                         className="border border-border rounded-lg p-4 hover:bg-muted/50 transition cursor-pointer"
-                        onClick={() => {
+                        onClick={async () => {
+                          const productPrice = parseFloat(suggestion.price) || 0;
+                          const productSalonId = typeof salonId === "string" ? parseInt(salonId, 10) : salonId || 0;
+                          
+                          // Add to local cart
                           cart.addProduct({
                             product_id: suggestion.product_id,
                             name: suggestion.name,
                             description: suggestion.description || "",
-                            price: parseFloat(suggestion.price) || 0,
+                            price: productPrice,
                             quantity: 1,
-                            salon_id: salonId || 0,
+                            salon_id: productSalonId,
                             salon_name: "",
                           });
+                          
+                          // Sync to backend
+                          try {
+                            await addToCart({
+                              product_id: suggestion.product_id,
+                              quantity: 1,
+                              price: productPrice,
+                              salon_id: productSalonId,
+                            });
+                          } catch (err) {
+                            console.error("Failed to sync product to backend:", err);
+                          }
+                          
                           // Refresh suggestions after adding
-                          setTimeout(() => {
-                            const fetchSuggestions = async () => {
-                              try {
-                                const numericSalonId =
-                                  typeof salonId === "string"
-                                    ? parseInt(salonId, 10)
-                                    : salonId;
-                                if (!numericSalonId) return;
-                                const result = await getUnifiedCart(
-                                  numericSalonId
-                                );
-                                if (!result.error) {
-                                  setSuggestions(
-                                    result.cart?.suggestions || []
-                                  );
-                                }
-                              } catch (err) {
-                                console.error(
-                                  "Failed to refresh suggestions:",
-                                  err
-                                );
+                          setTimeout(async () => {
+                            try {
+                              if (!productSalonId) return;
+                              const result = await getUnifiedCart(productSalonId);
+                              if (!result.error) {
+                                setSuggestions(result.cart?.suggestions || []);
                               }
-                            };
-                            fetchSuggestions();
+                            } catch (err) {
+                              console.error("Failed to refresh suggestions:", err);
+                            }
                           }, 500);
                         }}
                       >
@@ -2197,37 +2118,44 @@ const CartPage = () => {
                             ${parseFloat(suggestion.price || 0).toFixed(2)}
                           </span>
                           <button
-                            onClick={(e) => {
+                            onClick={async (e) => {
                               e.stopPropagation();
+                              const productPrice = parseFloat(suggestion.price) || 0;
+                              const productSalonId = typeof salonId === "string" ? parseInt(salonId, 10) : salonId || 0;
+                              
+                              // Add to local cart
                               cart.addProduct({
                                 product_id: suggestion.product_id,
                                 name: suggestion.name,
                                 description: suggestion.description || "",
-                                price: parseFloat(suggestion.price) || 0,
+                                price: productPrice,
                                 quantity: 1,
-                                salon_id: salonId || 0,
+                                salon_id: productSalonId,
                                 salon_name: "",
                               });
+                              
+                              // Sync to backend
+                              try {
+                                await addToCart({
+                                  product_id: suggestion.product_id,
+                                  quantity: 1,
+                                  price: productPrice,
+                                  salon_id: productSalonId,
+                                });
+                              } catch (err) {
+                                console.error("Failed to sync product to backend:", err);
+                              }
+                              
                               // Refresh suggestions after adding
-                              setTimeout(() => {
-                                const fetchSuggestions = async () => {
-                                  try {
-                                    const result = await getUnifiedCart(
-                                      salonId
-                                    );
-                                    if (!result.error) {
-                                      setSuggestions(
-                                        result.cart?.suggestions || []
-                                      );
-                                    }
-                                  } catch (err) {
-                                    console.error(
-                                      "Failed to refresh suggestions:",
-                                      err
-                                    );
+                              setTimeout(async () => {
+                                try {
+                                  const result = await getUnifiedCart(salonId);
+                                  if (!result.error) {
+                                    setSuggestions(result.cart?.suggestions || []);
                                   }
-                                };
-                                fetchSuggestions();
+                                } catch (err) {
+                                  console.error("Failed to refresh suggestions:", err);
+                                }
                               }, 500);
                             }}
                             className="px-3 py-1 bg-primary text-white text-xs rounded-lg hover:bg-primary/90 transition-colors flex items-center gap-1"
@@ -2285,20 +2213,10 @@ const CartPage = () => {
               )}
 
               <div className="pt-3 border-t border-border mb-4">
-                {discount > 0 && (
-                  <div className="flex justify-between text-sm mb-2">
-                    <span className="text-muted-foreground">
-                      Loyalty Discount
-                    </span>
-                    <span className="font-semibold text-green-600">
-                      -${discount.toFixed(2)}
-                    </span>
-                  </div>
-                )}
                 <div className="flex justify-between text-lg font-bold mb-4">
                   <span>Total</span>
                   <span className="text-primary">
-                    ${(total - discount).toFixed(2)}
+                    ${total.toFixed(2)}
                   </span>
                 </div>
 
@@ -2307,66 +2225,6 @@ const CartPage = () => {
                     {error}
                   </div>
                 )}
-
-                {/* Loyalty Points Section */}
-                <div className="mb-4 p-4 bg-muted/50 rounded-lg border border-border">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Gift className="w-4 h-4 text-primary" />
-                    <span className="text-sm font-semibold">
-                      Loyalty Points
-                    </span>
-                  </div>
-                  {loadingPoints ? (
-                    <div className="text-xs text-muted-foreground">
-                      Loading points...
-                    </div>
-                  ) : (
-                    <>
-                      <div className="text-xs text-muted-foreground mb-2">
-                        Available Points: {availablePoints.toLocaleString()}
-                      </div>
-                      {availablePoints > 0 ? (
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="number"
-                              min="0"
-                              max={availablePoints}
-                              value={pointsToRedeem}
-                              onChange={(e) => {
-                                const value = Math.max(
-                                  0,
-                                  Math.min(
-                                    availablePoints,
-                                    parseInt(e.target.value) || 0
-                                  )
-                                );
-                                setPointsToRedeem(value);
-                              }}
-                              className="flex-1 px-3 py-2 border border-border rounded-lg text-sm"
-                              placeholder="Points to redeem"
-                            />
-                            {pointsToRedeem > 0 && discount > 0 && (
-                              <span className="text-xs text-green-600 font-semibold whitespace-nowrap">
-                                -${discount.toFixed(2)}
-                              </span>
-                            )}
-                          </div>
-                          {pointsToRedeem > 0 && discount === 0 && (
-                            <div className="text-xs text-orange-600">
-                              Minimum points required to redeem. Check salon
-                              settings.
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="text-xs text-muted-foreground italic">
-                          No points available. Earn points by making purchases!
-                        </div>
-                      )}
-                    </>
-                  )}
-                </div>
 
                 {/* Payment Method Selection - Only show for services */}
                 {services.length > 0 && (
@@ -2454,7 +2312,7 @@ const CartPage = () => {
                     ) : (
                       <>
                         <CreditCard className="w-5 h-5" />
-                        Checkout All ({services.length + products.length} items)
+                        Checkout All ({services.length + products.reduce((sum, p) => sum + p.quantity, 0)} items)
                       </>
                     )}
                   </button>

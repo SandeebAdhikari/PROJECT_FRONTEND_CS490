@@ -9,13 +9,16 @@ export function getImageUrl(imagePath: string | null | undefined): string {
     return "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=1200&h=600&fit=crop&auto=format";
   }
 
-  // If it's already a full URL, ensure we use HTTPS for security
+  // If it's already a full URL
   if (imagePath.startsWith("https://")) {
     return imagePath;
   }
   
-  // Convert HTTP to HTTPS for mixed content issues
+  // Convert HTTP to HTTPS for mixed content issues (but not localhost for dev)
   if (imagePath.startsWith("http://")) {
+    if (imagePath.includes("localhost")) {
+      return imagePath; // Keep http for local dev
+    }
     return imagePath.replace("http://", "https://");
   }
 

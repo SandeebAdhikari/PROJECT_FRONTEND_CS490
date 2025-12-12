@@ -19,7 +19,10 @@ const LoyaltyPointsSummaryComponent = () => {
       if (result.error) {
         setError(result.error);
       } else if (result.summary) {
-        setSummary(result.summary);
+        // Ensure summary is always an array
+        setSummary(Array.isArray(result.summary) ? result.summary : []);
+      } else {
+        setSummary([]);
       }
 
       setLoading(false);
@@ -86,7 +89,7 @@ const LoyaltyPointsSummaryComponent = () => {
     );
   }
 
-  if (summary.length === 0) {
+  if (!Array.isArray(summary) || summary.length === 0) {
     return (
       <div className="bg-card border border-border rounded-2xl p-8 text-center">
         <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
@@ -100,7 +103,9 @@ const LoyaltyPointsSummaryComponent = () => {
     );
   }
 
-  const totalPoints = summary.reduce((sum, salon) => sum + salon.points, 0);
+  // Ensure summary is an array
+  const summaryArray = Array.isArray(summary) ? summary : [];
+  const totalPoints = summaryArray.reduce((sum, salon) => sum + (salon.points || 0), 0);
 
   return (
     <div className="bg-card border border-border rounded-2xl p-6 shadow-soft-br">
@@ -114,7 +119,7 @@ const LoyaltyPointsSummaryComponent = () => {
       </div>
 
       <div className="space-y-3">
-        {summary.map((salon) => (
+        {summaryArray.map((salon) => (
           <div
             key={salon.salon_id}
             className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl p-4 text-white"

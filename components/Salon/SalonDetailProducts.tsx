@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Package, Plus } from "lucide-react";
 import { API_ENDPOINTS } from "@/libs/api/config";
 import { useCart } from "@/hooks/useCart";
+import { addToCart } from "@/libs/api/shop";
 
 interface Product {
   product_id: number;
@@ -64,7 +65,7 @@ export default function SalonDetailProducts({ salonId }: { salonId: string }) {
       ? products
       : products.filter((p) => p.category === activeCategory);
 
-  const handleAddToCart = (product: Product, event?: React.MouseEvent<HTMLButtonElement>) => {
+  const handleAddToCart = async (product: Product, event?: React.MouseEvent<HTMLButtonElement>) => {
     const stock = Number(product.stock);
     if (stock <= 0) {
       alert("This product is out of stock");
@@ -72,17 +73,33 @@ export default function SalonDetailProducts({ salonId }: { salonId: string }) {
     }
 
     try {
+      const productPrice = Number(product.price);
+      const productSalonId = Number(salonId);
+      
       const productData = {
         product_id: product.product_id,
         name: product.name,
         description: product.description || "",
-        price: Number(product.price),
+        price: productPrice,
         quantity: 1,
-        salon_id: Number(salonId),
+        salon_id: productSalonId,
         stock: stock,
       };
       
+      // Add to local cart
       cart.addProduct(productData);
+      
+      // Sync to backend
+      try {
+        await addToCart({
+          product_id: product.product_id,
+          quantity: 1,
+          price: productPrice,
+          salon_id: productSalonId,
+        });
+      } catch (err) {
+        console.error("Failed to sync product to backend:", err);
+      }
       
       // Visual feedback
       if (event?.currentTarget) {

@@ -15,6 +15,7 @@ import { useFavorites } from "@/hooks/useFavorites";
 import SalonCard from "@/components/Salon/SalonCard";
 import { API_ENDPOINTS, fetchConfig } from "@/libs/api/config";
 import LoyaltyPointsSummary from "@/components/Loyalty/LoyaltyPointsSummary";
+import RewardsSection from "@/components/Loyalty/RewardsSection";
 import CustomerPhotoGallery from "@/components/Customer/CustomerPhotoGallery";
 
 type TabType = "upcoming" | "past" | "photos" | "favorites" | "loyalty" | "settings";
@@ -85,7 +86,15 @@ const PastBookingsContent = () => {
 };
 
 const LoyaltyContent = () => {
-  return <LoyaltyPointsSummary />;
+  return (
+    <div className="space-y-6">
+      <LoyaltyPointsSummary />
+      <div>
+        <h3 className="text-xl font-bold mb-4">Available Rewards</h3>
+        <RewardsSection />
+      </div>
+    </div>
+  );
 };
 
 interface FavoritesContentProps {
