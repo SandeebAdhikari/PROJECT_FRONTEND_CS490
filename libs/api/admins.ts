@@ -150,6 +150,7 @@ export async function getAppointmentTrends(
       API_ENDPOINTS.ADMINS.APPOINTMENT_TRENDS(startDate, endDate),
       {
         ...fetchConfig,
+        cache: "no-store",
         headers: {
           ...fetchConfig.headers,
           Authorization: `Bearer ${token}`,
@@ -157,13 +158,14 @@ export async function getAppointmentTrends(
       }
     );
 
-    if (!response.ok) {
-      const result = await response.json();
+    if (!response.ok && response.status !== 304) {
+      const result = await response.json().catch(() => ({}));
       return { error: result.error || "Failed to get trends" };
     }
 
-    const trends = await response.json();
-    return { trends: Array.isArray(trends) ? trends : [] };
+    const data = response.status === 304 ? [] : await response.json();
+    const trends = Array.isArray(data) ? data : (data.trends || []);
+    return { trends };
   } catch (error) {
     console.error("Get trends error:", error);
     return { error: "Network error. Please try again." };
@@ -187,6 +189,7 @@ export async function getSalonRevenues(
       API_ENDPOINTS.ADMINS.SALON_REVENUES(startDate, endDate),
       {
         ...fetchConfig,
+        cache: "no-store",
         headers: {
           ...fetchConfig.headers,
           Authorization: `Bearer ${token}`,
@@ -194,26 +197,44 @@ export async function getSalonRevenues(
       }
     );
 
-    if (!response.ok) {
-      const result = await response.json();
+    if (!response.ok && response.status !== 304) {
+      const result = await response.json().catch(() => ({}));
       return { error: result.error || "Failed to get revenues" };
     }
 
-    const revenues = await response.json();
-    return { revenues: Array.isArray(revenues) ? revenues : [] };
+    const data = response.status === 304 ? [] : await response.json();
+    const revenues = Array.isArray(data) ? data : (data.revenues || []);
+    return { revenues };
   } catch (error) {
     console.error("Get revenues error:", error);
     return { error: "Network error. Please try again." };
   }
 }
 
-export interface UserEngagement {
-  activeUsers: { active_user_count: number };
-  totalUsers: { total_user_count: number };
+export interface EngagementResponse {
+  customers: {
+    dau_7d: number;
+    mau_30d: number;
+    total_users: number;
+    bookings_7d: number;
+    bookings_30d: number;
+    completion_rate_30d: number;
+    repeat_customers_90d: number;
+    reviews_30d: number;
+    messages_30d: number;
+    inactive_60d: number;
+  };
+  owners: {
+    active_owners_30d: number;
+    active_salons_30d: number;
+    total_salons: number;
+    owner_created_appointments_30d: number;
+    staff_logins_30d: number;
+  };
 }
 
-export interface UserDemographic {
-  user_role: string;
+export interface UserDemographicBucket {
+  bucket: string;
   count: number;
 }
 
@@ -224,7 +245,7 @@ export interface CustomerRetention {
 /**
  * Get user engagement stats
  */
-export async function getUserEngagement(): Promise<{ engagement?: UserEngagement; error?: string }> {
+export async function getUserEngagement(): Promise<{ engagement?: EngagementResponse; error?: string }> {
   try {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -233,19 +254,21 @@ export async function getUserEngagement(): Promise<{ engagement?: UserEngagement
 
     const response = await fetch(API_ENDPOINTS.ADMINS.USER_ENGAGEMENT, {
       ...fetchConfig,
+      cache: "no-store",
       headers: {
         ...fetchConfig.headers,
         Authorization: `Bearer ${token}`,
       },
     });
 
-    if (!response.ok) {
-      const result = await response.json();
+    if (!response.ok && response.status !== 304) {
+      const result = await response.json().catch(() => ({}));
       return { error: result.error || "Failed to get user engagement" };
     }
 
-    const engagement = await response.json();
-    return { engagement };
+    const data = response.status === 304 ? {} : await response.json();
+    const engagement = (data as any).engagement || data;
+    return { engagement: engagement as EngagementResponse };
   } catch (error) {
     console.error("Get user engagement error:", error);
     return { error: "Network error. Please try again." };
@@ -255,7 +278,12 @@ export async function getUserEngagement(): Promise<{ engagement?: UserEngagement
 /**
  * Get user demographics
  */
-export async function getUserDemographics(): Promise<{ demographics?: UserDemographic[]; error?: string }> {
+export interface DemographicsResponse {
+  gender: UserDemographicBucket[];
+  age: UserDemographicBucket[];
+}
+
+export async function getUserDemographics(): Promise<{ demographics?: DemographicsResponse; error?: string }> {
   try {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -264,19 +292,21 @@ export async function getUserDemographics(): Promise<{ demographics?: UserDemogr
 
     const response = await fetch(API_ENDPOINTS.ADMINS.USER_DEMOGRAPHICS, {
       ...fetchConfig,
+      cache: "no-store",
       headers: {
         ...fetchConfig.headers,
         Authorization: `Bearer ${token}`,
       },
     });
 
-    if (!response.ok) {
-      const result = await response.json();
+    if (!response.ok && response.status !== 304) {
+      const result = await response.json().catch(() => ({}));
       return { error: result.error || "Failed to get demographics" };
     }
 
-    const demographics = await response.json();
-    return { demographics: Array.isArray(demographics) ? demographics : [] };
+    const data = response.status === 304 ? {} : await response.json();
+    const demographics = (data as any).demographics || data;
+    return { demographics: demographics as DemographicsResponse };
   } catch (error) {
     console.error("Get demographics error:", error);
     return { error: "Network error. Please try again." };

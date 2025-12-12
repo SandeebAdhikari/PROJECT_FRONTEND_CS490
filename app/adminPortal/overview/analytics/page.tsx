@@ -20,13 +20,14 @@ import {
   getUserEngagement,
   getUserDemographics,
   AppointmentTrend,
-  UserDemographic,
+  DemographicsResponse,
+  EngagementResponse,
 } from "@/libs/api/admins";
 
 export default function AnalyticsPage() {
   const [appointmentTrends, setAppointmentTrends] = useState<AppointmentTrend[]>([]);
-  const [demographics, setDemographics] = useState<UserDemographic[]>([]);
-  const [engagement, setEngagement] = useState<{ activeUsers: { active_user_count: number }; totalUsers: { total_user_count: number } } | null>(null);
+  const [demographics, setDemographics] = useState<DemographicsResponse | null>(null);
+  const [engagement, setEngagement] = useState<EngagementResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [startDate, setStartDate] = useState<string>("");
@@ -84,16 +85,21 @@ export default function AnalyticsPage() {
   // Note: Backend provides total active users in last 30 days, not daily breakdown
   // For a proper daily active users chart, we'd need a backend endpoint that provides daily login/appointment data
 
-  // Format demographics for chart
-  const demographicsChartData = demographics.map((d) => ({
-    group: d.user_role || "Unknown",
+  // Format demographics for charts (customers only)
+  const genderChartData = (demographics?.gender ?? []).map((d) => ({
+    group: d.bucket || "Unknown",
+    users: d.count || 0,
+  }));
+
+  const ageChartData = (demographics?.age ?? []).map((d) => ({
+    group: d.bucket || "Unknown",
     users: d.count || 0,
   }));
 
   // Format activity data (sessions per day - estimated based on total users)
   // Note: Backend doesn't provide session data, so we show a flat estimate
   // This is a placeholder visualization - in production, you'd want a backend endpoint that tracks sessions
-  const totalUsersCount = engagement?.totalUsers?.total_user_count ?? 0;
+  const totalUsersCount = engagement?.customers?.total_users ?? 0;
   const estimatedDailySessions =
     totalUsersCount > 0 ? Math.floor(totalUsersCount * 0.3) : 0; // Estimate 30% of users are active daily
   const activityData = Array.from({ length: 7 }, (_, i) => {
@@ -154,17 +160,17 @@ export default function AnalyticsPage() {
         <ChartCard title="User Engagement">
           <div className="flex flex-col items-center justify-center h-[250px] text-center">
             <p className="text-4xl font-bold text-foreground mb-2">
-              {engagement?.activeUsers?.active_user_count ?? 0}
+              {engagement?.customers?.mau_30d ?? 0}
             </p>
             <p className="text-muted-foreground mb-4">Active Users (Last 30 Days)</p>
             <p className="text-sm text-muted-foreground">
-              {engagement?.totalUsers?.total_user_count ?? 0} total users
+              {engagement?.customers?.total_users ?? 0} total users
             </p>
-            {(engagement?.totalUsers?.total_user_count ?? 0) > 0 && (
+            {(engagement?.customers?.total_users ?? 0) > 0 && (
               <p className="text-sm text-primary mt-2">
                 {Math.round(
-                  ((engagement?.activeUsers?.active_user_count ?? 0) /
-                    (engagement?.totalUsers?.total_user_count ?? 1)) *
+                  ((engagement?.customers?.mau_30d ?? 0) /
+                    (engagement?.customers?.total_users ?? 1)) *
                     100
                 )}% engagement rate
               </p>
@@ -173,11 +179,11 @@ export default function AnalyticsPage() {
         </ChartCard>
 
         {/* User Demographics */}
-        <ChartCard title="User Demographics">
+        <ChartCard title="User Demographics — Gender (customers)">
           <ResponsiveContainer width="100%" height={250}>
             <PieChart>
               <Pie
-                data={demographicsChartData}
+                data={genderChartData}
                 dataKey="users"
                 nameKey="group"
                 cx="50%"
@@ -185,10 +191,35 @@ export default function AnalyticsPage() {
                 outerRadius={90}
                 label
               >
-                {demographicsChartData.map((_, i) => (
+                {genderChartData.map((_, i) => (
                   <Cell
                     key={i}
-                    fill={["hsl(var(--primary))", "hsl(var(--accent))", "#8884d8", "#82ca9d"][i % 4]}
+                    fill={["hsl(var(--primary))", "hsl(var(--accent))", "#8884d8", "#82ca9d", "#f6ad55", "#63b3ed"][i % 6]}
+                  />
+                ))}
+              </Pie>
+              <Tooltip />
+            </PieChart>
+          </ResponsiveContainer>
+        </ChartCard>
+
+        {/* Demographics by Age */}
+        <ChartCard title="User Demographics — Age (customers)">
+          <ResponsiveContainer width="100%" height={250}>
+            <PieChart>
+              <Pie
+                data={ageChartData}
+                dataKey="users"
+                nameKey="group"
+                cx="50%"
+                cy="50%"
+                outerRadius={90}
+                label
+              >
+                {ageChartData.map((_, i) => (
+                  <Cell
+                    key={i}
+                    fill={["#63b3ed", "#f6ad55", "hsl(var(--primary))", "hsl(var(--accent))", "#8884d8", "#82ca9d"][i % 6]}
                   />
                 ))}
               </Pie>

@@ -5,6 +5,8 @@ export interface AccountSettings {
   full_name: string;
   email: string;
   phone: string;
+  gender?: string | null;
+  birth_year?: number | null;
   profile_pic: string | null;
   subscription_plan: string;
   created_at: string;
@@ -15,6 +17,8 @@ export interface UpdateAccountData {
   full_name?: string;
   email?: string;
   phone?: string;
+  gender?: string | null;
+  birth_year?: number | null;
 }
 
 export interface ChangePasswordData {
@@ -297,4 +301,3 @@ export async function deleteAccount(): Promise<{
     return { error: "Network error. Please try again." };
   }
 }
-

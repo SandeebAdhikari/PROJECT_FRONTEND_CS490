@@ -7,9 +7,9 @@ import {
   enable2FA,
   disable2FA,
   get2FAStatus,
-  getProfile,
   deleteAccount,
 } from "@/libs/api/auth";
+import { getAccountSettings, updateAccountSettings } from "@/libs/api/account";
 import AppointmentHistory from "@/components/History/AppointmentHistory";
 import { useFavorites } from "@/hooks/useFavorites";
 import SalonCard from "@/components/Salon/SalonCard";
@@ -254,7 +254,7 @@ const SettingsContent = () => {
     email: "",
     phone: "",
     gender: "",
-    dateOfBirth: "",
+    birthYear: "",
   });
 
   const [passwordData, setPasswordData] = useState({
@@ -330,16 +330,14 @@ const SettingsContent = () => {
       const status = await get2FAStatus();
       setIs2FAEnabled(status.twoFactorEnabled || false);
 
-      const userData = await getProfile();
-      if (userData.user) {
+      const account = await getAccountSettings();
+      if (account.account) {
         setProfileData({
-          fullName: (userData.user.full_name ||
-            userData.user.fullName ||
-            "") as string,
-          email: (userData.user.email || "") as string,
-          phone: (userData.user.phone || "") as string,
-          gender: (userData.user.gender || "") as string,
-          dateOfBirth: (userData.user.date_of_birth || userData.user.dateOfBirth || "") as string,
+          fullName: (account.account.full_name || "") as string,
+          email: (account.account.email || "") as string,
+          phone: (account.account.phone || "") as string,
+          gender: (account.account.gender || "") as string,
+          birthYear: account.account.birth_year ? String(account.account.birth_year) : "",
         });
       } else {
         const storedUser = localStorage.getItem("user");
@@ -350,7 +348,7 @@ const SettingsContent = () => {
             email: user.email || "",
             phone: user.phone || "",
             gender: user.gender || "",
-            dateOfBirth: user.date_of_birth || user.dateOfBirth || "",
+            birthYear: user.birth_year ? String(user.birth_year) : "",
           });
         }
       }
@@ -393,29 +391,31 @@ const SettingsContent = () => {
     }, 5000);
   };
 
-  const handleUpdateProfile = async (e: React.FormEvent) => {
+  const handleUpdateProfile = (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
 
-    try {
-      const token = localStorage.getItem("token") || localStorage.getItem("authToken");
-      const response = await fetch(API_ENDPOINTS.AUTH.PROFILE, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({
-          full_name: profileData.fullName,
-          phone: profileData.phone,
-          email: profileData.email,
-          gender: profileData.gender || null,
-          date_of_birth: profileData.dateOfBirth || null,
-        }),
+    const save = async () => {
+      setLoading(true);
+      setError("");
+      setMessage("");
+      const birthYearNum = profileData.birthYear
+        ? Number(profileData.birthYear)
+        : null;
+
+      const result = await updateAccountSettings({
+        full_name: profileData.fullName,
+        email: profileData.email,
+        phone: profileData.phone,
+        gender: profileData.gender || null,
+        birth_year: birthYearNum,
       });
 
-      if (response.ok) {
-        // Update localStorage with new profile data
+      if (result.error) {
+        setError(result.error);
+      } else {
+        setMessage(result.message || "Profile updated successfully!");
+
+        // update localStorage with new profile data
         const storedUser = localStorage.getItem("user");
         if (storedUser) {
           const user = JSON.parse(storedUser);
@@ -424,26 +424,21 @@ const SettingsContent = () => {
             full_name: profileData.fullName,
             phone: profileData.phone,
             email: profileData.email,
-            gender: profileData.gender,
-            date_of_birth: profileData.dateOfBirth,
+            gender: profileData.gender || null,
+            birth_year: birthYearNum,
           };
           localStorage.setItem("user", JSON.stringify(updatedUser));
         }
-        setMessage("Profile updated successfully!");
-      } else {
-        const data = await response.json();
-        setError(data.error || "Failed to update profile");
       }
-    } catch (err) {
-      console.error("Error updating profile:", err);
-      setError("Failed to update profile. Please try again.");
-    } finally {
+
       setLoading(false);
       setTimeout(() => {
         setMessage("");
         setError("");
-      }, 3000);
-    }
+      }, 5000);
+    };
+
+    void save();
   };
 
   const handleChangePassword = (e: React.FormEvent) => {
@@ -594,45 +589,45 @@ const SettingsContent = () => {
               className="w-full px-4 py-2.5 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary/20"
             />
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                Gender (Optional)
-              </label>
-              <select
-                value={profileData.gender}
-                onChange={(e) =>
-                  setProfileData({ ...profileData, gender: e.target.value })
-                }
-                className="w-full px-4 py-2.5 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary/20"
-              >
-                <option value="">Select Gender</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-                <option value="other">Other</option>
-                <option value="prefer_not_to_say">Prefer not to say</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                Date of Birth (Optional)
-              </label>
-              <input
-                type="date"
-                value={profileData.dateOfBirth}
-                onChange={(e) =>
-                  setProfileData({ ...profileData, dateOfBirth: e.target.value })
-                }
-                className="w-full px-4 py-2.5 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary/20"
-              />
-            </div>
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Gender
+            </label>
+            <select
+              value={profileData.gender}
+              onChange={(e) =>
+                setProfileData({ ...profileData, gender: e.target.value })
+              }
+              className="w-full px-4 py-2.5 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary/20"
+            >
+              <option value="">Select</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+              <option value="nonbinary">Non-binary</option>
+              <option value="prefer_not_say">Prefer not to say</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Birth Year
+            </label>
+            <input
+              type="number"
+              min="1940"
+              max={new Date().getFullYear()}
+              value={profileData.birthYear}
+              onChange={(e) =>
+                setProfileData({ ...profileData, birthYear: e.target.value })
+              }
+              placeholder="e.g., 1995"
+              className="w-full px-4 py-2.5 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary/20"
+            />
           </div>
           <button
             type="submit"
-            disabled={loading}
-            className="px-6 py-2.5 bg-primary text-white rounded-lg hover:bg-primary/90 font-medium transition-colors disabled:opacity-50"
+            className="px-6 py-2.5 bg-primary text-white rounded-lg hover:bg-primary/90 font-medium transition-colors"
           >
-            {loading ? "Updating..." : "Update Profile"}
+            Update Profile
           </button>
         </form>
       </div>
