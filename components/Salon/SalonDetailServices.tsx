@@ -112,67 +112,75 @@ export default function SalonDetailServices({ salonId }: { salonId: string }) {
     );
   }
 
+  const sectionWidth = "w-full lg:max-w-[860px] xl:max-w-[900px] mx-auto";
+
   return (
     <section className="mt-5 w-full">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <h2 className="text-2xl font-extrabold">Our Services</h2>
+      <div className={sectionWidth}>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
+          <h2 className="text-2xl font-extrabold">Our Services</h2>
 
-        <div className="flex items-center gap-2 ">
-          <Filter className="w-4 h-4 text-muted-foreground " />
-          <select
-            aria-label="Sort services"
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
-            className="border border-border text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary bg-background cursor-pointer font-inter"
-          >
-            {sortOptions.map((o) => (
-              <option key={o}>{o}</option>
-            ))}
-          </select>
+          <label className="flex items-center gap-2 border border-border rounded-lg px-3 py-1.5 text-sm text-foreground/80 bg-background shadow-sm">
+            <Filter className="w-4 h-4 text-muted-foreground" />
+            <select
+              aria-label="Sort services"
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="bg-transparent focus:outline-none cursor-pointer"
+            >
+              {sortOptions.map((o) => (
+                <option key={o}>{o}</option>
+              ))}
+            </select>
+          </label>
+        </div>
+
+        <div className="flex gap-2 overflow-x-auto sm:overflow-visible sm:flex-wrap bg-muted/70 rounded-lg sm:w-fit p-1 font-inter shadow-inner border border-border">
+          {categories.map((c) => (
+            <button
+              key={c}
+              onClick={() => setActiveCategory(c)}
+              className={[
+                "px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap cursor-pointer",
+                activeCategory === c
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground",
+              ].join(" ")}
+            >
+              {c}
+            </button>
+          ))}
         </div>
       </div>
 
-      <div className="flex gap-2 mb-8 overflow-x-auto scrollbar-hide bg-muted rounded-lg sm:w-fit p-1 font-inter">
-        {categories.map((c) => (
-          <button
-            key={c}
-            onClick={() => setActiveCategory(c)}
-            className={[
-              "px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap cursor-pointer",
-              activeCategory === c
-                ? "bg-primary-foreground text-foreground"
-                : "text-muted-foreground hover:text-foreground",
-            ].join(" ")}
-          >
-            {c}
-          </button>
-        ))}
+      <div className={sectionWidth}>
+        {groupNames.map((group) => {
+          const items = filtered.filter((s) => s.category_name === group);
+          if (!items.length) return null;
+
+          return (
+            <div key={group} className="mb-10 pt-6">
+              <h3 className="text-lg font-semibold mb-4">{group}</h3>
+              <div className="space-y-4">
+                {items.map((service) => (
+                  <SalonServiceDetailCard
+                    key={service.service_id}
+                    service={{
+                      id: service.service_id,
+                      name: service.custom_name,
+                      category: service.category_name,
+                      description: service.description,
+                      duration: `${service.duration} min`,
+                      price: Number(service.price),
+                    }}
+                    salonId={salonId}
+                  />
+                ))}
+              </div>
+            </div>
+          );
+        })}
       </div>
-
-      {groupNames.map((group) => {
-        const items = filtered.filter((s) => s.category_name === group);
-        if (!items.length) return null;
-
-        return (
-          <div key={group} className="mb-10">
-            <h3 className="text-lg font-semibold mb-4">{group}</h3>
-            {items.map((service) => (
-              <SalonServiceDetailCard
-                key={service.service_id}
-                service={{
-                  id: service.service_id,
-                  name: service.custom_name,
-                  category: service.category_name,
-                  description: service.description,
-                  duration: `${service.duration} min`,
-                  price: Number(service.price),
-                }}
-                salonId={salonId}
-              />
-            ))}
-          </div>
-        );
-      })}
     </section>
   );
 }
