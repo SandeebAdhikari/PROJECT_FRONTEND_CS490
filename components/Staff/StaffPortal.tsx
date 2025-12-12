@@ -26,7 +26,7 @@ import {
 } from "@/libs/api/staffPortal";
 
 
-type TabKey = "overview" | "appointments" | "schedule" | "customers" | "products" | "availability";
+type TabKey = "overview" | "appointments" | "schedule" | "customers" | "availability";
 
 interface StaffProfile {
   fullName: string;

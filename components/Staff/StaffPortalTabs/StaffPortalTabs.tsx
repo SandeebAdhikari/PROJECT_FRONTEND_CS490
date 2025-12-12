@@ -22,9 +22,8 @@ const tabConfig: { id: TabKey; label: string; description: string }[] = [
     label: "Appointments",
     description: "Guests & prep notes",
   },
-  { id: "schedule", label: "Schedule", description: "Today&apos;s schedule" },
+  { id: "schedule", label: "Schedule", description: "Today's schedule" },
   { id: "customers", label: "Customers", description: "Relationships" },
-  { id: "products", label: "Retail", description: "Attach & inventory" },
   { id: "availability", label: "Availability", description: "Set your hours" },
 ];
 
