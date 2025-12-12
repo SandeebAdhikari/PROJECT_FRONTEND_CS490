@@ -10,8 +10,9 @@ import StaffPortalTabsCustomer from "./StaffPortalTabsCustomer";
 import StaffPortalTabsAppointment from "./StaffPortalTabsAppointment";
 import StaffPortalTabsAvailability from "./StaffPortalTabsAvailability";
 import StaffPortalTabsSchedule from "./StaffPortalTabsSchedule";
+import StaffPortalTabsReviews from "./StaffPortalTabsReviews";
 
-type TabKey = "overview" | "appointments" | "schedule" | "customers" | "availability";
+type TabKey = "overview" | "appointments" | "schedule" | "customers" | "reviews" | "availability";
 
 const tabConfig: { id: TabKey; label: string; description: string }[] = [
   { id: "overview", label: "Overview", description: "Shift briefing" },
@@ -22,6 +23,7 @@ const tabConfig: { id: TabKey; label: string; description: string }[] = [
   },
   { id: "schedule", label: "Schedule", description: "Today's schedule" },
   { id: "customers", label: "Customers", description: "Relationships" },
+  { id: "reviews", label: "Reviews", description: "View & respond" },
   { id: "availability", label: "Availability", description: "Set your hours" },
 ];
 
@@ -107,6 +109,10 @@ const StaffPortalTabs: React.FC<StaffPortalTabsProps> = ({
 
         {activeTab === "customers" && (
           <StaffPortalTabsCustomer customers={customers} staffId={staffId} salonId={salonId} />
+        )}
+
+        {activeTab === "reviews" && (
+          <StaffPortalTabsReviews salonId={salonId} />
         )}
 
         {activeTab === "availability" && (
