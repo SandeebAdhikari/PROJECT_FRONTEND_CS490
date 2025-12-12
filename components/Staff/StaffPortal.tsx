@@ -238,9 +238,10 @@ const StaffPortal = () => {
           }));
         }
 
-        // Fetch appointments
+        // Fetch appointments - get upcoming appointments, not just today
         const appointmentsData = await listStaffAppointments({
           limit: 50,
+          range: "upcoming",
         });
         setAppointments(appointmentsData.data.map(mapAppointment));
 
@@ -492,6 +493,7 @@ const StaffPortal = () => {
                 // Refresh appointments
                 const appointmentsData = await listStaffAppointments({
                   limit: 50,
+                  range: "upcoming",
                 });
                 setAppointments(appointmentsData.data.map(mapAppointment));
                 // Refresh dashboard
