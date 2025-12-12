@@ -93,11 +93,9 @@ export default function AnalyticsPage() {
   // Format activity data (sessions per day - estimated based on total users)
   // Note: Backend doesn't provide session data, so we show a flat estimate
   // This is a placeholder visualization - in production, you'd want a backend endpoint that tracks sessions
-  const totalUsersCountForSessions = engagement?.totalUsers?.total_user_count ?? 0;
+  const totalUsersCount = engagement?.totalUsers?.total_user_count ?? 0;
   const estimatedDailySessions =
-    totalUsersCountForSessions > 0
-      ? Math.floor(totalUsersCountForSessions * 0.3)
-      : 0; // Estimate 30% of users are active daily
+    totalUsersCount > 0 ? Math.floor(totalUsersCount * 0.3) : 0; // Estimate 30% of users are active daily
   const activityData = Array.from({ length: 7 }, (_, i) => {
     const date = new Date();
     date.setDate(date.getDate() - (6 - i));
@@ -106,11 +104,6 @@ export default function AnalyticsPage() {
       sessions: estimatedDailySessions,
     };
   });
-
-  const activeUsersCount = engagement?.activeUsers?.active_user_count ?? 0;
-  const totalUsersCount = engagement?.totalUsers?.total_user_count ?? 0;
-  const engagementRate =
-    totalUsersCount > 0 ? Math.round((activeUsersCount / totalUsersCount) * 100) : 0;
 
   if (loading) {
     return (
@@ -161,15 +154,19 @@ export default function AnalyticsPage() {
         <ChartCard title="User Engagement">
           <div className="flex flex-col items-center justify-center h-[250px] text-center">
             <p className="text-4xl font-bold text-foreground mb-2">
-              {activeUsersCount}
+              {engagement?.activeUsers?.active_user_count ?? 0}
             </p>
             <p className="text-muted-foreground mb-4">Active Users (Last 30 Days)</p>
             <p className="text-sm text-muted-foreground">
-              {totalUsersCount} total users
+              {engagement?.totalUsers?.total_user_count ?? 0} total users
             </p>
-            {totalUsersCount > 0 && (
+            {(engagement?.totalUsers?.total_user_count ?? 0) > 0 && (
               <p className="text-sm text-primary mt-2">
-                {engagementRate}% engagement rate
+                {Math.round(
+                  ((engagement?.activeUsers?.active_user_count ?? 0) /
+                    (engagement?.totalUsers?.total_user_count ?? 1)) *
+                    100
+                )}% engagement rate
               </p>
             )}
           </div>

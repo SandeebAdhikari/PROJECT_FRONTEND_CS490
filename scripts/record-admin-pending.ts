@@ -30,7 +30,7 @@ async function main() {
   }, token);
   await context.addCookies([{ name: "token", value: token, url: baseURL }]);
 
-  // Navigate directly to pending approvals (try sidra path first, then adminPortal)
+  // Navigate directly to pending approvals
   let reached = false;
   for (const path of ["/adminPortal/overview/pending-approvals"]) {
     await page.goto(`${baseURL}${path}`, { waitUntil: "domcontentloaded" });

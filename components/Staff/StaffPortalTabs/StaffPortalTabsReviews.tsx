@@ -55,7 +55,7 @@ const StaffPortalTabsReviews: React.FC<StaffPortalTabsReviewsProps> = ({
     } finally {
       setLoading(false);
     }
-  }, [salonId]);
+  }, [salonId, API_URL]);
 
   useEffect(() => {
     fetchReviews();
@@ -293,3 +293,4 @@ const StaffPortalTabsReviews: React.FC<StaffPortalTabsReviewsProps> = ({
 };
 
 export default StaffPortalTabsReviews;
+

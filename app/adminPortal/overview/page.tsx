@@ -28,7 +28,7 @@ import {
   UserDemographic,
 } from "@/libs/api/admins";
 
-export default function SidraDashboard() {
+export default function AdminDashboard() {
   const ADMIN_NAME = "Admin";
   const [appointmentTrends, setAppointmentTrends] = useState<AppointmentTrend[]>([]);
   const [revenues, setRevenues] = useState<SalonRevenue[]>([]);

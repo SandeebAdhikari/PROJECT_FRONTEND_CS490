@@ -191,29 +191,50 @@ const CustomerPhotoManager: React.FC<CustomerPhotoManagerProps> = ({
     }
   };
 
-  const handleDownload = async (photoUrl: string, photoType: string) => {
+  const handleDownload = (photoUrl: string, photoType: string) => {
     try {
       const url = getPhotoUrl(photoUrl);
-      const response = await fetch(url);
-      const blob = await response.blob();
-      
-      // Create download link
-      const downloadUrl = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = downloadUrl;
       
       // Generate filename with date
       const date = new Date().toISOString().split("T")[0];
-      const extension = photoUrl.split(".").pop() || "jpg";
-      link.download = `${photoType}-photo-${date}.${extension}`;
+      const extension = photoUrl.split(".").pop()?.split("?")[0] || "jpg";
+      const filename = `${photoType}-photo-${date}.${extension}`;
       
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(downloadUrl);
+      // Use backend proxy to download (avoids CORS issues)
+      const token = localStorage.getItem("staffToken");
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+      const proxyUrl = `${API_BASE_URL}/api/photos/download?url=${encodeURIComponent(url)}&filename=${encodeURIComponent(filename)}`;
       
-      setMessage("Photo downloaded successfully");
-      setTimeout(() => setMessage(""), 3000);
+      // Create a hidden link and trigger download
+      const link = document.createElement("a");
+      link.href = proxyUrl;
+      link.download = filename;
+      
+      // Add auth header via fetch for the download
+      fetch(proxyUrl, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      })
+        .then((response) => {
+          if (!response.ok) throw new Error("Download failed");
+          return response.blob();
+        })
+        .then((blob) => {
+          const blobUrl = window.URL.createObjectURL(blob);
+          link.href = blobUrl;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          window.URL.revokeObjectURL(blobUrl);
+          setMessage("Photo downloaded successfully!");
+          setTimeout(() => setMessage(""), 3000);
+        })
+        .catch((err) => {
+          console.error("Download error:", err);
+          // Fallback: open in new tab
+          window.open(url, "_blank");
+          setMessage("Photo opened in new tab. Right-click to save.");
+          setTimeout(() => setMessage(""), 5000);
+        });
     } catch (err) {
       console.error("Error downloading photo:", err);
       setError("Failed to download photo");
