@@ -26,7 +26,7 @@ import {
 } from "@/libs/api/staffPortal";
 
 
-type TabKey = "overview" | "appointments" | "schedule" | "customers" | "products" | "availability";
+type TabKey = "overview" | "appointments" | "schedule" | "customers" | "reviews" | "availability";
 
 interface StaffProfile {
   fullName: string;
@@ -238,9 +238,10 @@ const StaffPortal = () => {
           }));
         }
 
-        // Fetch appointments
+        // Fetch appointments - get upcoming appointments, not just today
         const appointmentsData = await listStaffAppointments({
           limit: 50,
+          range: "upcoming",
         });
         setAppointments(appointmentsData.data.map(mapAppointment));
 
@@ -477,7 +478,6 @@ const StaffPortal = () => {
             onTabChange={(tab: TabKey) => setActiveTab(tab)}
             appointments={appointments}
             customers={customers}
-            products={products}
             featuredStaff={featuredStaff}
             onCreateAppointment={() => setShowNewAppointment(true)}
             onEditAppointment={(id) => setEditingAppointmentId(id)}
@@ -492,6 +492,7 @@ const StaffPortal = () => {
                 // Refresh appointments
                 const appointmentsData = await listStaffAppointments({
                   limit: 50,
+                  range: "upcoming",
                 });
                 setAppointments(appointmentsData.data.map(mapAppointment));
                 // Refresh dashboard

@@ -407,7 +407,7 @@ const PaymentSuccessPageContent = () => {
 
         {/* Next Steps */}
         <div className="bg-card border border-border rounded-2xl p-6 sm:p-8 shadow-soft-br mb-6">
-          <h2 className="text-xl font-bold mb-4">What&apos;s Next?</h2>
+          <h2 className="text-xl font-bold mb-4">What's Next?</h2>
           <div className="space-y-4">
             <div className="flex items-start gap-3">
               <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center flex-shrink-0 text-white font-bold">
@@ -416,7 +416,7 @@ const PaymentSuccessPageContent = () => {
               <div>
                 <p className="font-semibold">Confirmation Email</p>
                 <p className="text-sm text-muted-foreground">
-                  You&apos;ll receive a confirmation email with your appointment details and receipt.
+                  You'll receive a confirmation email with your appointment details and receipt.
                 </p>
               </div>
             </div>
@@ -427,7 +427,7 @@ const PaymentSuccessPageContent = () => {
               <div>
                 <p className="font-semibold">Appointment Reminder</p>
                 <p className="text-sm text-muted-foreground">
-                  We&apos;ll send you a reminder 24 hours before your appointment.
+                  We'll send you a reminder 24 hours before your appointment.
                 </p>
               </div>
             </div>

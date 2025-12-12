@@ -73,11 +73,28 @@ const NewAppointmentModal = ({
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!isOpen || !salonId) return;
+    if (!isOpen) return;
     const userData =
       typeof window !== "undefined" ? localStorage.getItem("user") : null;
     const user = userData ? JSON.parse(userData) : null;
-    const currentSalonId = user?.salon_id || salonId;
+    // Use user's salon_id from localStorage, or fall back to prop, or try staffUser
+    const staffUserData = typeof window !== "undefined" ? localStorage.getItem("staffUser") : null;
+    const staffUser = staffUserData ? JSON.parse(staffUserData) : null;
+    // Also check for salon.id in case salon_id is nested
+    const currentSalonId = user?.salon_id || salonId || staffUser?.salon_id || staffUser?.salon?.id;
+    
+    console.log("[NewAppointmentModal] salonId resolution:", {
+      propSalonId: salonId,
+      userSalonId: user?.salon_id,
+      staffUserSalonId: staffUser?.salon_id,
+      staffUserNestedSalonId: staffUser?.salon?.id,
+      resolved: currentSalonId
+    });
+    
+    if (!currentSalonId) {
+      console.warn("No salonId available for fetching services");
+      return;
+    }
 
     const fetchStaff = async () => {
       const res = await fetchWithRefresh(
@@ -97,13 +114,19 @@ const NewAppointmentModal = ({
     };
 
     const fetchServices = async () => {
-      const res = await fetchWithRefresh(
-        API_ENDPOINTS.SALONS.SERVICES(currentSalonId),
-        { credentials: "include" }
-      );
-      const data = await res.json();
-      if (res.ok && Array.isArray(data))
-        setServices(data.map((s) => ({ ...s, price: Number(s.price) })));
+      console.log("[NewAppointmentModal] Fetching services for salonId:", currentSalonId);
+      try {
+        const res = await fetchWithRefresh(
+          API_ENDPOINTS.SALONS.SERVICES(currentSalonId),
+          { credentials: "include" }
+        );
+        const data = await res.json();
+        console.log("[NewAppointmentModal] Services response:", { ok: res.ok, data });
+        if (res.ok && Array.isArray(data))
+          setServices(data.map((s) => ({ ...s, price: Number(s.price) })));
+      } catch (err) {
+        console.error("[NewAppointmentModal] Failed to fetch services:", err);
+      }
     };
 
     fetchStaff();
@@ -468,6 +491,9 @@ const NewAppointmentModal = ({
               Services <span className="text-red-500">*</span>
             </label>
             <div className="border border-border rounded-lg p-3 space-y-2 max-h-40 overflow-y-auto scrollbar-hide">
+              {services.length === 0 && (
+                <p className="text-sm text-muted-foreground">Loading services...</p>
+              )}
               {services.map((s) => {
                 const checked = form.service_ids.includes(s.service_id);
                 return (
