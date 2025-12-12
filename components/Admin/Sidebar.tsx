@@ -15,19 +15,19 @@ import { usePathname } from "next/navigation";
 import NextImage from "next/image";
 
 const navItems = [
-    { href: "/sidra/overview", icon: <LayoutDashboard size={18} />, label: "Dashboard" },
+    { href: "/overview", icon: <LayoutDashboard size={18} />, label: "Dashboard" },
 
-    { href: "/sidra/overview/salons", icon: <Store size={18} />, label: "Salons" },
+    { href: "/overview/salons", icon: <Store size={18} />, label: "Salons" },
 
-    { href: "/sidra/overview/analytics", icon: <BarChart2 size={18} />, label: "Users" },
+    { href: "/overview/analytics", icon: <BarChart2 size={18} />, label: "Users" },
 
-    { href: "/sidra/overview/reports", icon: <Users size={18} />, label: "Customers" },
+    { href: "/overview/reports", icon: <Users size={18} />, label: "Customers" },
 
-    { href: "/sidra/overview/reliability", icon: <Download size={18} />, label: "Reports" },
+    { href: "/overview/reliability", icon: <Download size={18} />, label: "Reports" },
 
-    { href: "/sidra/overview/settings", icon: <Activity size={18} />, label: "System Health" },
+    { href: "/overview/settings", icon: <Activity size={18} />, label: "System Health" },
 
-    { href: "/sidra/overview/pending-approvals", icon: <ClipboardCheck size={18} />, label: "Approvals" },
+    { href: "/overview/pending-approvals", icon: <ClipboardCheck size={18} />, label: "Approvals" },
 ];
 
 
