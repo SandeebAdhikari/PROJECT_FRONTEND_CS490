@@ -265,6 +265,7 @@ export default function SalonsPage() {
                       </div>
                     )}
                   </div>
+                  </div>
                   <button
                     onClick={() => handleDelete(salonId, salon.name)}
                     disabled={deletingId === salonId}
