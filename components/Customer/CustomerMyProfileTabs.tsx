@@ -253,6 +253,8 @@ const SettingsContent = () => {
     fullName: "",
     email: "",
     phone: "",
+    gender: "",
+    dateOfBirth: "",
   });
 
   const [passwordData, setPasswordData] = useState({
@@ -336,6 +338,8 @@ const SettingsContent = () => {
             "") as string,
           email: (userData.user.email || "") as string,
           phone: (userData.user.phone || "") as string,
+          gender: (userData.user.gender || "") as string,
+          dateOfBirth: (userData.user.date_of_birth || userData.user.dateOfBirth || "") as string,
         });
       } else {
         const storedUser = localStorage.getItem("user");
@@ -345,6 +349,8 @@ const SettingsContent = () => {
             fullName: user.full_name || user.fullName || "",
             email: user.email || "",
             phone: user.phone || "",
+            gender: user.gender || "",
+            dateOfBirth: user.date_of_birth || user.dateOfBirth || "",
           });
         }
       }
@@ -387,24 +393,57 @@ const SettingsContent = () => {
     }, 5000);
   };
 
-  const handleUpdateProfile = (e: React.FormEvent) => {
+  const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
 
-    // update localStorage with new profile data
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      const user = JSON.parse(storedUser);
-      const updatedUser = {
-        ...user,
-        full_name: profileData.fullName,
-        phone: profileData.phone,
-        email: profileData.email,
-      };
-      localStorage.setItem("user", JSON.stringify(updatedUser));
+    try {
+      const token = localStorage.getItem("token") || localStorage.getItem("authToken");
+      const response = await fetch(API_ENDPOINTS.AUTH.PROFILE, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          full_name: profileData.fullName,
+          phone: profileData.phone,
+          email: profileData.email,
+          gender: profileData.gender || null,
+          date_of_birth: profileData.dateOfBirth || null,
+        }),
+      });
+
+      if (response.ok) {
+        // Update localStorage with new profile data
+        const storedUser = localStorage.getItem("user");
+        if (storedUser) {
+          const user = JSON.parse(storedUser);
+          const updatedUser = {
+            ...user,
+            full_name: profileData.fullName,
+            phone: profileData.phone,
+            email: profileData.email,
+            gender: profileData.gender,
+            date_of_birth: profileData.dateOfBirth,
+          };
+          localStorage.setItem("user", JSON.stringify(updatedUser));
+        }
+        setMessage("Profile updated successfully!");
+      } else {
+        const data = await response.json();
+        setError(data.error || "Failed to update profile");
+      }
+    } catch (err) {
+      console.error("Error updating profile:", err);
+      setError("Failed to update profile. Please try again.");
+    } finally {
+      setLoading(false);
+      setTimeout(() => {
+        setMessage("");
+        setError("");
+      }, 3000);
     }
-
-    setMessage("Profile updated successfully!");
-    setTimeout(() => setMessage(""), 3000);
   };
 
   const handleChangePassword = (e: React.FormEvent) => {
@@ -555,11 +594,45 @@ const SettingsContent = () => {
               className="w-full px-4 py-2.5 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary/20"
             />
           </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Gender (Optional)
+              </label>
+              <select
+                value={profileData.gender}
+                onChange={(e) =>
+                  setProfileData({ ...profileData, gender: e.target.value })
+                }
+                className="w-full px-4 py-2.5 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary/20"
+              >
+                <option value="">Select Gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+                <option value="prefer_not_to_say">Prefer not to say</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Date of Birth (Optional)
+              </label>
+              <input
+                type="date"
+                value={profileData.dateOfBirth}
+                onChange={(e) =>
+                  setProfileData({ ...profileData, dateOfBirth: e.target.value })
+                }
+                className="w-full px-4 py-2.5 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary/20"
+              />
+            </div>
+          </div>
           <button
             type="submit"
-            className="px-6 py-2.5 bg-primary text-white rounded-lg hover:bg-primary/90 font-medium transition-colors"
+            disabled={loading}
+            className="px-6 py-2.5 bg-primary text-white rounded-lg hover:bg-primary/90 font-medium transition-colors disabled:opacity-50"
           >
-            Update Profile
+            {loading ? "Updating..." : "Update Profile"}
           </button>
         </form>
       </div>

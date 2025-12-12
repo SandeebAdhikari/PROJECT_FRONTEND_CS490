@@ -383,6 +383,30 @@ const BookingContent = () => {
     if (!formData.date || !formData.time)
       return setError("Please select date and time");
 
+    // Check if user has email and phone before booking
+    const token = localStorage.getItem("token") || localStorage.getItem("authToken");
+    let userEmail = "";
+    let userPhone = "";
+    
+    if (token) {
+      try {
+        const tokenParts = token.split(".");
+        if (tokenParts.length === 3) {
+          const payload = JSON.parse(atob(tokenParts[1]));
+          userEmail = payload.email || payload.user_email || "";
+          userPhone = payload.phone || payload.user_phone || "";
+        }
+      } catch {
+        // Try localStorage fallback
+        userEmail = localStorage.getItem("userEmail") || "";
+        userPhone = localStorage.getItem("userPhone") || "";
+      }
+    }
+
+    if (!userEmail || !userPhone) {
+      return setError("Please update your profile with email and phone number before booking. Go to Settings to update your profile.");
+    }
+
     setLoading(true);
 
     try {

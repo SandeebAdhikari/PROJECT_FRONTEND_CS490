@@ -33,6 +33,13 @@ const SignUpForm = () => {
         role: data.userType,
       };
 
+      // Add demographic info for customers
+      if (data.userType === "customer") {
+        if (data.gender) payload.gender = data.gender;
+        if (data.dateOfBirth) payload.date_of_birth = data.dateOfBirth;
+        if (data.zipcode) payload.zipcode = data.zipcode;
+      }
+
       // Add business info for owners
       if (data.userType === "owner") {
         Object.assign(payload, {
