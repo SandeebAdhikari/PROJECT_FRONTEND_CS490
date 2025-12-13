@@ -40,7 +40,7 @@
     "eslint-config-next": "15.5.4",
     "tailwindcss": "^4.1.14",
     "typescript": "5.9.3",
-    "chromedriver": "^131.0.4",
+    "chromedriver": "^143.0.1",
     "selenium-webdriver": "^4.26.0"
   }
 }
