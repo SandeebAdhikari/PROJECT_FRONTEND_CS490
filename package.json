@@ -6,6 +6,8 @@
     "test": "FEATURE_SCOPE=features playwright test",
     "test:features-8": "FEATURE_SCOPE=features playwright test tests/features-8.spec.ts",
     "test:features-15": "FEATURE_SCOPE=features playwright test tests/features-15.spec.ts",
+    "selenium:test:features-8": "node tests/selenium/features-8.test.js",
+    "selenium:test:features-15": "node tests/selenium/features-15.test.js",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
@@ -37,6 +39,8 @@
     "eslint": "^9",
     "eslint-config-next": "15.5.4",
     "tailwindcss": "^4.1.14",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "chromedriver": "^131.0.4",
+    "selenium-webdriver": "^4.26.0"
   }
 }
