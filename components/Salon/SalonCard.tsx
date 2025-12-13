@@ -63,9 +63,6 @@ const SalonCard: React.FC<SalonCardProps> = ({
           className="w-full h-44 sm:h-48 object-cover group-hover:scale-105 transition-transform duration-300"
         />
         <div className="absolute top-3 left-3 sm:top-4 sm:left-4 flex gap-2">
-          <div className="bg-primary text-white text-xs font-semibold px-2.5 py-1 sm:px-3 rounded-full shadow-sm">
-            <span>{category}</span>
-          </div>
           {isPending && (
             <div className="bg-yellow-500 text-white text-xs font-semibold px-2.5 py-1 sm:px-3 rounded-full shadow-sm">
               <span>Coming Soon</span>
