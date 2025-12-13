@@ -7,6 +7,11 @@ export default defineConfig({
     timeout: 10_000,
   },
   retries: 0,
+  // Allow scoping to lightweight feature checks when FEATURE_SCOPE=features
+  testMatch:
+    process.env.FEATURE_SCOPE === 'features'
+      ? /tests\/features-\d+\.spec\.ts/
+      : undefined,
   use: {
     baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000',
     headless: true,
