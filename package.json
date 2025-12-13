@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "test": "playwright test",
+    "test": "FEATURE_SCOPE=features playwright test",
     "test:features-8": "FEATURE_SCOPE=features playwright test tests/features-8.spec.ts",
     "test:features-15": "FEATURE_SCOPE=features playwright test tests/features-15.spec.ts",
     "dev": "next dev",
