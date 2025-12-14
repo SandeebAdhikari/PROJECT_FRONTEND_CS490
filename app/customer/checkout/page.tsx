@@ -208,13 +208,7 @@ const CheckoutPageContent = () => {
     }
   };
 
-  useEffect(() => {
-    if (pointsToRedeem > 0 && appointment?.salon_id) {
-      calculateDiscountAmount();
-    } else {
-      setDiscount(0);
-    }
-  }, [pointsToRedeem, appointment?.salon_id]);
+  // Removed auto-calculation - now requires clicking "Redeem" button
 
   const fetchAppointmentDetails = async () => {
     try {
@@ -832,12 +826,26 @@ const CheckoutPageContent = () => {
                         className="flex-1 min-w-0 px-3 py-2 border border-purple-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-purple-300 focus:border-purple-300"
                         placeholder="Enter points"
                       />
-                      {pointsToRedeem > 0 && discount > 0 && (
-                        <span className="flex-shrink-0 px-3 py-2 bg-green-100 text-green-700 text-sm font-semibold rounded-lg">
-                          -${discount.toFixed(2)}
-                        </span>
+                      {discount > 0 ? (
+                        <button
+                          onClick={() => { setPointsToRedeem(0); setDiscount(0); }}
+                          className="flex-shrink-0 px-3 py-2 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg border border-red-200 transition-colors"
+                        >
+                          Remove
+                        </button>
+                      ) : (
+                        <button
+                          onClick={calculateDiscountAmount}
+                          disabled={pointsToRedeem <= 0}
+                          className="flex-shrink-0 px-3 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        >
+                          Redeem
+                        </button>
                       )}
                     </div>
+                    {discount > 0 && (
+                      <p className="text-xs text-green-600 font-semibold mt-2">✓ ${discount.toFixed(2)} saved!</p>
+                    )}
                   </div>
                 )}
 
