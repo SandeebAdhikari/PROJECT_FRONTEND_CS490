@@ -13,5 +13,4 @@ export const dashboardMenu: MenuItem[] = [
   { id: 10, label: "Gallery", shortLabel: "Gallery", path: "gallery", icon: "Image" },
   { id: 11, label: "Salon Settings", shortLabel: "Salon", path: "salon-settings", icon: "Settings" },
   { id: 12, label: "Account Settings", shortLabel: "Account", path: "account-settings", icon: "User" },
-  { id: 13, label: "Verification", shortLabel: "Verify", path: "verification", icon: "Award" },
 ];
